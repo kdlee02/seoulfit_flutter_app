@@ -10,11 +10,18 @@ import '../models/travel_state.dart';
 /// OSM-backed map: one polyline per day (color-coded), numbered circular
 /// markers in visit order, tap to see the POI's name / type / stay time /
 /// address.
-class ItineraryMap extends StatelessWidget {
+class ItineraryMap extends StatefulWidget {
   final Itinerary itinerary;
   final double height;
 
   const ItineraryMap({super.key, required this.itinerary, this.height = 280});
+
+  @override
+  State<ItineraryMap> createState() => _ItineraryMapState();
+}
+
+class _ItineraryMapState extends State<ItineraryMap> {
+  final MapController _mapController = MapController();
 
   /// Distinct colors per day, drawn from the SeoulFit palette.
   static const List<Color> _dayColors = [
@@ -27,8 +34,24 @@ class ItineraryMap extends StatelessWidget {
 
   Color _colorFor(int dayIndex) => _dayColors[dayIndex % _dayColors.length];
 
+  void _zoomBy(double delta) {
+    final camera = _mapController.camera;
+    final target = (camera.zoom + delta)
+        .clamp(camera.minZoom ?? 1.0, camera.maxZoom ?? 19.0)
+        .toDouble();
+    _mapController.move(camera.center, target);
+  }
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final itinerary = widget.itinerary;
+    final height = widget.height;
     final dayPoints = <List<_MapPoi>>[];
     for (final day in itinerary.days) {
       final pts = <_MapPoi>[];
@@ -97,6 +120,7 @@ class ItineraryMap extends StatelessWidget {
         child: Stack(
           children: [
             FlutterMap(
+              mapController: _mapController,
               options: mapOptions,
               children: [
                 TileLayer(
@@ -135,6 +159,23 @@ class ItineraryMap extends StatelessWidget {
                 ),
               ],
             ),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Column(
+                children: [
+                  _ZoomButton(
+                    icon: Icons.add,
+                    onTap: () => _zoomBy(1),
+                  ),
+                  const SizedBox(height: 8),
+                  _ZoomButton(
+                    icon: Icons.remove,
+                    onTap: () => _zoomBy(-1),
+                  ),
+                ],
+              ),
+            ),
             if (itinerary.days.length > 1)
               Positioned(
                 left: 8,
@@ -156,11 +197,19 @@ class ItineraryMap extends StatelessWidget {
     );
   }
 
+  // Enable the full set of map gestures (pinch / double-tap / scroll-wheel
+  // zoom, drag) so the map stays interactive even nested in a scroll view.
+  static const _interaction =
+      InteractionOptions(flags: InteractiveFlag.all);
+
   MapOptions _buildMapOptions(List<_MapPoi> allPoints) {
     if (allPoints.length == 1) {
       return MapOptions(
         initialCenter: allPoints.first.point,
         initialZoom: 14,
+        minZoom: 3,
+        maxZoom: 18,
+        interactionOptions: _interaction,
       );
     }
     final lats = allPoints.map((p) => p.point.latitude);
@@ -172,6 +221,9 @@ class ItineraryMap extends StatelessWidget {
           lngs.reduce((a, b) => a > b ? a : b)),
     );
     return MapOptions(
+      minZoom: 3,
+      maxZoom: 18,
+      interactionOptions: _interaction,
       initialCameraFit: CameraFit.bounds(
         bounds: bounds,
         padding: const EdgeInsets.all(40),
@@ -242,6 +294,30 @@ class _NumberedMarker extends StatelessWidget {
               fontSize: 13,
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ZoomButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ZoomButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.95),
+      borderRadius: BorderRadius.circular(10),
+      elevation: 2,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Icon(icon, size: 20, color: kInk),
         ),
       ),
     );

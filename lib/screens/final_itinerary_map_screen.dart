@@ -124,12 +124,14 @@ class FinalItineraryMapScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Final Itinerary',
-                                style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800,
-                                    color: kInk),
+                              Expanded(
+                                child: Text(
+                                  'Final Itinerary',
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      color: kInk),
+                                ),
                               ),
                               if (score != null)
                                 Container(
@@ -272,10 +274,18 @@ class _DayHeader extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                   fontSize: 13, fontWeight: FontWeight.w600, color: kInk)),
         ),
-        if (day.estimatedCost.isNotEmpty)
-          Text(day.estimatedCost,
-              style:
-                  GoogleFonts.plusJakartaSans(fontSize: 12, color: kSubtext)),
+        if (day.estimatedCost.isNotEmpty) ...[
+          const SizedBox(width: 8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 110),
+            child: Text(day.estimatedCost,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12, color: kSubtext)),
+          ),
+        ],
       ]),
     );
   }
@@ -286,8 +296,23 @@ class _PoiRow extends StatelessWidget {
   final Poi poi;
   const _PoiRow({required this.sequence, required this.poi});
 
+  static Future<void> _open(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Prefer the Korean name inside "(...)" for the map search; fall back to
+    // the full place name when there's no parenthesised text.
+    final paren = RegExp(r'[（(]([^）)]+)[）)]').firstMatch(poi.name);
+    final term = paren?.group(1)?.trim();
+    final keyword = Uri.encodeQueryComponent(
+        (term != null && term.isNotEmpty) ? term : poi.name);
+    final naverUrl =
+        'https://m.map.naver.com/search2/search.naver?query=$keyword';
+    final kakaoUrl = 'https://map.kakao.com/?q=$keyword';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(13),
@@ -296,46 +321,114 @@ class _PoiRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: kCardBorder),
       ),
-      child: Row(children: [
-        Container(
-          width: 34,
-          height: 34,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                  color: kMintLight, borderRadius: BorderRadius.circular(10)),
+              child: Center(
+                child: Text('$sequence',
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: kMint)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(poi.name,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: kInk)),
+                    if (poi.address.isNotEmpty)
+                      Text(poi.address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11, color: kSubtext)),
+                  ]),
+            ),
+            if (poi.type.isNotEmpty)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                    color: kMintLight, borderRadius: BorderRadius.circular(20)),
+                child: Text(poi.type,
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: kMint)),
+              ),
+          ]),
+          const SizedBox(height: 10),
+          // Per-POI map search links: Naver + Kakao, by place title.
+          Row(children: [
+            const SizedBox(width: 46),
+            _MapSearchButton(
+              label: 'Naver Map',
+              bg: const Color(0xFF03C75A),
+              onTap: () => _open(naverUrl),
+            ),
+            const SizedBox(width: 8),
+            _MapSearchButton(
+              label: 'Kakao Map',
+              bg: const Color(0xFFFFE000),
+              fg: Colors.black,
+              onTap: () => _open(kakaoUrl),
+            ),
+          ]),
+        ],
+      ),
+    );
+  }
+}
+
+/// A small pill button + hyperlink that opens a map search for a POI title.
+class _MapSearchButton extends StatelessWidget {
+  final String label;
+  final Color bg;
+  final Color fg;
+  final VoidCallback onTap;
+  const _MapSearchButton({
+    required this.label,
+    required this.bg,
+    this.fg = Colors.white,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-              color: kMintLight, borderRadius: BorderRadius.circular(10)),
-          child: Center(
-            child: Text('$sequence',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: kMint)),
+            color: bg,
+            borderRadius: BorderRadius.circular(20),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(poi.name,
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.map_outlined, size: 13, color: fg),
+            const SizedBox(width: 5),
+            Text(label,
                 style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13, fontWeight: FontWeight.w600, color: kInk)),
-            if (poi.address.isNotEmpty)
-              Text(poi.address,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11, color: kSubtext)),
+                    fontSize: 11, fontWeight: FontWeight.w700, color: fg)),
+            const SizedBox(width: 3),
+            Icon(Icons.open_in_new, size: 10, color: fg.withValues(alpha: 0.8)),
           ]),
         ),
-        if (poi.type.isNotEmpty)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-                color: kMintLight, borderRadius: BorderRadius.circular(20)),
-            child: Text(poi.type,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: kMint)),
-          ),
-      ]),
+      ),
     );
   }
 }
@@ -346,13 +439,6 @@ class _PoiRow extends StatelessWidget {
 class _TransitLegRow extends StatelessWidget {
   final TransitLeg leg;
   const _TransitLegRow({required this.leg});
-
-  Future<void> _open(String? url) async {
-    if (url == null || url.isEmpty) return;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -381,12 +467,6 @@ class _TransitLegRow extends StatelessWidget {
                     _LegChip(emoji: '🚶', label: '${leg.walkMinutes} min'),
                   if (leg.carMinutes != null)
                     _LegChip(emoji: '🚗', label: '${leg.carMinutes} min'),
-                  if (leg.kakaoCarUrl != null || leg.kakaoWalkUrl != null)
-                    _LegChip(
-                      icon: Icons.map_outlined,
-                      label: 'Kakao Map',
-                      onTap: () => _open(leg.kakaoCarUrl ?? leg.kakaoWalkUrl),
-                    ),
                 ],
               ),
             ),
@@ -401,52 +481,32 @@ class _LegChip extends StatelessWidget {
   final IconData? icon;
   final String? emoji;
   final String label;
-  final VoidCallback? onTap;
 
-  const _LegChip({this.icon, this.emoji, required this.label, this.onTap});
+  const _LegChip({this.icon, this.emoji, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    final tappable = onTap != null;
-    final content = Container(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: tappable ? kMintLight : kInk.withValues(alpha: 0.05),
+        color: kInk.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
-        border: tappable
-            ? Border.all(color: kMint.withValues(alpha: 0.45))
-            : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (emoji != null) Text(emoji!, style: const TextStyle(fontSize: 12)),
-          if (icon != null)
-            Icon(icon, size: 13, color: tappable ? kMint : kSubtext),
+          if (icon != null) Icon(icon, size: 13, color: kSubtext),
           const SizedBox(width: 4),
           Text(
             label,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: tappable ? kMint : kSubtext,
+              color: kSubtext,
             ),
           ),
-          if (tappable) ...[
-            const SizedBox(width: 3),
-            Icon(Icons.open_in_new, size: 11, color: kMint.withValues(alpha: 0.7)),
-          ],
         ],
-      ),
-    );
-
-    if (!tappable) return content;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: content,
       ),
     );
   }

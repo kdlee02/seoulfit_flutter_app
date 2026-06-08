@@ -11,7 +11,7 @@ import '../models/travel_state.dart';
 import '../providers/travel_provider.dart';
 
 /// A connection between two consecutive selected stops. Walk/car estimates plus
-/// a Kakao Map deep-link — no ODsay here (that lives on the Transit screen).
+/// a Kakao Map deep-link between the two stops.
 class _Hop {
   final double? distanceKm;
   final int? walkMin;
@@ -22,8 +22,28 @@ class _Hop {
   int get etaMin => walkMin ?? 0;
 }
 
-class RouteVariationScreen extends StatelessWidget {
+class RouteVariationScreen extends StatefulWidget {
   const RouteVariationScreen({super.key});
+
+  @override
+  State<RouteVariationScreen> createState() => _RouteVariationScreenState();
+}
+
+class _RouteVariationScreenState extends State<RouteVariationScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Build the ODsay transit options for the selected stops as soon as the
+    // route is shown (the Transit screen used to trigger this on a button tap).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final p = context.read<TravelProvider>();
+      if (p.selectedStops.length >= 2 &&
+          p.recomputedLegs == null &&
+          !p.legsLoading) {
+        p.recomputeTransit();
+      }
+    });
+  }
 
   static double _haversineKm(
       double lat1, double lng1, double lat2, double lng2) {
@@ -89,25 +109,6 @@ class RouteVariationScreen extends StatelessWidget {
     await _open('https://maps.google.com/?q=$lat,$lng');
   }
 
-  Future<void> _openDirections(List<Poi> stops) async {
-    final pts = stops.where((p) => p.lat != null && p.lng != null).toList();
-    if (pts.isEmpty) return;
-    final origin = '${pts.first.lat},${pts.first.lng}';
-    final dest = '${pts.last.lat},${pts.last.lng}';
-    final mid = pts.length > 2
-        ? pts
-            .sublist(1, pts.length - 1)
-            .map((p) => '${p.lat},${p.lng}')
-            .join('|')
-        : '';
-    await _open(
-      'https://www.google.com/maps/dir/?api=1'
-      '&origin=$origin&destination=$dest'
-      '${mid.isNotEmpty ? '&waypoints=$mid' : ''}'
-      '&travelmode=transit',
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TravelProvider>();
@@ -162,6 +163,15 @@ class RouteVariationScreen extends StatelessWidget {
     final walkTotal = hops.fold<int>(0, (s, h) => s + (h.walkMin ?? 0));
     final dayCount = provider.itinerary?.days.length ?? 1;
 
+    // ODsay transit leg for hop i: prefer the recomputed legs for the current
+    // selection, otherwise the legs from the original itinerary.
+    final recomputed = provider.recomputedLegs;
+    final hasRecomputed =
+        recomputed != null && recomputed.length == stops.length - 1;
+    TransitLeg? transitFor(int i) => hasRecomputed
+        ? recomputed[i]
+        : provider.legBetween(stops[i], stops[i + 1]);
+
     // Synthetic single-day itinerary so we can reuse the OSM map widget.
     final routeItinerary = Itinerary(
       summary: '',
@@ -200,15 +210,6 @@ class RouteVariationScreen extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: kMint)),
                     ),
-                    const Spacer(),
-                    TextButton.icon(
-                      onPressed: () => _openDirections(stops),
-                      icon: const Icon(Icons.map_rounded,
-                          size: 16, color: kMint),
-                      label: Text('Directions',
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12, color: kMint)),
-                    ),
                   ]),
                   const SizedBox(height: 4),
                   Text('Your Route',
@@ -216,7 +217,7 @@ class RouteVariationScreen extends StatelessWidget {
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           color: kInk)),
-                  Text('Walking times & Kakao Map links between stops',
+                  Text('Walking, transit & Kakao Map links between stops',
                       style: GoogleFonts.plusJakartaSans(
                           fontSize: 13, color: kSubtext)),
                 ],
@@ -256,13 +257,18 @@ class RouteVariationScreen extends StatelessWidget {
                                       _openMaps(stops[i].lat!, stops[i].lng!)
                                   : null,
                             ),
-                            if (i < hops.length)
+                            if (i < hops.length) ...[
                               _HopRow(
                                 hop: hops[i],
                                 onKakao: hops[i].kakaoUrl != null
                                     ? () => _open(hops[i].kakaoUrl!)
                                     : null,
                               ),
+                              _InlineTransitCard(
+                                leg: transitFor(i),
+                                loading: provider.legsLoading,
+                              ),
+                            ],
                           ],
                           const SizedBox(height: 16),
                           Container(
@@ -280,58 +286,7 @@ class RouteVariationScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () => _openDirections(stops),
-                              icon: const Icon(Icons.navigation_rounded,
-                                  size: 18),
-                              label: const Text(
-                                  'Get Directions in Google Maps'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1A73E8),
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50)),
-                                elevation: 0,
-                                textStyle: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.w700, fontSize: 15),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              // Kick off the ODsay recompute, THEN open the
-                              // Transit screen where it's displayed.
-                              onPressed: () {
-                                context
-                                    .read<TravelProvider>()
-                                    .recomputeTransit();
-                                Navigator.pushNamed(context, '/transit-explore');
-                              },
-                              icon: const Icon(
-                                  Icons.directions_transit_rounded,
-                                  size: 18),
-                              label: const Text('Transit Guide & Explore'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: kMint,
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50)),
-                                elevation: 0,
-                                textStyle: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.w700, fontSize: 15),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                         ],
                       ),
                     ),
@@ -343,6 +298,243 @@ class RouteVariationScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Inline transit options for one hop, woven into the route-summary timeline.
+/// Shares the light card / mint visual language of the rest of the summary and
+/// hangs off the same connector line. No Kakao Map button — that link lives on
+/// the hop row directly above it.
+class _InlineTransitCard extends StatelessWidget {
+  final TransitLeg? leg;
+  final bool loading;
+  const _InlineTransitCard({required this.leg, required this.loading});
+
+  static String _wonFmt(int won) {
+    final s = won.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+
+  /// Wraps [child] so it hangs off the timeline's connector line, matching the
+  /// indent of the hop row above it.
+  Widget _connector(Widget child) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 14, bottom: 8),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 2, color: kCardBorder),
+            const SizedBox(width: 16),
+            Expanded(child: child),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final options = leg?.transitOptions ?? const <TransitOption>[];
+
+    if (options.isEmpty) {
+      if (loading) {
+        return _connector(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(children: [
+              const SizedBox(
+                width: 13,
+                height: 13,
+                child: CircularProgressIndicator(strokeWidth: 2, color: kMint),
+              ),
+              const SizedBox(width: 8),
+              Text('Finding subway & bus routes…',
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: kSubtext,
+                      fontWeight: FontWeight.w600)),
+            ]),
+          ),
+        );
+      }
+      return const SizedBox.shrink();
+    }
+
+    final headlineMinutes = options.first.totalMinutes;
+
+    return _connector(
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: kMintLight.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: kMint.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.directions_transit_rounded,
+                  color: kMint, size: 15),
+              const SizedBox(width: 6),
+              Text('Public transit',
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: kInk)),
+              const SizedBox(width: 6),
+              Text('· ${options.length} option${options.length == 1 ? "" : "s"}',
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: kSubtext,
+                      fontWeight: FontWeight.w500)),
+              const Spacer(),
+              if (headlineMinutes != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: kMint,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text('fastest ~$headlineMinutes min',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white)),
+                ),
+            ]),
+            const SizedBox(height: 10),
+            for (var i = 0; i < options.length; i++)
+              _OptionBlock(
+                opt: options[i],
+                wonFmt: _wonFmt,
+                isLast: i == options.length - 1,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One ODsay route option (subway / bus / subway+bus), light-themed to match
+/// the route summary.
+class _OptionBlock extends StatelessWidget {
+  final TransitOption opt;
+  final String Function(int) wonFmt;
+  final bool isLast;
+  const _OptionBlock(
+      {required this.opt, required this.wonFmt, this.isLast = false});
+
+  IconData get _icon {
+    switch (opt.type) {
+      case 1:
+        return Icons.subway_rounded;
+      case 2:
+        return Icons.directions_bus_rounded;
+      default:
+        return Icons.alt_route_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final meta = [
+      if (opt.totalMinutes != null) '${opt.totalMinutes} min',
+      if (opt.fareWon != null) '₩${wonFmt(opt.fareWon!)}',
+      if ((opt.transfers ?? 0) > 0) '${opt.transfers} transfer',
+      if (opt.walkMeters != null) 'walk ${opt.walkMeters}m',
+    ].join(' · ');
+
+    return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 8),
+      padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
+      decoration: BoxDecoration(
+        color: kCard,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: kCardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(_icon, size: 14, color: kMint),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(opt.typeLabel,
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: kInk)),
+            ),
+            if (meta.isNotEmpty)
+              Text(meta,
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: kMint)),
+          ]),
+          if (opt.segments.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            for (var i = 0; i < opt.segments.length; i++)
+              _SegmentRow(
+                text: opt.segments[i],
+                isLast: i == opt.segments.length - 1,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// One ODsay segment line rendered as a light timeline row.
+class _SegmentRow extends StatelessWidget {
+  final String text;
+  final bool isLast;
+  const _SegmentRow({required this.text, required this.isLast});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(children: [
+          Container(
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(top: 4),
+            decoration:
+                const BoxDecoration(color: kMint, shape: BoxShape.circle),
+          ),
+          if (!isLast)
+            Container(
+                width: 2,
+                height: 18,
+                color: kMint.withValues(alpha: 0.25),
+                margin: const EdgeInsets.symmetric(vertical: 2)),
+        ]),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(top: 0, bottom: isLast ? 0 : 7),
+            child: Text(text,
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11.5,
+                    color: kSubtext,
+                    height: 1.35)),
+          ),
+        ),
+      ],
     );
   }
 }

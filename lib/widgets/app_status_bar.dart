@@ -8,20 +8,38 @@ class AppStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = dark ? Colors.white : kInk;
+    // Show a 뒤로가기 (back) control on any screen that was pushed onto the
+    // navigation stack. Tab roots (reached via pushReplacement) can't pop, so
+    // the button stays hidden there.
+    final canPop = Navigator.of(context).canPop();
     return Container(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '9:41',
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-              letterSpacing: -0.3,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (canPop) ...[
+                GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  behavior: HitTestBehavior.opaque,
+                  child: Icon(Icons.arrow_back_ios_new_rounded,
+                      size: 17, color: color),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Text(
+                '9:41',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
           ),
           Row(
             children: [
