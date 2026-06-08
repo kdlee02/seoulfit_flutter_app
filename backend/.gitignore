@@ -1,0 +1,8 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+planner_last_failed.txt
+.env
+*.env
