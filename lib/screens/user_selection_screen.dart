@@ -6,6 +6,7 @@ import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../models/travel_state.dart';
 import '../providers/travel_provider.dart';
+import '../services/api_service.dart';
 
 class UserSelectionScreen extends StatefulWidget {
   const UserSelectionScreen({super.key});
@@ -16,37 +17,34 @@ class UserSelectionScreen extends StatefulWidget {
 
 class _UserSelectionScreenState extends State<UserSelectionScreen> {
   late final List<Poi> _pois;
-  // Stores indices into _pois in the order they were selected.
-  late final List<int> _selectionOrder;
+  late final Set<int> _selected;
 
   @override
   void initState() {
     super.initState();
     _pois = context.read<TravelProvider>().allPois;
-    // Pre-select every stop, in itinerary order.
-    _selectionOrder = List<int>.generate(_pois.length, (i) => i);
+    // Pre-select every stop.
+    _selected = Set<int>.from(List.generate(_pois.length, (i) => i));
   }
 
-  int get _selectedCount => _selectionOrder.length;
+  int get _selectedCount => _selected.length;
 
   void _toggle(int index) {
     setState(() {
-      if (_selectionOrder.contains(index)) {
-        _selectionOrder.remove(index);
+      if (_selected.contains(index)) {
+        _selected.remove(index);
       } else {
-        _selectionOrder.add(index);
+        _selected.add(index);
       }
     });
   }
 
-  int? _orderOf(int index) {
-    final pos = _selectionOrder.indexOf(index);
-    return pos >= 0 ? pos + 1 : null;
-  }
-
   void _buildRoute() {
-    // Hand the selected POIs (in selection order) to the route screen.
-    final stops = [for (final i in _selectionOrder) _pois[i]];
+    // Pass selected POIs in original itinerary order.
+    final stops = [
+      for (var i = 0; i < _pois.length; i++)
+        if (_selected.contains(i)) _pois[i],
+    ];
     context.read<TravelProvider>().setSelectedStops(stops);
     Navigator.pushNamed(context, '/route-variation');
   }
@@ -128,18 +126,21 @@ class _UserSelectionScreenState extends State<UserSelectionScreen> {
             ),
             const Divider(height: 1),
             Expanded(
-              child: ListView.separated(
+              child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                itemCount: _pois.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (_, i) {
-                  return _SelectionCard(
-                    poi: _pois[i],
-                    selected: _selectionOrder.contains(i),
-                    orderNumber: _orderOf(i),
-                    onChanged: (_) => _toggle(i),
-                  );
-                },
+                children: [
+                  for (var i = 0; i < _pois.length; i++) ...[
+                    if (_pois[i].day > 0 &&
+                        (i == 0 || _pois[i].day != _pois[i - 1].day))
+                      _DaySectionHeader(day: _pois[i].day),
+                    _SelectionCard(
+                      poi: _pois[i],
+                      selected: _selected.contains(i),
+                      onChanged: (_) => _toggle(i),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ],
               ),
             ),
             Container(
@@ -179,39 +180,87 @@ class _UserSelectionScreenState extends State<UserSelectionScreen> {
   }
 }
 
-class _SelectionCard extends StatelessWidget {
+/// Day divider in the stop list so Day 1 and Day 2 stops are visually grouped
+/// instead of running together as one undivided list.
+class _DaySectionHeader extends StatelessWidget {
+  final int day;
+  const _DaySectionHeader({required this.day});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 10),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            decoration: BoxDecoration(
+              color: kMint,
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Text('Day $day',
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white)),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(child: Divider(color: kCardBorder, height: 1)),
+        ],
+      ),
+    );
+  }
+}
+
+class _SelectionCard extends StatefulWidget {
   final Poi poi;
   final bool selected;
-  final int? orderNumber;
   final ValueChanged<bool> onChanged;
 
   const _SelectionCard({
     required this.poi,
     required this.selected,
-    this.orderNumber,
     required this.onChanged,
   });
 
   @override
+  State<_SelectionCard> createState() => _SelectionCardState();
+}
+
+class _SelectionCardState extends State<_SelectionCard> {
+  Future<String>? _detailFuture;
+  bool _explainExpanded = false;
+
+  void _onExplain() {
+    setState(() {
+      _explainExpanded = true;
+      _detailFuture ??= ApiService().fetchPoiDetail(
+        widget.poi.name,
+        type: widget.poi.type,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final hasNotes = poi.notes.isNotEmpty;
+    final poi = widget.poi;
     final subtitle = poi.address.isNotEmpty
         ? poi.address
         : (poi.stayMinutes > 0 ? '${poi.stayMinutes} min stay' : '');
 
     return GestureDetector(
-      onTap: () => onChanged(!selected),
+      onTap: () => widget.onChanged(!widget.selected),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: selected ? kCard : kCanvas,
+          color: widget.selected ? kCard : kCanvas,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? kMint : kCardBorder,
-            width: selected ? 1.5 : 1,
+            color: widget.selected ? kMint : kCardBorder,
+            width: widget.selected ? 1.5 : 1,
           ),
-          boxShadow: selected
+          boxShadow: widget.selected
               ? [
                   BoxShadow(
                       color: kMint.withValues(alpha: 0.1),
@@ -221,42 +270,41 @@ class _SelectionCard extends StatelessWidget {
               : null,
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: orderNumber != null
-                  ? Container(
-                      key: ValueKey('order_$orderNumber'),
-                      width: 32,
-                      height: 32,
-                      decoration: const BoxDecoration(
-                          color: kMint, shape: BoxShape.circle),
-                      child: Center(
-                        child: Text(
-                          '$orderNumber',
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white),
+            // Selection checkbox
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: widget.selected
+                    ? Container(
+                        key: const ValueKey('checked'),
+                        width: 32,
+                        height: 32,
+                        decoration: const BoxDecoration(
+                            color: kMint, shape: BoxShape.circle),
+                        child: const Icon(Icons.check_rounded,
+                            size: 18, color: Colors.white),
+                      )
+                    : Container(
+                        key: const ValueKey('unchecked'),
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: kCardBorder, width: 2),
+                          color: kCanvas,
                         ),
                       ),
-                    )
-                  : Container(
-                      key: const ValueKey('unchecked'),
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: kCardBorder, width: 2),
-                        color: kCanvas,
-                      ),
-                    ),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // POI name + type badge
                   Row(children: [
                     Expanded(
                       child: Text(poi.name,
@@ -267,7 +315,8 @@ class _SelectionCard extends StatelessWidget {
                     ),
                     if (poi.type.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
                             color: kMintLight,
                             borderRadius: BorderRadius.circular(20)),
@@ -286,33 +335,106 @@ class _SelectionCard extends StatelessWidget {
                         style: GoogleFonts.plusJakartaSans(
                             fontSize: 11, color: kSubtext)),
                   ],
-                  if (hasNotes) ...[
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: kMintLight,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(Icons.info_outline_rounded,
-                            size: 11, color: kMint),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            poi.notes,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: kMint,
+                  if (poi.notes.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    // Mascot + existing notes as speech bubble (no extra API call)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image.asset('assets/images/seoulfit_mascot.png',
+                            width: 38, height: 38),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: kYellowLight,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4),
+                                topRight: Radius.circular(12),
+                                bottomLeft: Radius.circular(12),
+                                bottomRight: Radius.circular(12),
+                              ),
+                              border: Border.all(
+                                  color: kYellow.withValues(alpha: 0.6)),
                             ),
+                            child: Text(poi.notes,
+                                style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11,
+                                    color: kInk,
+                                    height: 1.5)),
                           ),
                         ),
-                      ]),
+                      ],
                     ),
                   ],
+                  const SizedBox(height: 8),
+                  // Explain button (absorbs tap so it doesn't toggle selection)
+                  if (!_explainExpanded)
+                    GestureDetector(
+                      onTap: _onExplain,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: kMintLight,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.travel_explore_rounded,
+                              size: 12, color: kMint),
+                          const SizedBox(width: 4),
+                          Text('Explain',
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: kMint)),
+                        ]),
+                      ),
+                    ),
+                  // Tavily detail — lazy, only fetched after Explain tap
+                  if (_explainExpanded)
+                    FutureBuilder<String>(
+                      future: _detailFuture,
+                      builder: (context, snap) {
+                        if (snap.connectionState == ConnectionState.waiting) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(children: [
+                              const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 1.5, color: kMint),
+                              ),
+                              const SizedBox(width: 6),
+                              Text('Searching the web…',
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11, color: kSubtext)),
+                            ]),
+                          );
+                        }
+                        final detail = snap.data ?? '';
+                        if (detail.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: kCanvas,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: kCardBorder),
+                            ),
+                            child: Text(detail,
+                                style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11,
+                                    color: kSubtext,
+                                    height: 1.6)),
+                          ),
+                        );
+                      },
+                    ),
                 ],
               ),
             ),

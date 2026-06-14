@@ -29,3 +29,6 @@ faiss-cpu>=1.8
 
 # Lens — Gemini Vision + Seoul Open Data RAG
 google-genai>=0.3.0
+
+# POI image search
+serpapi

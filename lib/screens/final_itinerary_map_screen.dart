@@ -11,9 +11,18 @@ import '../widgets/app_bottom_nav.dart';
 import '../widgets/itinerary_map.dart';
 import '../models/travel_state.dart';
 import '../providers/travel_provider.dart';
+import '../services/api_service.dart';
 
-class FinalItineraryMapScreen extends StatelessWidget {
+class FinalItineraryMapScreen extends StatefulWidget {
   const FinalItineraryMapScreen({super.key});
+
+  @override
+  State<FinalItineraryMapScreen> createState() =>
+      _FinalItineraryMapScreenState();
+}
+
+class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
+  int? _selectedDay;
 
   Future<void> _exportJson(BuildContext context, Itinerary itinerary) async {
     const encoder = JsonEncoder.withIndent('  ');
@@ -28,13 +37,9 @@ class FinalItineraryMapScreen extends StatelessWidget {
         ext: 'json',
         mimeType: MimeType.json,
       );
-      if (context.mounted) {
-        _snack(context, 'Itinerary saved as JSON', kSuccess);
-      }
+      if (context.mounted) _snack(context, 'Itinerary saved as JSON', kSuccess);
     } catch (e) {
-      if (context.mounted) {
-        _snack(context, 'Save failed: $e', Colors.red);
-      }
+      if (context.mounted) _snack(context, 'Save failed: $e', Colors.red);
     }
   }
 
@@ -61,6 +66,41 @@ class FinalItineraryMapScreen extends StatelessWidget {
     return null;
   }
 
+  Widget _dayPills(List<ItineraryDay> days) {
+    if (days.length <= 1) return const SizedBox.shrink();
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final d in days)
+            GestureDetector(
+              onTap: () => setState(() => _selectedDay = d.day),
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                decoration: BoxDecoration(
+                  color: d.day == _selectedDay ? kMint : Colors.transparent,
+                  borderRadius: BorderRadius.circular(50),
+                  border: Border.all(
+                    color: d.day == _selectedDay ? kMint : kCardBorder,
+                  ),
+                ),
+                child: Text(
+                  'Day ${d.day}',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: d.day == _selectedDay ? Colors.white : kSubtext,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final itinerary = context.watch<TravelProvider>().itinerary;
@@ -80,12 +120,12 @@ class FinalItineraryMapScreen extends StatelessWidget {
                       fontSize: 16, fontWeight: FontWeight.w700, color: kInk)),
               const SizedBox(height: 6),
               Text('Plan a trip in the chat first.',
-                  style:
-                      GoogleFonts.plusJakartaSans(fontSize: 13, color: kSubtext)),
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13, color: kSubtext)),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () =>
-                    Navigator.pushNamedAndRemoveUntil(context, '/chat', (r) => false),
+                onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                    context, '/chat', (r) => false),
                 child: const Text('Go to Chat'),
               ),
               const Spacer(),
@@ -96,9 +136,22 @@ class FinalItineraryMapScreen extends StatelessWidget {
       );
     }
 
-    final totalStops =
-        itinerary.days.fold<int>(0, (n, d) => n + d.pois.length);
+    final days = itinerary.days;
+    final activeDay = days.firstWhere(
+      (d) => d.day == _selectedDay,
+      orElse: () => days.first,
+    );
+    if (_selectedDay != activeDay.day) _selectedDay = activeDay.day;
+
+    final totalStops = itinerary.days.fold<int>(0, (n, d) => n + d.pois.length);
     final score = _score(itinerary);
+
+    final mapItinerary = Itinerary(
+      summary: itinerary.summary,
+      days: [activeDay],
+      sources: itinerary.sources,
+      raw: itinerary.raw,
+    );
 
     return Scaffold(
       backgroundColor: kCanvas,
@@ -110,10 +163,9 @@ class FinalItineraryMapScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Real OSM map with numbered, color-coded day routes.
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                      child: ItineraryMap(itinerary: itinerary, height: 260),
+                      child: ItineraryMap(itinerary: mapItinerary, height: 260),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -126,7 +178,7 @@ class FinalItineraryMapScreen extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Final Itinerary',
+                                  'Initial Itinerary',
                                   style: GoogleFonts.plusJakartaSans(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w800,
@@ -141,7 +193,8 @@ class FinalItineraryMapScreen extends StatelessWidget {
                                     color: kSuccess.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(50),
                                     border: Border.all(
-                                        color: kSuccess.withValues(alpha: 0.4)),
+                                        color:
+                                            kSuccess.withValues(alpha: 0.4)),
                                   ),
                                   child: Row(children: [
                                     const Icon(Icons.verified_rounded,
@@ -160,40 +213,43 @@ class FinalItineraryMapScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                              '$totalStops locations · ${itinerary.days.length} ${itinerary.days.length == 1 ? "day" : "days"}',
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 13, color: kSubtext)),
+                            '$totalStops locations · ${days.length} ${days.length == 1 ? "day" : "days"}',
+                            style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13, color: kSubtext),
+                          ),
                           if (itinerary.summary.isNotEmpty) ...[
                             const SizedBox(height: 10),
                             Text(
                               itinerary.summary,
                               style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 13,
-                                  color: kInk,
-                                  height: 1.45),
+                                  fontSize: 13, color: kInk, height: 1.45),
                             ),
                           ],
-                          const SizedBox(height: 16),
-                          // Day-by-day place list, with a transit leg row
-                          // between each consecutive pair of stops.
-                          for (final day in itinerary.days) ...[
-                            _DayHeader(day: day),
-                            for (var i = 0; i < day.pois.length; i++) ...[
-                              _PoiRow(sequence: i + 1, poi: day.pois[i]),
-                              if (i < day.pois.length - 1 &&
-                                  i < day.transitLegs.length)
-                                _TransitLegRow(leg: day.transitLegs[i]),
-                            ],
-                            const SizedBox(height: 10),
+                          const SizedBox(height: 14),
+                          _dayPills(days),
+                          if (days.length > 1) const SizedBox(height: 14),
+                          _DayHeader(day: activeDay),
+                          for (var i = 0; i < activeDay.pois.length; i++) ...[
+                            _PoiRow(
+                                key: ValueKey('${activeDay.day}-$i'),
+                                sequence: i + 1,
+                                poi: activeDay.pois[i]),
+                            if (i < activeDay.pois.length - 1 &&
+                                i < activeDay.transitLegs.length)
+                              _TransitLegRow(
+                                  leg: activeDay.transitLegs[i]),
                           ],
-                          const SizedBox(height: 6),
-                          if (itinerary.sources.isNotEmpty)
+                          const SizedBox(height: 10),
+                          if (itinerary.sources.isNotEmpty) ...[
+                            const SizedBox(height: 6),
                             _SourcesCard(sources: itinerary.sources),
+                          ],
                           const SizedBox(height: 14),
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton.icon(
-                              onPressed: () => _exportJson(context, itinerary),
+                              onPressed: () =>
+                                  _exportJson(context, itinerary),
                               icon: const Icon(Icons.download_rounded,
                                   size: 18, color: kMint),
                               label: Text('Export Itinerary JSON',
@@ -202,10 +258,10 @@ class FinalItineraryMapScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w700,
                                       color: kMint)),
                               style: OutlinedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 15),
-                                side:
-                                    const BorderSide(color: kMint, width: 1.5),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 15),
+                                side: const BorderSide(
+                                    color: kMint, width: 1.5),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(50)),
                               ),
@@ -217,19 +273,20 @@ class FinalItineraryMapScreen extends StatelessWidget {
                             child: ElevatedButton.icon(
                               onPressed: () => Navigator.pushNamed(
                                   context, '/user-selection'),
-                              icon:
-                                  const Icon(Icons.checklist_rounded, size: 18),
+                              icon: const Icon(Icons.checklist_rounded,
+                                  size: 18),
                               label: const Text('Select My Stops'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kMint,
                                 foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(50)),
                                 elevation: 0,
                                 textStyle: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.w700, fontSize: 15),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15),
                               ),
                             ),
                           ),
@@ -291,143 +348,145 @@ class _DayHeader extends StatelessWidget {
   }
 }
 
-class _PoiRow extends StatelessWidget {
+class _PoiRow extends StatefulWidget {
   final int sequence;
   final Poi poi;
-  const _PoiRow({required this.sequence, required this.poi});
+  const _PoiRow({super.key, required this.sequence, required this.poi});
 
-  static Future<void> _open(String url) async {
-    final uri = Uri.tryParse(url);
-    if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+  @override
+  State<_PoiRow> createState() => _PoiRowState();
+}
+
+class _PoiRowState extends State<_PoiRow> {
+  late final Future<String> _summaryFuture;
+  late final Future<String> _imageFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final svc = ApiService();
+    _summaryFuture = svc.fetchPoiSummary(
+      widget.poi.name,
+      type: widget.poi.type,
+    );
+    _imageFuture = svc.fetchPoiImage(
+      widget.poi.name,
+      type: widget.poi.type,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Prefer the Korean name inside "(...)" for the map search; fall back to
-    // the full place name when there's no parenthesised text.
-    final paren = RegExp(r'[（(]([^）)]+)[）)]').firstMatch(poi.name);
-    final term = paren?.group(1)?.trim();
-    final keyword = Uri.encodeQueryComponent(
-        (term != null && term.isNotEmpty) ? term : poi.name);
-    final naverUrl =
-        'https://m.map.naver.com/search2/search.naver?query=$keyword';
-    final kakaoUrl = 'https://map.kakao.com/?q=$keyword';
-
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: kCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: kCardBorder),
       ),
+      clipBehavior: Clip.hardEdge,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                  color: kMintLight, borderRadius: BorderRadius.circular(10)),
-              child: Center(
-                child: Text('$sequence',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: kMint)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(poi.name,
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: kInk)),
-                    if (poi.address.isNotEmpty)
-                      Text(poi.address,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11, color: kSubtext)),
-                  ]),
-            ),
-            if (poi.type.isNotEmpty)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                    color: kMintLight, borderRadius: BorderRadius.circular(20)),
-                child: Text(poi.type,
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: kMint)),
-              ),
-          ]),
-          const SizedBox(height: 10),
-          // Per-POI map search links: Naver + Kakao, by place title.
-          Row(children: [
-            const SizedBox(width: 46),
-            _MapSearchButton(
-              label: 'Naver Map',
-              bg: const Color(0xFF03C75A),
-              onTap: () => _open(naverUrl),
-            ),
-            const SizedBox(width: 8),
-            _MapSearchButton(
-              label: 'Kakao Map',
-              bg: const Color(0xFFFFE000),
-              fg: Colors.black,
-              onTap: () => _open(kakaoUrl),
-            ),
-          ]),
-        ],
-      ),
-    );
-  }
-}
-
-/// A small pill button + hyperlink that opens a map search for a POI title.
-class _MapSearchButton extends StatelessWidget {
-  final String label;
-  final Color bg;
-  final Color fg;
-  final VoidCallback onTap;
-  const _MapSearchButton({
-    required this.label,
-    required this.bg,
-    this.fg = Colors.white,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(20),
+          // POI image
+          FutureBuilder<String>(
+            future: _imageFuture,
+            builder: (context, snap) {
+              final url = snap.data ?? '';
+              if (url.isEmpty) return const SizedBox.shrink();
+              return Image.network(
+                url,
+                width: double.infinity,
+                height: 160,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              );
+            },
           ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.map_outlined, size: 13, color: fg),
-            const SizedBox(width: 5),
-            Text(label,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11, fontWeight: FontWeight.w700, color: fg)),
-            const SizedBox(width: 3),
-            Icon(Icons.open_in_new, size: 10, color: fg.withValues(alpha: 0.8)),
-          ]),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                        color: kMintLight, borderRadius: BorderRadius.circular(10)),
+                    child: Center(
+                      child: Text('${widget.sequence}',
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: kMint)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.poi.name,
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: kInk)),
+                          if (widget.poi.address.isNotEmpty)
+                            Text(widget.poi.address,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11, color: kSubtext)),
+                        ]),
+                  ),
+                  if (widget.poi.type.isNotEmpty)
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: kMintLight, borderRadius: BorderRadius.circular(20)),
+                      child: Text(widget.poi.type,
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: kMint)),
+                    ),
+                ]),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.only(left: 46),
+                  child: FutureBuilder<String>(
+                    future: _summaryFuture,
+                    builder: (context, snap) {
+                      if (snap.connectionState == ConnectionState.waiting) {
+                        return Row(children: [
+                          const SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 1.5, color: kMint),
+                          ),
+                          const SizedBox(width: 8),
+                          Text('Loading summary…',
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11, color: kSubtext)),
+                        ]);
+                      }
+                      final summary = snap.data ?? '';
+                      if (summary.isEmpty) return const SizedBox.shrink();
+                      return Text(
+                        summary,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12, color: kSubtext, height: 1.5),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -542,7 +601,9 @@ class _SourcesCard extends StatelessWidget {
             children: [
               for (final s in sources)
                 _SourceBadge(
-                    s.courseTitle.isNotEmpty ? s.courseTitle : s.source),
+                  label: s.courseTitle.isNotEmpty ? s.courseTitle : s.source,
+                  url: s.sourceUrl,
+                ),
             ],
           ),
         ],
@@ -553,11 +614,20 @@ class _SourcesCard extends StatelessWidget {
 
 class _SourceBadge extends StatelessWidget {
   final String label;
-  const _SourceBadge(this.label);
+  final String url;
+  const _SourceBadge({required this.label, required this.url});
+
+  Future<void> _open() async {
+    final uri = Uri.tryParse(url);
+    if (uri != null && uri.hasScheme) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final hasUrl = url.isNotEmpty;
+    final badge = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: kCanvas,
@@ -572,9 +642,19 @@ class _SourceBadge extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11, fontWeight: FontWeight.w600, color: kInk)),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: hasUrl ? kMint : kInk,
+                  decoration: hasUrl ? TextDecoration.underline : null,
+                  decorationColor: kMint)),
         ),
+        if (hasUrl) ...[
+          const SizedBox(width: 3),
+          const Icon(Icons.open_in_new, size: 10, color: kMint),
+        ],
       ]),
     );
+    if (!hasUrl) return badge;
+    return GestureDetector(onTap: _open, child: badge);
   }
 }

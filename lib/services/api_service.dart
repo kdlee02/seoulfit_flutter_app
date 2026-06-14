@@ -6,6 +6,9 @@ import 'package:http/http.dart' as http;
 import '../models/travel_state.dart';
 
 class ApiService {
+  static final Map<String, String> _summaryCache = {};
+  static final Map<String, String> _imageCache = {};
+  static final Map<String, String> _detailCache = {};
   /// Base URL for the backend.
   ///
   /// - In local dev, defaults to `http://localhost:8000` so `flutter run`
@@ -70,6 +73,63 @@ class ApiService {
   /// Resets the conversation on the backend.
   Future<void> reset() async {
     await http.post(Uri.parse('$_base/reset?thread_id=$threadId'));
+  }
+
+  /// Fetches a 1–2 sentence Gemini summary for a Seoul POI.
+  Future<String> fetchPoiSummary(String name, {String type = ''}) async {
+    if (_summaryCache.containsKey(name)) return _summaryCache[name]!;
+    final body = jsonEncode({'name': name, 'type': type});
+    final response = await http.post(
+      Uri.parse('$_base/poi-summary'),
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    if (response.statusCode == 200) {
+      final json =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final result = (json['summary'] as String?) ?? '';
+      _summaryCache[name] = result;
+      return result;
+    }
+    return '';
+  }
+
+  /// Fetches the best-matching thumbnail for a Seoul POI via SerpApi + Gemini.
+  Future<String> fetchPoiImage(String name, {String type = ''}) async {
+    if (_imageCache.containsKey(name)) return _imageCache[name]!;
+    final body = jsonEncode({'name': name, 'type': type});
+    final response = await http.post(
+      Uri.parse('$_base/poi-image'),
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    if (response.statusCode == 200) {
+      final json =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final result = (json['image_url'] as String?) ?? '';
+      _imageCache[name] = result;
+      return result;
+    }
+    return '';
+  }
+
+  /// Fetches structured Tavily visitor info for a Seoul POI (stop selection screen).
+  Future<String> fetchPoiDetail(String name, {String type = ''}) async {
+    if (_detailCache.containsKey(name)) return _detailCache[name]!;
+    final body = jsonEncode({'name': name, 'type': type});
+    final response = await http.post(
+      Uri.parse('$_base/poi-detail'),
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    if (response.statusCode == 200) {
+      final json =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final result = (json['detail'] as String?) ?? '';
+      _detailCache[name] = result;
+      return result;
+    }
+    return '';
   }
 
   /// Recomputes transit (distance / walk / car / Kakao / ODsay) for an

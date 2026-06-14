@@ -222,6 +222,158 @@ def reset(thread_id: str = "travel-session-1"):
     return {"status": "reset"}
 
 
+class PoiSummaryRequest(BaseModel):
+    name: str
+    type: str = ""
+
+
+@app.post("/poi-summary")
+def poi_summary(req: PoiSummaryRequest):
+    """Return a 1-2 sentence Gemini summary for a Seoul POI."""
+    try:
+        from google import genai as _genai
+        client = _genai.Client(api_key=GEMINI_API_KEY)
+        prompt = (
+            f"In 1-2 sentences, describe {req.name} in Seoul, South Korea "
+            "and what visitors can experience there. Be specific and engaging. "
+            "Do not include any markdown formatting."
+        )
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+        return {"summary": (response.text or "").strip()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/poi-image")
+def poi_image(req: PoiSummaryRequest):
+    """Return the best-matching thumbnail for a Seoul POI.
+
+    Steps:
+    1. Ask Gemini to write a Seoul-specific image search query from the POI name/type.
+    2. Fetch the top 10 results from SerpApi.
+    3. Ask Gemini to pick the thumbnail that actually shows the place, or 'none'.
+    """
+    serpapi_key = os.getenv("SERPAPI_KEY", "")
+    if not serpapi_key:
+        raise HTTPException(status_code=503, detail="SERPAPI_KEY not configured")
+    try:
+        from google import genai as _genai
+        import serpapi
+
+        gemini = _genai.Client(api_key=GEMINI_API_KEY)
+
+        # Step 1 — generate a disambiguation-safe search query.
+        type_hint = f" ({req.type})" if req.type else ""
+        query_prompt = (
+            f"Generate a concise Google Images search query (max 8 words) to find a "
+            f"photo of '{req.name}'{type_hint} in Seoul, South Korea. "
+            "Make it specific enough to avoid confusion with similarly named places "
+            "or people elsewhere in the world. Return only the search query string, "
+            "nothing else."
+        )
+        query_resp = gemini.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=query_prompt,
+        )
+        search_query = (query_resp.text or req.name).strip().strip('"')
+
+        # Step 2 — fetch images from SerpApi (no aspect-ratio/size filter so we
+        # don't exclude valid shots; SerpApi's thumbnail field is already a
+        # pre-scaled CDN image for every result).
+        serp_client = serpapi.Client(api_key=serpapi_key)
+        results = serp_client.search({
+            "engine": "google_images_light",
+            "google_domain": "google.co.kr",
+            "q": search_query,
+            "hl": "en",
+            "gl": "kr",
+            "location": "Seoul, Seoul, South Korea",
+            "safe": "active",
+            "image_type": "photo",
+        })
+        images = (results.get("images_results") or [])[:5]
+        if not images:
+            return {"image_url": ""}
+
+        # Step 3 — let Gemini pick the best match (or reject all).
+        candidates = "\n".join(
+            f"{i+1}. title={img.get('title','')!r} url={img.get('thumbnail','')}"
+            for i, img in enumerate(images)
+        )
+        pick_prompt = (
+            f"I need a photo of '{req.name}'{type_hint} in Seoul, South Korea.\n"
+            f"Here are 5 image search results:\n{candidates}\n\n"
+            "Return ONLY the thumbnail URL of the image that best shows the actual "
+            "Seoul location. If none of them clearly show the correct place, "
+            "return exactly: none"
+        )
+        pick_resp = gemini.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=pick_prompt,
+        )
+        chosen = (pick_resp.text or "").strip()
+        if not chosen or chosen.lower() == "none":
+            return {"image_url": ""}
+        return {"image_url": chosen}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/poi-detail")
+def poi_detail(req: PoiSummaryRequest):
+    """Return structured visitor bullet points for a Seoul POI (stop selection screen).
+
+    Tavily fetches live web data (hours, fees, tips); Gemini formats it into
+    labeled bullet lines so the info is distinct from the Gemini prose summary.
+    """
+    tavily_key = os.getenv("TAVILY_API_KEY", "")
+    if not tavily_key:
+        raise HTTPException(status_code=503, detail="TAVILY_API_KEY not configured")
+    try:
+        from tavily import TavilyClient
+        from google import genai as _genai
+
+        # Step 1 — Tavily web search for practical visitor info.
+        tavily = TavilyClient(api_key=tavily_key)
+        response = tavily.search(
+            query=(
+                f"{req.name} Seoul opening hours admission fee visitor tips highlights"
+            ),
+            search_depth="basic",
+            max_results=3,
+            include_answer=True,
+        )
+        raw = response.get("answer") or ""
+        if not raw:
+            return {"detail": ""}
+
+        # Step 2 — Gemini reformats the raw web answer into 3-4 labeled bullets.
+        type_hint = f" ({req.type})" if req.type else ""
+        format_prompt = (
+            f"Here is live web information about '{req.name}'{type_hint} in Seoul:\n\n"
+            f"{raw}\n\n"
+            "Reformat this into exactly 3-4 short bullet lines using these labels "
+            "(skip a label if the info isn't available):\n"
+            "• Hours: ...\n"
+            "• Entry: ...\n"
+            "• Highlight: ...\n"
+            "• Tip: ...\n\n"
+            "Keep each line to one sentence or less. Return only the bullet lines, "
+            "no intro or extra text."
+        )
+        gemini = _genai.Client(api_key=GEMINI_API_KEY)
+        fmt_resp = gemini.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=format_prompt,
+        )
+        return {"detail": (fmt_resp.text or "").strip()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/transit-legs")
 def transit_legs(req: TransitLegsRequest):
     """Recompute distance / walk / car / Kakao links / ODsay public-transit
