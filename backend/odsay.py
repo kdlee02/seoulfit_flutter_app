@@ -20,7 +20,9 @@ from urllib.parse import quote
 
 import requests
 
-ODSAY_API_KEY     = os.getenv("ODSAY_API_KEY", "wuZ/k4XPzI/3g0HBm1FlTw")
+# Secrets live in backend/.env (gitignored), not in source. ODsay stays
+# dormant (is_enabled() == False) if the key is unset, same as the other keys.
+ODSAY_API_KEY     = os.getenv("ODSAY_API_KEY", "")
 ODSAY_SERVICE_URI = os.getenv("ODSAY_SERVICE_URI", "http://localhost:8888")
 
 ODSAY_ENDPOINT = "https://api.odsay.com/v1/api/searchPubTransPathT"

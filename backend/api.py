@@ -247,6 +247,38 @@ def poi_summary(req: PoiSummaryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/poi-arrival-tip")
+def poi_arrival_tip(req: PoiSummaryRequest):
+    """Return a short "you've arrived" confirmation tip for a foreign visitor.
+
+    Unlike /poi-summary (what the place is), this answers "how do I know I'm in
+    the right spot?" — a visible landmark / storefront to recognise, plus what's
+    notable right at the entrance. One short callout the user can glance at on
+    arrival so they aren't left wondering whether they came to the right place.
+    """
+    try:
+        from google import genai as _genai
+        client = _genai.Client(api_key=GEMINI_API_KEY)
+        type_hint = f" ({req.type})" if req.type else ""
+        prompt = (
+            f"A foreign tourist is arriving at '{req.name}'{type_hint} in Seoul, "
+            "South Korea and wants to confirm they're in the right place. "
+            "In 1-2 short sentences, plain English, no markdown: "
+            "(1) describe a clearly visible landmark, sign, or storefront they "
+            "can look for to know they've arrived, and "
+            "(2) mention one notable thing right at the entrance or just inside. "
+            "Be concrete and visual. If you are not sure about the specific place, "
+            "give a brief, safe orientation tip instead of inventing details."
+        )
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+        return {"arrival_tip": (response.text or "").strip()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/poi-image")
 def poi_image(req: PoiSummaryRequest):
     """Return the best-matching thumbnail for a Seoul POI.

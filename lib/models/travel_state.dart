@@ -105,15 +105,20 @@ class ItineraryDay {
     this.transitLegs = const [],
   });
 
-  factory ItineraryDay.fromJson(Map<String, dynamic> json) => ItineraryDay(
-        day: (json['day'] as num?)?.toInt() ?? 0,
-        theme: json['theme'] as String? ?? '',
-        pois: _asJsonList(json['pois']).map(Poi.fromJson).toList(),
-        estimatedCost: json['estimated_cost']?.toString() ?? '',
-        transitLegs: _asJsonList(json['transit_legs'])
-            .map(TransitLeg.fromJson)
-            .toList(),
-      );
+  factory ItineraryDay.fromJson(Map<String, dynamic> json) {
+    final dayNum = (json['day'] as num?)?.toInt() ?? 0;
+    return ItineraryDay(
+      day: dayNum,
+      theme: json['theme'] as String? ?? '',
+      pois: _asJsonList(json['pois'])
+          .map((p) => Poi.fromJson(p, day: dayNum))
+          .toList(),
+      estimatedCost: json['estimated_cost']?.toString() ?? '',
+      transitLegs: _asJsonList(json['transit_legs'])
+          .map(TransitLeg.fromJson)
+          .toList(),
+    );
+  }
 }
 
 /// Distance + walk/car ETA + Kakao Map deep links between two consecutive
@@ -202,6 +207,11 @@ class Poi {
   final int stayMinutes;
   final String notes;
 
+  /// Itinerary day this POI belongs to (1-based), injected from the parent
+  /// [ItineraryDay] so the day grouping survives even when POIs are flattened
+  /// into a single list (selection screen, route summary). 0 if unknown.
+  final int day;
+
   const Poi({
     required this.name,
     required this.type,
@@ -210,9 +220,10 @@ class Poi {
     this.lng,
     required this.stayMinutes,
     required this.notes,
+    this.day = 0,
   });
 
-  factory Poi.fromJson(Map<String, dynamic> json) => Poi(
+  factory Poi.fromJson(Map<String, dynamic> json, {int day = 0}) => Poi(
         name: json['name'] as String? ?? '',
         type: json['type'] as String? ?? '',
         address: json['address'] as String? ?? '',
@@ -220,6 +231,7 @@ class Poi {
         lng: (json['lng'] as num?)?.toDouble(),
         stayMinutes: (json['stay_minutes'] as num?)?.toInt() ?? 0,
         notes: json['notes'] as String? ?? '',
+        day: day,
       );
 }
 

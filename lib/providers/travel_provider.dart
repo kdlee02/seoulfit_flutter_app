@@ -31,6 +31,17 @@ class TravelProvider extends ChangeNotifier {
   List<TransitLeg>? recomputedLegs;
   bool legsLoading = false;
 
+  /// Whether the one-time "how to pay for Seoul transit" tip has been
+  /// dismissed this session. Shown once on first entry to the route screen so
+  /// first-time foreign visitors know how fares work.
+  bool transitTipDismissed = false;
+
+  void dismissTransitTip() {
+    if (transitTipDismissed) return;
+    transitTipDismissed = true;
+    notifyListeners();
+  }
+
   bool get hasItinerary => state?.itinerary != null;
   bool get confirmed => state?.confirmed ?? false;
   Itinerary? get itinerary => state?.itinerary;

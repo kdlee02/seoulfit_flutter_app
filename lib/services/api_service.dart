@@ -9,6 +9,7 @@ class ApiService {
   static final Map<String, String> _summaryCache = {};
   static final Map<String, String> _imageCache = {};
   static final Map<String, String> _detailCache = {};
+  static final Map<String, String> _arrivalTipCache = {};
   /// Base URL for the backend.
   ///
   /// - In local dev, defaults to `http://localhost:8000` so `flutter run`
@@ -127,6 +128,26 @@ class ApiService {
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       final result = (json['detail'] as String?) ?? '';
       _detailCache[name] = result;
+      return result;
+    }
+    return '';
+  }
+
+  /// Fetches a short "you've arrived" confirmation tip for a Seoul POI — a
+  /// visible landmark to recognise plus what's at the entrance. Empty on failure.
+  Future<String> fetchPoiArrivalTip(String name, {String type = ''}) async {
+    if (_arrivalTipCache.containsKey(name)) return _arrivalTipCache[name]!;
+    final body = jsonEncode({'name': name, 'type': type});
+    final response = await http.post(
+      Uri.parse('$_base/poi-arrival-tip'),
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    if (response.statusCode == 200) {
+      final json =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final result = (json['arrival_tip'] as String?) ?? '';
+      _arrivalTipCache[name] = result;
       return result;
     }
     return '';
