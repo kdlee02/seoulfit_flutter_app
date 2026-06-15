@@ -49,3 +49,10 @@ app.*.map.json
 
 # Local API keys / secrets (do not commit)
 lib/config/api_keys.dart
+backend/.env
+
+# Python backend runtime (do not commit)
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc

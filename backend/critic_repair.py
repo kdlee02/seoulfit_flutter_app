@@ -462,8 +462,8 @@ class CriticAgent:
             return list(requested)
 
         return extract_requested_areas(
-            state.get("location"),
-            state.get("purpose"),
+            state.get("region"),
+            state.get("category"),
         )
 
     def _evaluate_area_coverage(
@@ -665,8 +665,8 @@ class RepairAgent:
             return itinerary, logs
 
         requested_areas = report.get("requested_areas") or extract_requested_areas(
-            state.get("location"),
-            state.get("purpose"),
+            state.get("region"),
+            state.get("category"),
         )
 
         itinerary = self._repair_missing_areas(

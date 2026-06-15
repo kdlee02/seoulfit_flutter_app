@@ -17,11 +17,12 @@ class _SlotParsingScreenState extends State<SlotParsingScreen> {
   bool _isEditing = false;
 
   static const _slotMeta = [
-    _SlotMeta(icon: Icons.calendar_today_rounded, label: 'Duration', field: 'duration', isMint: true),
-    _SlotMeta(icon: Icons.location_on_rounded, label: 'Region', field: 'location', isMint: true),
-    _SlotMeta(icon: Icons.attach_money_rounded, label: 'Budget', field: 'budget', isMint: false),
-    _SlotMeta(icon: Icons.restaurant_rounded, label: 'Dietary', field: 'dietary', isMint: false),
-    _SlotMeta(icon: Icons.star_rounded, label: 'Purpose', field: 'purpose', isMint: false),
+    _SlotMeta(icon: Icons.calendar_today_rounded, label: 'Travel Dates', field: 'travel_dates', isMint: true),
+    _SlotMeta(icon: Icons.location_on_rounded, label: 'Region', field: 'region', isMint: true),
+    _SlotMeta(icon: Icons.restaurant_rounded, label: 'Dietary', field: 'restrictions', isMint: false),
+    _SlotMeta(icon: Icons.star_rounded, label: 'Category', field: 'category', isMint: false),
+    _SlotMeta(icon: Icons.group_rounded, label: 'Traveling With', field: 'companion', isMint: false),
+    _SlotMeta(icon: Icons.directions_run_rounded, label: 'Trip Style', field: 'pace', isMint: false),
   ];
 
   late final List<TextEditingController> _controllers;

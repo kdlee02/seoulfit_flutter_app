@@ -40,7 +40,7 @@ from geo import (
     haversine_km as _haversine_km,
     infer_area_from_fields as _infer_area_from_text_or_coords,
 )
-from llm import lm_context
+# lm_context removed — DSPy replaced with direct Gemini calls
 from rag import (
     build_query,
     parse_day_segments,
@@ -50,6 +50,29 @@ from rag import (
 from state import TravelState
 
 load_dotenv()
+
+# ---------------------------------------------------------------------------
+# Gemini key (set by make_retrieve_node via set_planner_api_key)
+# ---------------------------------------------------------------------------
+
+_PLANNER_GEMINI_KEY: str = os.getenv("GEMINI_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
+
+
+def set_planner_api_key(key: str) -> None:
+    global _PLANNER_GEMINI_KEY
+    _PLANNER_GEMINI_KEY = key
+
+
+def _gemini_text(prompt: str) -> str:
+    """Call Gemini and return raw text (JSON expected from caller)."""
+    from google import genai as _genai
+    client = _genai.Client(api_key=_PLANNER_GEMINI_KEY)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config={"response_mime_type": "application/json"},
+    )
+    return response.text or ""
 
 
 # ---------------------------------------------------------------------------
@@ -780,7 +803,7 @@ def _format_segment_block(seg: dict[str, Any]) -> str:
     area = seg.get("area")
     purpose_hint = (seg.get("purpose_hint") or "").strip()
     if area:
-        header = f"{_area_label(area)} — {purpose_hint}" if purpose_hint else _area_label(area)
+        header = f"{_area_label(area)} - {purpose_hint}" if purpose_hint else _area_label(area)
     else:
         header = purpose_hint or "Seoul"
 
@@ -789,17 +812,17 @@ def _format_segment_block(seg: dict[str, Any]) -> str:
     anchors = seg.get("anchor_courses") or []
     if anchors:
         lines.append("")
-        lines.append("[ANCHOR COURSE — use sequence as the day backbone if relevant]")
+        lines.append("[ANCHOR COURSE - use sequence as the day backbone if relevant]")
         for i, c in enumerate(anchors, start=1):
             lines.append(_format_one_course(c, i))
     else:
         lines.append("")
-        lines.append("[ANCHOR COURSE — none available; rely on supplement POIs + Google Places]")
+        lines.append("[ANCHOR COURSE - none available; rely on supplement POIs + Google Places]")
 
     suppl = seg.get("supplement_pois") or []
     if suppl:
         lines.append("")
-        lines.append("[SUPPLEMENT POIs — individual additions for gaps in anchor courses]")
+        lines.append("[SUPPLEMENT POIs - individual additions for gaps in anchor courses]")
         for poi in suppl:
             lines.append(_format_one_poi(poi))
 
@@ -1066,7 +1089,7 @@ def _validate_and_repair_itinerary(
         for day_num in range(1, expected_days + 1):
             if day_num not in existing_day_nums:
                 days.append({"day": day_num, "theme": f"Day {day_num}", "pois": [], "estimated_cost": ""})
-                print(f"[Validator] Day {day_num} 누락 — 빈 일정 추가 (duration={duration})")
+                print(f"[Validator] Day {day_num} 누락 -- 빈 일정 추가 (duration={duration})")
         # Keep days sorted by day number.
         days.sort(key=lambda d: int(d.get("day") or 0))
 
@@ -1286,11 +1309,13 @@ def _parse_itinerary_json(raw: str, *, use_llm_fallback: bool = True) -> dict[st
     except json.JSONDecodeError as second_err:
         if use_llm_fallback:
             try:
-                with lm_context():
-                    fixed = get_fixer()(
-                        broken_json=isolated[:8000],
-                        error_message=str(second_err),
-                    ).fixed_json
+                fix_prompt = (
+                    "Repair this malformed JSON document. "
+                    "Return ONLY the corrected JSON object, no prose, no markdown fences.\n\n"
+                    f"Error: {second_err}\n\n"
+                    f"Broken JSON:\n{isolated[:8000]}"
+                )
+                fixed = _gemini_text(fix_prompt)
                 return json.loads(_isolate_json_object(fixed))
             except Exception:
                 pass
@@ -1362,18 +1387,20 @@ def _normalize_sources(
 # ---------------------------------------------------------------------------
 
 def make_retrieve_node(api_key: str):
+    set_planner_api_key(api_key)
+
     def retrieve_node(state: TravelState) -> TravelState:
         segments = parse_day_segments(
-            location=state.get("location") or "",
-            purpose=state.get("purpose") or "",
-            duration=state.get("duration") or "",
+            location=state.get("region") or "",
+            purpose=state.get("category") or "",
+            duration=state.get("travel_dates") or "",
         )
 
         try:
             segments_with_data, all_courses = retrieve_for_segments(
                 api_key=api_key,
                 segments=segments,
-                purpose=state.get("purpose") or "",
+                purpose=state.get("category") or "",
             )
         except Exception as e:
             return {
@@ -1402,11 +1429,11 @@ def plan_node(state: TravelState) -> TravelState:
             "messages": [AIMessage(content="⚠️ No candidate courses found. Try different details.")],
         }
 
-    location = state.get("location") or ""
-    purpose = state.get("purpose") or ""
-    duration = state.get("duration") or ""
-    budget = state.get("budget") or ""
-    dietary = state.get("dietary") or "none"
+    location = state.get("region") or ""
+    purpose = state.get("category") or ""
+    duration = state.get("travel_dates") or ""
+    budget = ""
+    dietary = state.get("restrictions") or "none"
 
     requested_areas = _extract_requested_areas(location, purpose)
     print(f"[planner] requested_areas = {requested_areas}")
@@ -1420,7 +1447,7 @@ def plan_node(state: TravelState) -> TravelState:
             api_key=GOOGLE_PLACES_API_KEY,
         )
     else:
-        print("[planner] GOOGLE_PLACES_API_KEY 없음 — Google Places 보완 생략")
+        print("[planner] GOOGLE_PLACES_API_KEY 없음 -- Google Places 보완 생략")
 
     prompt_context = _format_courses_for_prompt(
         courses,
@@ -1431,17 +1458,19 @@ def plan_node(state: TravelState) -> TravelState:
     )
 
     try:
-        with lm_context():
-            result = get_planner()(
-                duration=duration,
-                location=location,
-                budget=budget,
-                dietary=dietary,
-                purpose=purpose,
-                candidate_courses=prompt_context,
-            )
+        system_prompt = ItineraryPlanner.__doc__ or ""
+        user_prompt = (
+            f"{system_prompt}\n\n"
+            f"Duration: {duration}\n"
+            f"Location: {location}\n"
+            f"Budget: {budget}\n"
+            f"Dietary: {dietary}\n"
+            f"Purpose: {purpose}\n"
+            f"Candidate Courses:\n{prompt_context}"
+        )
+        raw_json = _gemini_text(user_prompt)
 
-        itinerary = _parse_itinerary_json(result.itinerary_json)
+        itinerary = _parse_itinerary_json(raw_json)
 
         itinerary = _validate_and_repair_itinerary(
             itinerary,

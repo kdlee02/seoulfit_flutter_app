@@ -5,7 +5,7 @@
 #   uvicorn          <0.23,  >=0.22
 #   python-multipart <0.0.10,>=0.0.9
 # We list the packages here (so they're explicit deps of our code) but leave
-# them unpinned — pip resolves them against litellm[proxy]'s constraints.
+# them unpinned - pip resolves them against litellm[proxy]'s constraints.
 fastapi
 uvicorn[standard]
 python-dotenv
@@ -27,7 +27,7 @@ dspy==2.5.43
 # Vector store for the course RAG (rag.py loads vectorstore/index.faiss).
 faiss-cpu>=1.8
 
-# Lens — Gemini Vision + Seoul Open Data RAG
+# Lens - Gemini Vision + Seoul Open Data RAG
 google-genai>=0.3.0
 
 # POI image search

@@ -5,20 +5,21 @@ from typing import Annotated
 
 
 class TravelState(TypedDict, total=False):
-    duration: Optional[str]         # 여행 기간
-    location: Optional[str]         # 숙박 지역
-    budget: Optional[str]           # 예산
-    dietary: Optional[str]          # 식단 제약
-    purpose: Optional[str]          # 가는 이유
-    current_step: str               # 현재 수집 단계: start | collecting | confirm | retrieving | planning | critic | done
-    confirmed: bool                 # 최종 컨펌 여부
+    travel_dates: Optional[str]        # 여행 날짜/기간
+    category: Optional[str]            # 관심사 카테고리
+    restrictions: Optional[str]        # 식이/신체 제약
+    companion: Optional[str]           # 동행자
+    pace: Optional[str]                # 여행 스타일
+    region: Optional[str]              # 서울 지역
+    current_step: str                  # start | collecting_basics | collecting_region | confirm | retrieving | planning | critic | done
+    confirmed: bool                    # 최종 컨펌 여부
     messages: Annotated[list, add_messages]  # 대화 히스토리 (reducer 적용)
 
     # RAG + planning
-    retrieved_courses: list[dict[str, Any]]   # FAISS 검색 결과 코스 리스트 (flat merge of all segment anchors)
-    day_segments: Optional[list[dict[str, Any]]]  # per-day-segment anchor courses + supplement POIs
-    itinerary: Optional[dict[str, Any]]       # 최종 일정 (구조화된 JSON)
+    retrieved_courses: list[dict[str, Any]]
+    day_segments: Optional[list[dict[str, Any]]]
+    itinerary: Optional[dict[str, Any]]
 
     # Planner → critic_repair handoff
-    planning_context: Optional[dict[str, Any]]   # requested_areas + google_supplement
-    critic_report: Optional[dict[str, Any]]      # before/after scores + repair log
+    planning_context: Optional[dict[str, Any]]
+    critic_report: Optional[dict[str, Any]]

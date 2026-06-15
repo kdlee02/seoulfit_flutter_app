@@ -16,22 +16,24 @@ List<Map<String, dynamic>> _asJsonList(Object? raw) {
 
 /// Mirrors the StateResponse Pydantic model from the FastAPI backend.
 class TravelState {
-  final String? duration;
-  final String? location;
-  final String? budget;
-  final String? dietary;
-  final String? purpose;
+  final String? travelDates;
+  final String? region;
+  final String? restrictions;
+  final String? category;
+  final String? companion;
+  final String? pace;
   final String currentStep;
   final bool confirmed;
   final String? reply;
   final Itinerary? itinerary;
 
   const TravelState({
-    this.duration,
-    this.location,
-    this.budget,
-    this.dietary,
-    this.purpose,
+    this.travelDates,
+    this.region,
+    this.restrictions,
+    this.category,
+    this.companion,
+    this.pace,
     this.currentStep = 'start',
     this.confirmed = false,
     this.reply,
@@ -41,11 +43,12 @@ class TravelState {
   factory TravelState.fromJson(Map<String, dynamic> json) {
     final itineraryJson = _asJsonMap(json['itinerary']);
     return TravelState(
-      duration: json['duration'] as String?,
-      location: json['location'] as String?,
-      budget: json['budget'] as String?,
-      dietary: json['dietary'] as String?,
-      purpose: json['purpose'] as String?,
+      travelDates: json['travel_dates'] as String?,
+      region: json['region'] as String?,
+      restrictions: json['restrictions'] as String?,
+      category: json['category'] as String?,
+      companion: json['companion'] as String?,
+      pace: json['pace'] as String?,
       currentStep: (json['current_step'] as String?) ?? 'start',
       confirmed: (json['confirmed'] as bool?) ?? false,
       reply: json['reply'] as String?,
@@ -56,11 +59,12 @@ class TravelState {
 
   /// Raw slot values keyed by backend field name.
   Map<String, String?> get slots => {
-        'duration': duration,
-        'location': location,
-        'budget': budget,
-        'dietary': dietary,
-        'purpose': purpose,
+        'travel_dates': travelDates,
+        'region': region,
+        'restrictions': restrictions,
+        'category': category,
+        'companion': companion,
+        'pace': pace,
       };
 }
 

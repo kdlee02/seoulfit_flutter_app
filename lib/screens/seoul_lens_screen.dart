@@ -1,5 +1,6 @@
 ﻿import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -23,6 +24,8 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
   bool _sheetExpanded = true;
   final _picker = ImagePicker();
   final _lens = LensService();
+  final _tts = FlutterTts();
+  bool _isSpeaking = false;
   XFile? _pickedImage;
   Uint8List? _pickedBytes;
   bool _isAnalyzing = false;
@@ -36,6 +39,11 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+    _tts.setLanguage('en-US');
+    _tts.setSpeechRate(0.5);
+    _tts.setCompletionHandler(() {
+      if (mounted) setState(() => _isSpeaking = false);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _showMediaPicker());
   }
 
@@ -335,6 +343,36 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
                 Text(r.description,
                     style: GoogleFonts.plusJakartaSans(
                         fontSize: 13, color: kInk, height: 1.55)),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      if (_isSpeaking) {
+                        await _tts.stop();
+                        setState(() => _isSpeaking = false);
+                      } else {
+                        setState(() => _isSpeaking = true);
+                        await _tts.speak(r.description);
+                      }
+                    },
+                    icon: Icon(
+                      _isSpeaking ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                      size: 16,
+                    ),
+                    label: Text(_isSpeaking ? 'Stop' : 'Play Audio'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isSpeaking ? Colors.redAccent : kMint,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50)),
+                      textStyle: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w700, fontSize: 13),
+                    ),
+                  ),
+                ),
               ]),
             ),
             const SizedBox(height: 14),
@@ -436,6 +474,7 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
   @override
   void dispose() {
     _scanCtrl.dispose();
+    _tts.stop();
     super.dispose();
   }
 

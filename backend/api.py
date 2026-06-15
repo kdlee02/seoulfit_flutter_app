@@ -30,6 +30,7 @@ if not hasattr(_lc, "verbose"):
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, AIMessage
 
@@ -109,25 +110,26 @@ def healthz():
 
 class ChatRequest(BaseModel):
     thread_id: str = "travel-session-1"
-    message: str | None = None  # None on first call → triggers greeting
+    message: Optional[str] = None  # None on first call → triggers greeting
 
 
 class StateResponse(BaseModel):
-    duration: str | None
-    location: str | None
-    budget: str | None
-    dietary: str | None
-    purpose: str | None
+    travel_dates: Optional[str] = None
+    category: Optional[str] = None
+    restrictions: Optional[str] = None
+    companion: Optional[str] = None
+    pace: Optional[str] = None
+    region: Optional[str] = None
     current_step: str
     confirmed: bool
-    reply: str | None           # latest AI message text
-    itinerary: dict | None = None  # full day-by-day plan once available
+    reply: Optional[str]
+    itinerary: Optional[dict] = None
 
 
 class TransitStop(BaseModel):
-    name: str | None = None
-    lat: float | None = None
-    lng: float | None = None
+    name: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
 
 
 class TransitLegsRequest(BaseModel):
@@ -147,20 +149,20 @@ def _get_state(thread_id: str) -> dict:
     if snapshot and snapshot.values:
         return snapshot.values
     return {
-        "duration": None, "location": None, "budget": None,
-        "dietary": None, "purpose": None,
+        "travel_dates": None, "category": None, "restrictions": None,
+        "companion": None, "pace": None, "region": None,
         "current_step": "start", "confirmed": False, "messages": [],
     }
 
 
-def _latest_ai_message(state: dict) -> str | None:
+def _latest_ai_message(state: dict) -> Optional[str]:
     for msg in reversed(state.get("messages", [])):
         if isinstance(msg, AIMessage):
             return msg.content
     return None
 
 
-def _run(thread_id: str, user_input: str | None) -> dict:
+def _run(thread_id: str, user_input: Optional[str]) -> dict:
     state = _get_state(thread_id)
     messages = list(state.get("messages", []))
     if user_input:
@@ -185,11 +187,12 @@ def chat(req: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
     return StateResponse(
-        duration=new_state.get("duration"),
-        location=new_state.get("location"),
-        budget=new_state.get("budget"),
-        dietary=new_state.get("dietary"),
-        purpose=new_state.get("purpose"),
+        travel_dates=new_state.get("travel_dates"),
+        category=new_state.get("category"),
+        restrictions=new_state.get("restrictions"),
+        companion=new_state.get("companion"),
+        pace=new_state.get("pace"),
+        region=new_state.get("region"),
         current_step=new_state.get("current_step", "start"),
         confirmed=new_state.get("confirmed", False),
         reply=_latest_ai_message(new_state),
@@ -202,11 +205,12 @@ def get_state(thread_id: str = "travel-session-1"):
     """Return current state without invoking the graph."""
     state = _get_state(thread_id)
     return StateResponse(
-        duration=state.get("duration"),
-        location=state.get("location"),
-        budget=state.get("budget"),
-        dietary=state.get("dietary"),
-        purpose=state.get("purpose"),
+        travel_dates=state.get("travel_dates"),
+        category=state.get("category"),
+        restrictions=state.get("restrictions"),
+        companion=state.get("companion"),
+        pace=state.get("pace"),
+        region=state.get("region"),
         current_step=state.get("current_step", "start"),
         confirmed=state.get("confirmed", False),
         reply=_latest_ai_message(state),
