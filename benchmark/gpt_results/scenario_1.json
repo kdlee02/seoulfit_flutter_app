@@ -1,0 +1,71 @@
+{
+"summary": "A full-day Seongsu itinerary exploring trendy cafes, artistic streets, and photogenic urban spaces in Seoul's creative district.",
+"days": [
+{
+"day": 1,
+"theme": "Seongsu cafe hopping and urban photography",
+"pois": [
+{
+"name": "Daelim Changgo (대림창고)",
+"type": "cafe",
+"lat": 37.5443,
+"lng": 127.0558,
+"stay_minutes": 90,
+"estimated_start_time": "10:00",
+"estimated_end_time": "11:30",
+"notes": "A famous warehouse-style cafe with industrial interiors, high ceilings, and great spots for aesthetic photos."
+},
+{
+"name": "Seongsu Cafe Street (성수 카페거리)",
+"type": "street",
+"lat": 37.5448,
+"lng": 127.0568,
+"stay_minutes": 90,
+"estimated_start_time": "11:30",
+"estimated_end_time": "13:00",
+"notes": "Walk around the trendy streets filled with unique cafes, boutiques, murals, and vintage urban scenery."
+},
+{
+"name": "Cafe Onion Seongsu (카페 어니언 성수점)",
+"type": "cafe",
+"lat": 37.5446,
+"lng": 127.0565,
+"stay_minutes": 60,
+"estimated_start_time": "13:00",
+"estimated_end_time": "14:00",
+"notes": "A popular bakery cafe inside a renovated factory building known for its rustic atmosphere and photogenic desserts."
+},
+{
+"name": "Seoul Forest (서울숲)",
+"type": "park",
+"lat": 37.5444,
+"lng": 127.0374,
+"stay_minutes": 120,
+"estimated_start_time": "14:30",
+"estimated_end_time": "16:30",
+"notes": "A large urban park with seasonal flowers, forest paths, and peaceful locations for nature photography."
+},
+{
+"name": "Blue Bottle Coffee Seongsu (블루보틀 성수점)",
+"type": "cafe",
+"lat": 37.5455,
+"lng": 127.0546,
+"stay_minutes": 60,
+"estimated_start_time": "17:00",
+"estimated_end_time": "18:00",
+"notes": "Enjoy specialty coffee in a minimalist industrial space that represents Seongsu's modern cafe culture."
+},
+{
+"name": "Seongsu Yeonbang (성수연방)",
+"type": "shopping",
+"lat": 37.5436,
+"lng": 127.0561,
+"stay_minutes": 60,
+"estimated_start_time": "18:00",
+"estimated_end_time": "19:00",
+"notes": "A stylish complex with design shops, cafes, and restaurants, ideal for evening photos and browsing local brands."
+}
+]
+}
+]
+}

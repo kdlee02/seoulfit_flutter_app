@@ -1,0 +1,199 @@
+{
+"summary": "A 4-day Seoul shopping and K-pop adventure exploring trendy districts, flagship stores, entertainment landmarks, cafes, and modern lifestyle spaces in Hongdae, Seongsu, Gangnam, and Jamsil.",
+"days": [
+{
+"day": 1,
+"theme": "Hongdae youth culture and K-pop shopping",
+"pois": [
+{
+"name": "Hongdae Walking Street (홍대 걷고싶은거리)",
+"type": "street",
+"lat": 37.5563,
+"lng": 126.9220,
+"stay_minutes": 90,
+"estimated_start_time": "10:00",
+"estimated_end_time": "11:30",
+"notes": "Experience street performances, K-pop dance covers, fashion boutiques, and the energetic atmosphere of Hongdae."
+},
+{
+"name": "AK Plaza Hongdae (AK플라자 홍대)",
+"type": "shopping",
+"lat": 37.5573,
+"lng": 126.9258,
+"stay_minutes": 120,
+"estimated_start_time": "11:30",
+"estimated_end_time": "13:30",
+"notes": "Shop for K-pop albums, character goods, cosmetics, and Korean fashion near Hongik University Station."
+},
+{
+"name": "Mecenatpolis Mall (메세나폴리스몰)",
+"type": "shopping",
+"lat": 37.5506,
+"lng": 126.9135,
+"stay_minutes": 90,
+"estimated_start_time": "14:00",
+"estimated_end_time": "15:30",
+"notes": "Explore a modern shopping complex with fashion brands, cafes, and lifestyle stores."
+},
+{
+"name": "Kakao Friends Hongdae Flagship Store (카카오프렌즈 홍대 플래그십 스토어)",
+"type": "shopping",
+"lat": 37.5547,
+"lng": 126.9237,
+"stay_minutes": 60,
+"estimated_start_time": "16:00",
+"estimated_end_time": "17:00",
+"notes": "Purchase popular Korean character merchandise and enjoy photo opportunities with giant character displays."
+},
+{
+"name": "Hongdae Club Street (홍대 클럽거리)",
+"type": "street",
+"lat": 37.5518,
+"lng": 126.9223,
+"stay_minutes": 90,
+"estimated_start_time": "17:30",
+"estimated_end_time": "19:00",
+"notes": "Walk through the nightlife district known for music culture, performances, and trendy local shops."
+}
+]
+},
+{
+"day": 2,
+"theme": "Seongsu creative shopping and trendy cafes",
+"pois": [
+{
+"name": "Seongsu Cafe Street (성수 카페거리)",
+"type": "street",
+"lat": 37.5448,
+"lng": 127.0568,
+"stay_minutes": 90,
+"estimated_start_time": "10:00",
+"estimated_end_time": "11:30",
+"notes": "Discover industrial-style cafes, designer boutiques, and Seoul's latest lifestyle trends."
+},
+{
+"name": "Musinsa Store Seongsu (무신사 스토어 성수)",
+"type": "shopping",
+"lat": 37.5442,
+"lng": 127.0565,
+"stay_minutes": 90,
+"estimated_start_time": "12:00",
+"estimated_end_time": "13:30",
+"notes": "Browse Korean street fashion brands and trendy apparel popular among young locals."
+},
+{
+"name": "Seongsu Yeonbang (성수연방)",
+"type": "shopping",
+"lat": 37.5436,
+"lng": 127.0561,
+"stay_minutes": 60,
+"estimated_start_time": "14:00",
+"estimated_end_time": "15:00",
+"notes": "Explore a stylish complex featuring local brands, cafes, and creative lifestyle shops."
+},
+{
+"name": "SM Entertainment Seongsu Building (SM엔터테인먼트 성수 사옥)",
+"type": "kpop_landmark",
+"lat": 37.5459,
+"lng": 127.0545,
+"stay_minutes": 60,
+"estimated_start_time": "15:30",
+"estimated_end_time": "16:30",
+"notes": "Visit the surrounding area of the entertainment company's building, a popular spot for K-pop fans."
+},
+{
+"name": "Cafe Onion Seongsu (카페 어니언 성수점)",
+"type": "cafe",
+"lat": 37.5446,
+"lng": 127.0565,
+"stay_minutes": 90,
+"estimated_start_time": "17:00",
+"estimated_end_time": "18:30",
+"notes": "Relax in a famous factory-style cafe known for its pastries and unique industrial interior."
+}
+]
+},
+{
+"day": 3,
+"theme": "Gangnam luxury shopping and K-pop entertainment",
+"pois": [
+{
+"name": "COEX Mall (코엑스몰)",
+"type": "shopping",
+"lat": 37.5125,
+"lng": 127.0588,
+"stay_minutes": 120,
+"estimated_start_time": "10:00",
+"estimated_end_time": "12:00",
+"notes": "Shop at one of Asia's largest underground malls featuring fashion, beauty, and entertainment stores."
+},
+{
+"name": "SMTOWN@coex Artium Area (SMTOWN 코엑스 아티움 주변)",
+"type": "kpop_landmark",
+"lat": 37.5123,
+"lng": 127.0590,
+"stay_minutes": 60,
+"estimated_start_time": "12:00",
+"estimated_end_time": "13:00",
+"notes": "Explore a famous K-pop area associated with SM Entertainment and popular among fans."
+},
+{
+"name": "K-Star Road (강남돌 K스타로드)",
+"type": "kpop_landmark",
+"lat": 37.5253,
+"lng": 127.0457,
+"stay_minutes": 90,
+"estimated_start_time": "14:00",
+"estimated_end_time": "15:30",
+"notes": "Walk along a street decorated with GangnamDol sculptures representing famous K-pop artists."
+},
+{
+"name": "Apgujeong Rodeo Street (압구정 로데오거리)",
+"type": "shopping",
+"lat": 37.5274,
+"lng": 127.0403,
+"stay_minutes": 120,
+"estimated_start_time": "16:00",
+"estimated_end_time": "18:00",
+"notes": "Enjoy premium Korean fashion, beauty stores, designer boutiques, and celebrity hotspots."
+}
+]
+},
+{
+"day": 4,
+"theme": "Jamsil entertainment, shopping, and iconic Seoul experiences",
+"pois": [
+{
+"name": "Lotte World Mall (롯데월드몰)",
+"type": "shopping",
+"lat": 37.5131,
+"lng": 127.1048,
+"stay_minutes": 180,
+"estimated_start_time": "10:00",
+"estimated_end_time": "13:00",
+"notes": "Explore a massive shopping complex with luxury brands, K-pop stores, beauty shops, and restaurants."
+},
+{
+"name": "Lotte World Adventure (롯데월드 어드벤처)",
+"type": "tourist_spot",
+"lat": 37.5110,
+"lng": 127.0982,
+"stay_minutes": 180,
+"estimated_start_time": "13:30",
+"estimated_end_time": "16:30",
+"notes": "Enjoy Korea's famous indoor theme park with attractions, performances, and entertainment."
+},
+{
+"name": "Seoul Sky (서울스카이)",
+"type": "tourist_spot",
+"lat": 37.5133,
+"lng": 127.1029,
+"stay_minutes": 90,
+"estimated_start_time": "17:00",
+"estimated_end_time": "18:30",
+"notes": "Finish the trip with panoramic views of Seoul from one of the world's tallest observation decks."
+}
+]
+}
+]
+}

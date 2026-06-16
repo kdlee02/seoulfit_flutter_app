@@ -1,0 +1,163 @@
+{
+"summary": "A 3-day Seoul journey combining K-pop culture, trendy neighborhoods, vegetarian-friendly dining, shopping, and local street experiences across Hongdae, Itaewon, and Yongsan.",
+"days": [
+{
+"day": 1,
+"theme": "Hongdae K-pop culture and youthful street food",
+"pois": [
+{
+"name": "Hongdae Walking Street (홍대 걷고싶은거리)",
+"type": "street",
+"lat": 37.5563,
+"lng": 126.9220,
+"stay_minutes": 90,
+"estimated_start_time": "10:00",
+"estimated_end_time": "11:30",
+"notes": "Explore Seoul's vibrant youth district with street performances, K-pop dance covers, fashion stores, and entertainment venues."
+},
+{
+"name": "KT&G Sangsangmadang Hongdae (KT&G 상상마당 홍대)",
+"type": "tourist_spot",
+"lat": 37.5508,
+"lng": 126.9227,
+"stay_minutes": 60,
+"estimated_start_time": "11:30",
+"estimated_end_time": "12:30",
+"notes": "Visit a creative cultural complex featuring exhibitions, design shops, and indie Korean culture."
+},
+{
+"name": "Plant Cafe Hongdae (플랜트 카페 홍대점)",
+"type": "restaurant",
+"lat": 37.5553,
+"lng": 126.9245,
+"stay_minutes": 90,
+"estimated_start_time": "13:00",
+"estimated_end_time": "14:30",
+"notes": "Enjoy vegan and vegetarian-friendly dishes including burgers, salads, and desserts popular among international visitors."
+},
+{
+"name": "Myeongdong Kyoja Hongdae Branch (명동교자 홍대점)",
+"type": "restaurant",
+"lat": 37.5567,
+"lng": 126.9240,
+"stay_minutes": 60,
+"estimated_start_time": "15:00",
+"estimated_end_time": "16:00",
+"notes": "Try Korean-style noodles and dumplings with vegetarian options available upon request."
+},
+{
+"name": "AK Plaza Hongdae K-pop Store Area (AK플라자 홍대 K-pop 매장)",
+"type": "kpop_landmark",
+"lat": 37.5573,
+"lng": 126.9258,
+"stay_minutes": 90,
+"estimated_start_time": "16:30",
+"estimated_end_time": "18:00",
+"notes": "Browse K-pop albums, merchandise, photo cards, and character goods near Hongik University Station."
+}
+]
+},
+{
+"day": 2,
+"theme": "Itaewon international cuisine and K-pop lifestyle",
+"pois": [
+{
+"name": "Itaewon Antique Furniture Street (이태원 앤틱가구거리)",
+"type": "street",
+"lat": 37.5348,
+"lng": 126.9934,
+"stay_minutes": 60,
+"estimated_start_time": "10:30",
+"estimated_end_time": "11:30",
+"notes": "Walk through a unique street filled with vintage furniture, art objects, and multicultural shops."
+},
+{
+"name": "Plant Cafe Itaewon (플랜트 카페 이태원점)",
+"type": "restaurant",
+"lat": 37.5341,
+"lng": 126.9947,
+"stay_minutes": 90,
+"estimated_start_time": "12:00",
+"estimated_end_time": "13:30",
+"notes": "A famous vegan cafe offering plant-based Korean and Western dishes, cakes, and coffee."
+},
+{
+"name": "Itaewon Main Street (이태원 거리)",
+"type": "street",
+"lat": 37.5345,
+"lng": 126.9946,
+"stay_minutes": 90,
+"estimated_start_time": "14:00",
+"estimated_end_time": "15:30",
+"notes": "Discover international food culture, unique fashion boutiques, and Seoul's diverse neighborhood atmosphere."
+},
+{
+"name": "Hybe Insight Area (하이브 인사이트 주변)",
+"type": "kpop_landmark",
+"lat": 37.5255,
+"lng": 126.9643,
+"stay_minutes": 90,
+"estimated_start_time": "16:00",
+"estimated_end_time": "17:30",
+"notes": "Visit the area around HYBE's headquarters, a popular photo spot for fans of BTS and other HYBE artists."
+}
+]
+},
+{
+"day": 3,
+"theme": "Yongsan modern culture and Korean entertainment",
+"pois": [
+{
+"name": "HYBE Headquarters (하이브 사옥)",
+"type": "kpop_landmark",
+"lat": 37.5256,
+"lng": 126.9644,
+"stay_minutes": 60,
+"estimated_start_time": "10:00",
+"estimated_end_time": "11:00",
+"notes": "Take photos outside the headquarters of one of Korea's biggest entertainment companies and a famous destination for K-pop fans."
+},
+{
+"name": "National Museum of Korea (국립중앙박물관)",
+"type": "museum",
+"lat": 37.5239,
+"lng": 126.9804,
+"stay_minutes": 120,
+"estimated_start_time": "11:30",
+"estimated_end_time": "13:30",
+"notes": "Explore Korean history, traditional art, and cultural treasures in one of Asia's largest museums."
+},
+{
+"name": "Vegenarang (베지나랑)",
+"type": "restaurant",
+"lat": 37.5307,
+"lng": 126.9732,
+"stay_minutes": 60,
+"estimated_start_time": "14:00",
+"estimated_end_time": "15:00",
+"notes": "Taste vegetarian Korean cuisine with meat-free versions of traditional dishes."
+},
+{
+"name": "Yongsan Electronics Market (용산전자상가)",
+"type": "shopping",
+"lat": 37.5322,
+"lng": 126.9605,
+"stay_minutes": 90,
+"estimated_start_time": "15:30",
+"estimated_end_time": "17:00",
+"notes": "Explore Korea's famous electronics district featuring gaming stores, gadgets, and technology shops."
+},
+{
+"name": "Yongsan Family Park (용산가족공원)",
+"type": "park",
+"lat": 37.5227,
+"lng": 126.9785,
+"stay_minutes": 60,
+"estimated_start_time": "17:30",
+"estimated_end_time": "18:30",
+"notes": "Relax in a peaceful green space with walking paths and scenic views before ending the trip."
+}
+]
+}
+]
+}

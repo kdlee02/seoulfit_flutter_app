@@ -1,0 +1,573 @@
+{
+  "summary": "This 2-day itinerary for Seoul focuses on history and culture in the Jongno, Insadong, Gwanghwamun, and Namsan areas. You'll explore magnificent palaces, traditional hanok villages, charming cultural streets, and enjoy panoramic views, all while immersing yourself in Korea's rich heritage.",
+  "days": [
+    {
+      "day": 1,
+      "theme": "Royal Heritage & Traditional Charm of Jongno",
+      "pois": [
+        {
+          "name": "Changdeokgung Palace (창덕궁)",
+          "type": "history",
+          "address": "99 Yulgok-ro, Jongno-gu, Seoul, South Korea",
+          "lat": 37.57935668685352,
+          "lng": 126.99019110040985,
+          "stay_minutes": 90,
+          "notes": "Start your cultural journey at this UNESCO World Heritage site, a beautifully preserved palace reflecting Joseon Dynasty architecture. It perfectly matches your interest in history and culture. Foreign visitors can enjoy guided tours in English. Admission fee applies."
+        },
+        {
+          "name": "Bukchon Hanok Village (북촌 한옥마을)",
+          "type": "history",
+          "address": "Gyedong-gil, Jongno-gu, Seoul, South Korea",
+          "lat": 37.58180825093766,
+          "lng": 126.98694067671876,
+          "stay_minutes": 90,
+          "notes": "Walk through this charming village nestled between Gyeongbokgung and Changdeokgung palaces. It's home to traditional Korean houses (hanok) and offers a glimpse into Seoul's past. Please be mindful as it is a residential area."
+        },
+        {
+          "name": "The Restaurant",
+          "type": "restaurant",
+          "address": "54 Samcheong-ro, Jongno District",
+          "lat": 37.5808101,
+          "lng": 126.9803885,
+          "stay_minutes": 60,
+          "notes": "Enjoy lunch at this restaurant located near Samcheong-dong, offering a convenient dining option after exploring the hanok village. No specific dietary restrictions were mentioned, so a variety of options should be available.",
+          "source": "Google Places",
+          "rating": 4.3,
+          "user_ratings_total": 205
+        },
+        {
+          "name": "Samcheong-dong (삼청동)",
+          "type": "street",
+          "address": "Samcheong-ro, Jongno-gu, Seoul",
+          "lat": 37.57609593622847,
+          "lng": 126.9794121359672,
+          "stay_minutes": 60,
+          "notes": "Explore the artistic and charming street of Samcheong-dong, known for its galleries, cafes, and unique shops, blending traditional and modern Korean culture. It's a pleasant walk from Bukchon Hanok Village."
+        },
+        {
+          "name": "Boan1942 (보안1942)",
+          "type": "tourist_spot",
+          "address": "33 , Hyoja-ro, Jongno-gu, Seoul",
+          "lat": 37.57899552372898,
+          "lng": 126.9736682819058,
+          "stay_minutes": 60,
+          "notes": "Visit this unique cultural complex that was once an inn and now houses an art gallery, bookstore, and cafe. It offers a blend of history and contemporary art, aligning with your cultural interests."
+        },
+        {
+          "name": "Starbucks Ima Building",
+          "type": "cafe",
+          "address": "42 Jong-ro 1-gil, Jongno District",
+          "lat": 37.5738013,
+          "lng": 126.978811,
+          "stay_minutes": 45,
+          "notes": "Take a coffee break at this Starbucks, conveniently located in the central Jongno area, perfect for resting before dinner. No specific dietary restrictions, so a standard menu is suitable.",
+          "source": "Google Places",
+          "rating": 4.2,
+          "user_ratings_total": 596
+        },
+        {
+          "name": "Goryeo Samgyetang Gwanghwamun",
+          "type": "restaurant",
+          "address": "5-1 Sejong-daero 23-gil, Jongno District",
+          "lat": 37.5714453,
+          "lng": 126.9760906,
+          "stay_minutes": 60,
+          "notes": "Enjoy a traditional Korean dinner with Samgyetang (ginseng chicken soup), a popular nourishing dish. This restaurant is in the Gwanghwamun area, a historically significant part of Jongno.",
+          "source": "Google Places",
+          "rating": 4.1,
+          "user_ratings_total": 556
+        }
+      ],
+      "estimated_cost": "₩50,000-₩80,000 per person (excluding major shopping)"
+    },
+    {
+      "day": 2,
+      "theme": "Jongno / Insadong / Bukchon · history",
+      "pois": [
+        {
+          "name": "Cheonggyecheon Stream (청계천)",
+          "type": "park",
+          "lat": 37.5693987304375,
+          "lng": 126.9790936299317,
+          "stay_minutes": 75,
+          "estimated_start_time": "10:00",
+          "estimated_end_time": "11:15",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, family, nature.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jongno",
+          "profile_roles": [
+            "attraction",
+            "family",
+            "nature"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJIwCT4-yifDUR1E63iG76hr0",
+          "address": "37, Mugyo-ro, Jongno-gu, Seoul"
+        },
+        {
+          "name": "FourB, Gwanghwamun",
+          "type": "cafe",
+          "lat": 37.5706409,
+          "lng": 126.9786534,
+          "stay_minutes": 60,
+          "estimated_start_time": "11:40",
+          "estimated_end_time": "12:40",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: cafe.",
+          "source": "Google Places (live)",
+          "profile_cluster": "jongno_area",
+          "profile_roles": [
+            "cafe"
+          ],
+          "representative_score": null,
+          "google_place_id": null,
+          "address": "17 Jong-ro 3-gil, Jongno District"
+        },
+        {
+          "name": "Insa-dong Culture Street (인사동 문화의거리)",
+          "type": "shopping",
+          "lat": 37.573659025106025,
+          "lng": 126.9861276309419,
+          "stay_minutes": 90,
+          "estimated_start_time": "13:05",
+          "estimated_end_time": "14:35",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, shopping.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "insadong",
+          "profile_roles": [
+            "attraction",
+            "shopping"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJe_DH-eeifDURH6NzBYr0d7I",
+          "address": "30-9 Gwanhun-dong, Jongno-gu, Seoul, South Korea"
+        },
+        {
+          "name": "PKM Gallery (PKM갤러리)",
+          "type": "museum",
+          "lat": 37.58409024933437,
+          "lng": 126.98008508445082,
+          "stay_minutes": 90,
+          "estimated_start_time": "15:00",
+          "estimated_end_time": "16:30",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, culture, history.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "bukchon",
+          "profile_roles": [
+            "attraction",
+            "culture",
+            "history"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJm7L0VnikfDURseFfTm3NuOw",
+          "address": "40 Samcheong-ro 7-gil, Jongno-gu, Seoul"
+        },
+        {
+          "name": "Sejong Village Food and Culture Alley (세종마을 음식문화거리)",
+          "type": "street",
+          "lat": 37.57655042647526,
+          "lng": 126.9721042244635,
+          "stay_minutes": 90,
+          "estimated_start_time": "16:55",
+          "estimated_end_time": "18:25",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, culture, shopping.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jongno",
+          "profile_roles": [
+            "attraction",
+            "culture",
+            "shopping"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJGZLaGg-jfDURMAEAPR27oKY",
+          "address": "54-2 Chebu-dong, Jongno-gu, Seoul, South Korea"
+        }
+      ],
+      "estimated_cost": "₩70,000-₩100,000 per person (including Hanbok rental)",
+      "replanned": true,
+      "replan_target_area": "jongno_area",
+      "replan_reason": [
+        "cluster_scattered",
+        "consecutive_meal_like_pois",
+        "no_representative_anchor",
+        "not_in_profile",
+        "off_theme_cluster_poi"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "course_id": "VK_THEME_048",
+      "course_title": "Filming Spots: \"BLACKPINK House\" in Seoul",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=346602"
+    }
+  ],
+  "supplement_restaurants": [
+    {
+      "poi_name": "Starbucks Ima Building",
+      "poi_type": "cafe",
+      "address_en": "42 Jong-ro 1-gil, Jongno District",
+      "address_ko": "42 Jong-ro 1-gil, Jongno District",
+      "lat": 37.5738013,
+      "lng": 126.978811,
+      "rating": 4.2,
+      "user_ratings_total": 596,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJ40SqROqifDURpEwBPFWBuF0",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Starbucks",
+      "poi_type": "cafe",
+      "address_en": "4 Sajik-ro 8-gil, Jongno District",
+      "address_ko": "4 Sajik-ro 8-gil, Jongno District",
+      "lat": 37.5748676,
+      "lng": 126.969321,
+      "rating": 4.2,
+      "user_ratings_total": 230,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJsXjnvZaifDURyj1TUKkoJhU",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "다동커피집",
+      "poi_type": "cafe",
+      "address_en": "24-8 Dadong-gil, Jung District",
+      "address_ko": "24-8 Dadong-gil, Jung District",
+      "lat": 37.5673387,
+      "lng": 126.9806302,
+      "rating": 4.2,
+      "user_ratings_total": 119,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJczT11O2ifDURLQYkK5wOu7Q",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Ogawa",
+      "poi_type": "restaurant",
+      "address_en": "1층, 19 지하 Saemunan-ro 5-gil, Jongno District",
+      "address_ko": "1층, 19 지하 Saemunan-ro 5-gil, Jongno District",
+      "lat": 37.5719813,
+      "lng": 126.9740918,
+      "rating": 4.4,
+      "user_ratings_total": 705,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJDZZ2XZOifDURMG141DzjvOs",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "The Restaurant",
+      "poi_type": "restaurant",
+      "address_en": "54 Samcheong-ro, Jongno District",
+      "address_ko": "54 Samcheong-ro, Jongno District",
+      "lat": 37.5808101,
+      "lng": 126.9803885,
+      "rating": 4.3,
+      "user_ratings_total": 205,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJG9IJmcaifDURfdO3wPGYBYc",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Candle 1978",
+      "poi_type": "restaurant",
+      "address_en": "95 Sopa-ro, Jung District",
+      "address_ko": "95 Sopa-ro, Jung District",
+      "lat": 37.556797,
+      "lng": 126.985328,
+      "rating": 4.2,
+      "user_ratings_total": 749,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJp9VynveifDURO2--INmo4Ho",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "The Spoon",
+      "poi_type": "restaurant",
+      "address_en": "61-1 Migeun-dong, Seodaemun-gu",
+      "address_ko": "61-1 Migeun-dong, Seodaemun-gu",
+      "lat": 37.5625073,
+      "lng": 126.9665819,
+      "rating": 4.1,
+      "user_ratings_total": 91,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJ7bKnOIiifDURVkqxTJFicrY",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Mokkoji",
+      "poi_type": "restaurant",
+      "address_en": "1층, 120-19 지하 Seosomun-dong, Jung District",
+      "address_ko": "1층, 120-19 지하 Seosomun-dong, Jung District",
+      "lat": 37.5618686,
+      "lng": 126.9733868,
+      "rating": 4.1,
+      "user_ratings_total": 57,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJufoOD4uifDUR2RDNop-e7wo",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Goryeo Samgyetang Gwanghwamun",
+      "poi_type": "restaurant",
+      "address_en": "5-1 Sejong-daero 23-gil, Jongno District",
+      "address_ko": "5-1 Sejong-daero 23-gil, Jongno District",
+      "lat": 37.5714453,
+      "lng": 126.9760906,
+      "rating": 4.1,
+      "user_ratings_total": 556,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJx_XVruyifDURWSy_wj7OHy0",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "남산의 사계절",
+      "poi_type": "restaurant",
+      "address_en": "54 Toegye-ro 8-gil, Jung District",
+      "address_ko": "54 Toegye-ro 8-gil, Jung District",
+      "lat": 37.5570313,
+      "lng": 126.979599,
+      "rating": 4,
+      "user_ratings_total": 327,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJF34jjfWifDURqxMfRRb8X_Q",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Sogong-dong Ttukbaegijip Main Branch",
+      "poi_type": "restaurant",
+      "address_en": "18 Seosomun-ro 11-gil, Jung District",
+      "address_ko": "18 Seosomun-ro 11-gil, Jung District",
+      "lat": 37.56364649999999,
+      "lng": 126.9730089,
+      "rating": 4,
+      "user_ratings_total": 137,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJPRsggIyifDURjq17muz317g",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Din Tai Fung Myeongdong",
+      "poi_type": "restaurant",
+      "address_en": "2층 딘타이펑, 호텔28, 13 Myeongdong 7-gil, Jung District",
+      "address_ko": "2층 딘타이펑, 호텔28, 13 Myeongdong 7-gil, Jung District",
+      "lat": 37.5643649,
+      "lng": 126.9839488,
+      "rating": 3.9,
+      "user_ratings_total": 1936,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJZfqyTvCifDURj0A4kmAEV0E",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    }
+  ],
+  "repair_log": [
+    {
+      "action_type": "rebuild_day",
+      "day": 2,
+      "status": "accepted",
+      "reason": "structural issue가 남아 area profile representative 기반으로 day 전체를 재구성",
+      "before": [
+        "Hanbok Rental (한복대여)",
+        "Namsangol Hanok Village (남산골 한옥마을)",
+        "남산의 사계절",
+        "Seoul Namsan Park (남산공원(서울))",
+        "다동커피집",
+        "Candle 1978"
+      ],
+      "after": [
+        "Cheonggyecheon Stream (청계천)",
+        "FourB, Gwanghwamun",
+        "Insa-dong Culture Street (인사동 문화의거리)",
+        "PKM Gallery (PKM갤러리)",
+        "Sejong Village Food and Culture Alley (세종마을 음식문화거리)"
+      ],
+      "target_area": "jongno_area",
+      "evidence": [
+        "area=jongno_area, purpose=history",
+        "raw_representatives=14, representatives=12, attractions=36, meals=14, cafes=13",
+        "first_anchor=Cheonggyecheon Stream (청계천)",
+        "google_live=5개 (dietary=none)",
+        "lunch_candidate=FourB, Gwanghwamun (Google Places live, 0.1km)",
+        "selected=['Cheonggyecheon Stream (청계천)', 'FourB, Gwanghwamun', 'Insa-dong Culture Street (인사동 문화의거리)', 'PKM Gallery (PKM갤러리)', 'Sejong Village Food and Culture Alley (세종마을 음식문화거리)']"
+      ]
+    }
+  ],
+  "replanner_result": {
+    "changed": true,
+    "passed_to_critic": true,
+    "needs_replan": false,
+    "warnings": []
+  },
+  "pipeline_log": {
+    "cycles": [
+      {
+        "step": "initial_critic",
+        "result": {
+          "overall_score": 0.858,
+          "passed": false,
+          "needs_replan": true,
+          "needs_repair": false,
+          "days_needing_replan": [
+            1,
+            2
+          ],
+          "days_needing_repair": [],
+          "issue_count": 8,
+          "issues": [
+            {
+              "day": 1,
+              "type": "weak_representative_anchor",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 2,
+              "type": "not_in_profile",
+              "severity": "medium"
+            },
+            {
+              "day": 2,
+              "type": "off_theme_cluster_poi",
+              "severity": "medium"
+            },
+            {
+              "day": 2,
+              "type": "off_theme_cluster_poi",
+              "severity": "medium"
+            },
+            {
+              "day": 2,
+              "type": "cluster_scattered",
+              "severity": "medium"
+            },
+            {
+              "day": 2,
+              "type": "no_representative_anchor",
+              "severity": "medium"
+            },
+            {
+              "day": 2,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            }
+          ]
+        }
+      },
+      {
+        "step": "replanner_1",
+        "result": {
+          "changed": true,
+          "actions": 1,
+          "warnings": []
+        }
+      },
+      {
+        "step": "critic_after_replan_1",
+        "result": {
+          "overall_score": 0.988,
+          "passed": true,
+          "needs_replan": true,
+          "needs_repair": false,
+          "days_needing_replan": [
+            1
+          ],
+          "days_needing_repair": [],
+          "issue_count": 2,
+          "issues": [
+            {
+              "day": 1,
+              "type": "weak_representative_anchor",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            }
+          ]
+        }
+      }
+    ],
+    "final_score": 0.988,
+    "final_passed": true,
+    "total_changes": 1,
+    "final_issues": [
+      {
+        "day": 1,
+        "type": "weak_representative_anchor",
+        "severity": "low",
+        "description": "Day 1의 jongno_area 대표 후보 비중이 낮습니다."
+      },
+      {
+        "day": 1,
+        "type": "consecutive_meal_like_pois",
+        "severity": "low",
+        "description": "Day 1에 식사/카페/시장 성격의 POI가 연속 배치되어 흐름이 단조롭습니다."
+      }
+    ]
+  }
+}

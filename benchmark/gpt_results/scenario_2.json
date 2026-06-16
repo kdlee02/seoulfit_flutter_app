@@ -1,0 +1,117 @@
+{
+"summary": "A 2-day cultural journey through Jongno featuring royal palaces, traditional villages, historic streets, museums, and Korean heritage experiences.",
+"days": [
+{
+"day": 1,
+"theme": "Royal heritage and traditional Korean culture",
+"pois": [
+{
+"name": "Gyeongbokgung Palace (경복궁)",
+"type": "history",
+"lat": 37.5796,
+"lng": 126.9770,
+"stay_minutes": 120,
+"estimated_start_time": "09:30",
+"estimated_end_time": "11:30",
+"notes": "The largest Joseon Dynasty palace featuring grand architecture, royal halls, and the famous changing of the guard ceremony."
+},
+{
+"name": "National Palace Museum of Korea (국립고궁박물관)",
+"type": "museum",
+"lat": 37.5766,
+"lng": 126.9734,
+"stay_minutes": 60,
+"estimated_start_time": "11:30",
+"estimated_end_time": "12:30",
+"notes": "Explore royal artifacts and learn about the history of Korea's kings and the Joseon royal family."
+},
+{
+"name": "Tongin Market (통인시장)",
+"type": "restaurant",
+"lat": 37.5804,
+"lng": 126.9708,
+"stay_minutes": 90,
+"estimated_start_time": "13:00",
+"estimated_end_time": "14:30",
+"notes": "A traditional market where visitors can enjoy various Korean street foods using the unique traditional coin lunch experience."
+},
+{
+"name": "Bukchon Hanok Village (북촌한옥마을)",
+"type": "history",
+"lat": 37.5826,
+"lng": 126.9830,
+"stay_minutes": 90,
+"estimated_start_time": "15:00",
+"estimated_end_time": "16:30",
+"notes": "Walk through preserved Korean traditional houses and enjoy scenic alleys between the old and modern city."
+},
+{
+"name": "Samcheong-dong Street (삼청동길)",
+"type": "street",
+"lat": 37.5841,
+"lng": 126.9818,
+"stay_minutes": 90,
+"estimated_start_time": "16:30",
+"estimated_end_time": "18:00",
+"notes": "A charming cultural street filled with galleries, cafes, craft shops, and traditional-inspired architecture."
+}
+]
+},
+{
+"day": 2,
+"theme": "Art, temples, and traditional shopping in Jongno",
+"pois": [
+{
+"name": "Insadong Street (인사동 거리)",
+"type": "street",
+"lat": 37.5743,
+"lng": 126.9849,
+"stay_minutes": 120,
+"estimated_start_time": "10:00",
+"estimated_end_time": "12:00",
+"notes": "A famous cultural street known for traditional tea houses, antique stores, Korean crafts, and souvenir shops."
+},
+{
+"name": "Ssamziegil (쌈지길)",
+"type": "shopping",
+"lat": 37.5742,
+"lng": 126.9856,
+"stay_minutes": 60,
+"estimated_start_time": "12:00",
+"estimated_end_time": "13:00",
+"notes": "A unique multi-level shopping complex featuring handmade crafts, art pieces, and local designer products."
+},
+{
+"name": "Jogyesa Temple (조계사)",
+"type": "history",
+"lat": 37.5731,
+"lng": 126.9827,
+"stay_minutes": 60,
+"estimated_start_time": "13:30",
+"estimated_end_time": "14:30",
+"notes": "The center of Korean Zen Buddhism, known for its colorful lanterns, peaceful atmosphere, and centuries-old traditions."
+},
+{
+"name": "Seoul Museum of Craft Art (서울공예박물관)",
+"type": "museum",
+"lat": 37.5767,
+"lng": 126.9858,
+"stay_minutes": 90,
+"estimated_start_time": "15:00",
+"estimated_end_time": "16:30",
+"notes": "Discover Korean traditional and contemporary crafts through beautifully curated exhibitions."
+},
+{
+"name": "Ikseon-dong Hanok Street (익선동 한옥거리)",
+"type": "street",
+"lat": 37.5740,
+"lng": 126.9897,
+"stay_minutes": 90,
+"estimated_start_time": "17:00",
+"estimated_end_time": "18:30",
+"notes": "End the day exploring a trendy neighborhood where renovated hanok houses host cafes, restaurants, and boutique stores."
+}
+]
+}
+]
+}

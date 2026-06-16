@@ -1,0 +1,328 @@
+{
+  "summary": "This one-day itinerary focuses on the trendy Seongsu neighborhood, perfect for cafe hopping and photography. You'll explore unique industrial-chic cafes, interactive beauty experiences, and a plaza dedicated to upcycling, culminating in an authentic Korean BBQ dinner.",
+  "days": [
+    {
+      "day": 1,
+      "theme": "Seongsu's Cafe Culture & Photo Spots",
+      "pois": [
+        {
+          "name": "Seongsu-dong Cafe Street (성수동 카페거리)",
+          "type": "cafe",
+          "address": "Yeonmujang-gil, Seongdong-gu, Seoul",
+          "lat": 37.54415874999967,
+          "lng": 127.0499445640484,
+          "stay_minutes": 60,
+          "notes": "Cafe Onion Seongsu area replaced with a concrete representative POI. Evidence for Seongsu-dong Cafe Street (성수동 카페거리): not_in_area_prior. Representative score: 0.78.",
+          "source": "Google Places",
+          "rating": "4.4",
+          "user_ratings_total": 0
+        },
+        {
+          "name": "Amore Store Beauty Experience (아모레성수 뷰티체험)",
+          "type": "shopping",
+          "address": "7 Achasan-ro 11-gil, Seongdong-gu, Seoul",
+          "lat": 37.54440782489604,
+          "lng": 127.05901731152728,
+          "stay_minutes": 60,
+          "notes": "Just a short walk from Cafe Onion, this experiential beauty store offers a unique opportunity to try various K-beauty products and engage in interactive experiences. It's great for photography with its stylish interior and product displays. Entry is free, and staff are available to assist."
+        },
+        {
+          "name": "Daelim Changgo Gallery (성수동 대림창고 갤러리)",
+          "type": "cafe",
+          "address": "78 Seongsui-ro, Seongdong-gu, Seoul",
+          "lat": 37.54196104032842,
+          "lng": 127.05653705769294,
+          "stay_minutes": 90,
+          "notes": "This renovated warehouse serves as both an art gallery and a cafe, making it a perfect spot for photography and a light lunch. Its large open space and rotating art installations provide a unique backdrop. You can enjoy a meal or coffee amidst the art, fitting perfectly with the cafe hopping theme.",
+          "source": "Google Places",
+          "rating": "4.2",
+          "user_ratings_total": 0
+        },
+        {
+          "name": "Seoul Upcycling Plaza (서울새활용플라자)",
+          "type": "tourist_spot",
+          "address": "49 Jadongchasijang-gil, Seongdong-gu, Seoul",
+          "lat": 37.55869290265427,
+          "lng": 127.05783039926044,
+          "stay_minutes": 60,
+          "notes": "Head north to the Seoul Upcycling Plaza, a fascinating complex dedicated to creative reuse and sustainability. The building itself has unique architecture, and the various exhibits and workshops offer interesting subjects for photography. Entry is free, and it provides a different cultural experience."
+        },
+        {
+          "name": "Peer Coffee",
+          "type": "cafe",
+          "address": "1층, 24 Gwangnaru-ro 4ga-gil, Seongdong-gu",
+          "lat": 37.5489186,
+          "lng": 127.0548742,
+          "stay_minutes": 45,
+          "notes": "Enjoy an afternoon coffee break at Peer Coffee, known for its minimalist design and quality brews. It's a great spot to relax and capture some clean, modern aesthetic photos. A perfect stop to recharge before dinner.",
+          "source": "Google Places",
+          "rating": 4.5,
+          "user_ratings_total": 152
+        },
+        {
+          "name": "이항아삼겹살",
+          "type": "restaurant",
+          "address": "119-5 화양동, Gwangjin District",
+          "lat": 37.5474777,
+          "lng": 127.0706024,
+          "stay_minutes": 60,
+          "notes": "Conclude your day with an authentic Korean BBQ experience. This restaurant offers delicious samgyeopsal (pork belly) that you grill at your table. It’s a lively and immersive dining experience, often enjoyed with soju or beer. Remember that side dishes (banchan) are typically refillable.",
+          "source": "Google Places",
+          "rating": 4,
+          "user_ratings_total": 146
+        }
+      ],
+      "estimated_cost": "₩60,000 - ₩90,000 per person"
+    }
+  ],
+  "sources": [
+    {
+      "course_id": "VK_THEME_026",
+      "course_title": "Punch's Pick: Mangwon Hangang Park in Seoul",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=217013"
+    },
+    {
+      "course_id": "VK_THEME_048",
+      "course_title": "Filming Spots: \"BLACKPINK House\" in Seoul",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=346602"
+    },
+    {
+      "course_id": "VS_MVP_038_DAY3",
+      "course_title": "If you are a Hallyu star fan",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouareaHallyustarfan/ENN036208"
+    },
+    {
+      "course_id": "VS_MVP_038_DAY5",
+      "course_title": "If you are a Hallyu star fan",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouareaHallyustarfan/ENN036208"
+    },
+    {
+      "course_id": "VK_THEME_036",
+      "course_title": "Come and get a taste of the real Gangnam Style",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=261"
+    }
+  ],
+  "supplement_restaurants": [
+    {
+      "poi_name": "Cafe Onion Seongsu",
+      "poi_type": "cafe",
+      "address_en": "8 Achasan-ro 9-gil, Seongdong-gu",
+      "address_ko": "8 Achasan-ro 9-gil, Seongdong-gu",
+      "lat": 37.5447328,
+      "lng": 127.0582091,
+      "rating": 4.2,
+      "user_ratings_total": 3417,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJHb1ypJWkfDURb2d4XCjLluM",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Daelim Changgo",
+      "poi_type": "cafe",
+      "address_en": "78 Seongsui-ro, Seongdong-gu",
+      "address_ko": "78 Seongsui-ro, Seongdong-gu",
+      "lat": 37.5418384,
+      "lng": 127.0564636,
+      "rating": 4.2,
+      "user_ratings_total": 2804,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJi_M445OkfDURBV_ePY2qCHo",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Room Escape Cafe SOLVER (Solver)",
+      "poi_type": "cafe",
+      "address_en": "아차산로 201 지하 1층, Gwangjin District",
+      "address_ko": "아차산로 201 지하 1층, Gwangjin District",
+      "lat": 37.541714,
+      "lng": 127.066009,
+      "rating": 4.5,
+      "user_ratings_total": 187,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJnZoBMeqkfDURFwT9iuywsrQ",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Peer Coffee",
+      "poi_type": "cafe",
+      "address_en": "1층, 24 Gwangnaru-ro 4ga-gil, Seongdong-gu",
+      "address_ko": "1층, 24 Gwangnaru-ro 4ga-gil, Seongdong-gu",
+      "lat": 37.5489186,
+      "lng": 127.0548742,
+      "rating": 4.5,
+      "user_ratings_total": 152,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJV-gBk7OjfDURCOFwVQRXgqk",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Lang Study Cafe",
+      "poi_type": "cafe",
+      "address_en": "26 Achasan-ro 34-gil, 자양제4동, Gwangjin District",
+      "address_ko": "26 Achasan-ro 34-gil, 자양제4동, Gwangjin District",
+      "lat": 37.53902509999999,
+      "lng": 127.0691292,
+      "rating": 4.3,
+      "user_ratings_total": 115,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJ-4KiGOmkfDUR1QleOgcOn9o",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "촬댄양꼬치",
+      "poi_type": "restaurant",
+      "address_en": "573-1 Majang-dong, Seongdong-gu",
+      "address_ko": "573-1 Majang-dong, Seongdong-gu",
+      "lat": 37.56662949999999,
+      "lng": 127.0362234,
+      "rating": 4.4,
+      "user_ratings_total": 100,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJT6s551ajfDURLr0SC8t48Zs",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Bongchu Jjimdak",
+      "poi_type": "restaurant",
+      "address_en": "20-5 Seolleung-ro 157-gil, Gangnam District",
+      "address_ko": "20-5 Seolleung-ro 157-gil, Gangnam District",
+      "lat": 37.5265368,
+      "lng": 127.0382171,
+      "rating": 4.4,
+      "user_ratings_total": 135,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJT7cD24ejfDURiZyRRVk6hUo",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Outback Steakhouse Konkuk Star City",
+      "poi_type": "restaurant",
+      "address_en": "2층, 롯데백화점) 스타시티몰 스타존, 92 Neungdong-ro, Jayang-dong, Gwangjin District, 서울시",
+      "address_ko": "2층, 롯데백화점) 스타시티몰 스타존, 92 Neungdong-ro, Jayang-dong, Gwangjin District, 서울시",
+      "lat": 37.538557,
+      "lng": 127.0729616,
+      "rating": 4.1,
+      "user_ratings_total": 904,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJv3J1p9ukfDURvP24ggfcl14",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "이항아삼겹살",
+      "poi_type": "restaurant",
+      "address_en": "119-5 화양동, Gwangjin District",
+      "address_ko": "119-5 화양동, Gwangjin District",
+      "lat": 37.5474777,
+      "lng": 127.0706024,
+      "rating": 4,
+      "user_ratings_total": 146,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJs6dplMSkfDURW-XD4eAMnMs",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Hanilkwan Apgujeong",
+      "poi_type": "restaurant",
+      "address_en": "14 Apgujeong-ro, Gangnam District",
+      "address_ko": "14 Apgujeong-ro, Gangnam District",
+      "lat": 37.5277582,
+      "lng": 127.032479,
+      "rating": 4,
+      "user_ratings_total": 1709,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJkUSoe4-jfDURujr_bknv6iE",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Pizza School yongdap points",
+      "poi_type": "restaurant",
+      "address_en": "61-6 용답동, Seongdong-gu",
+      "address_ko": "61-6 용답동, Seongdong-gu",
+      "lat": 37.5647222,
+      "lng": 127.0538889,
+      "rating": 4,
+      "user_ratings_total": 140,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJ6bQ6G7OkfDURBqNxBmGp3JQ",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "주먹구구",
+      "poi_type": "restaurant",
+      "address_en": "South Korea",
+      "address_ko": "South Korea",
+      "lat": 37.5469318,
+      "lng": 127.074404,
+      "rating": 4,
+      "user_ratings_total": 74,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJu1GbBdukfDURMlluTokoWsQ",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    }
+  ]
+}

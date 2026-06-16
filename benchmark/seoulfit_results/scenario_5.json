@@ -1,0 +1,1868 @@
+{
+  "summary": "This 5-day Seoul itinerary is designed for a family trip focused on sightseeing, covering a diverse range of experiences from youthful Hongdae and trendy Seongsu to historical Jongno, global Itaewon, and the family-friendly attractions of Jamsil. Each day balances cultural immersion, nature, and entertainment, ensuring a memorable experience for all ages.",
+  "days": [
+    {
+      "day": 1,
+      "theme": "Youthful Vibes and Artistic Exploration in Hongdae",
+      "pois": [
+        {
+          "name": "Mangwon Hangang Park (한강시민공원 망원지구 (망원한강공원))",
+          "type": "park",
+          "address": "467 Maponaru-gil, Mapo-gu, Seoul",
+          "lat": 37.552343677962696,
+          "lng": 126.89988649187372,
+          "stay_minutes": 60,
+          "notes": "Yeonnam-dong Cafe Street area replaced with a concrete representative POI. Evidence for Mangwon Hangang Park (한강시민공원 망원지구 (망원한강공원)): area_prior_match:Mangwon Market:rank=8:full. Representative score: 0.8085."
+        },
+        {
+          "name": "K-POP Square Hongdae [Tax Refund Shop] (케이팝 스퀘어 홍대)",
+          "type": "shopping",
+          "address": "141, Yanghwa-ro, Mapo-gu, Seoul",
+          "lat": 37.55575410747659,
+          "lng": 126.92166987902588,
+          "stay_minutes": 60,
+          "notes": "Yeonnam-dong area replaced with a concrete representative POI. Evidence for K-POP Square Hongdae [Tax Refund Shop] (케이팝 스퀘어 홍대): area_prior_match:Hongdae Street:rank=1:single_distinctive=['hongdae']. Representative score: 0.764."
+        },
+        {
+          "name": "KPOP Dance One-day Class (KPOP 댄스 원데이클래스)",
+          "type": "kpop_landmark",
+          "address": "8F, 53 Ewhayeodae-gil, Seodaemun-gu, Seoul",
+          "lat": 37.55907442576055,
+          "lng": 126.94541511568684,
+          "stay_minutes": 60,
+          "notes": "Yeonnam-dong (연남동) area replaced with a concrete representative POI. Evidence for KPOP Dance One-day Class (KPOP 댄스 원데이클래스): not_in_area_prior. Representative score: 0.6995."
+        },
+        {
+          "name": "Hongs Zzuggumi",
+          "type": "restaurant",
+          "address": "146 Eoulmadang-ro, Mapo-gu",
+          "lat": 37.556165,
+          "lng": 126.9260901,
+          "stay_minutes": 60,
+          "notes": "Enjoy a delicious Korean lunch. This restaurant is a popular choice in the Hongdae area, offering a taste of local cuisine.",
+          "source": "Google Places",
+          "rating": 4.7,
+          "user_ratings_total": 3815
+        },
+        {
+          "name": "K-POP Square Hongdae [Tax Refund Shop]",
+          "type": "shopping",
+          "address": "141, Yanghwa-ro, Mapo-gu, Seoul",
+          "lat": 37.55575410747659,
+          "lng": 126.92166987902588,
+          "stay_minutes": 60,
+          "notes": "A fun stop for souvenir shopping, especially if anyone in the family is interested in K-POP merchandise. Foreign visitors can often claim tax refunds here."
+        },
+        {
+          "name": "Oil Tank Culture Park",
+          "type": "park",
+          "address": "87 Jeungsan-ro, Mapo-gu, Seoul",
+          "lat": 37.57110627153124,
+          "lng": 126.894239097082,
+          "stay_minutes": 90,
+          "notes": "This unique park, transformed from former oil storage tanks, offers interesting architecture, exhibition spaces, and green areas perfect for family exploration and sightseeing."
+        },
+        {
+          "name": "Millo Coffee Roasters",
+          "type": "cafe",
+          "address": "36 Yanghwa-ro 18an-gil, Mapo-gu",
+          "lat": 37.5570351,
+          "lng": 126.9266137,
+          "stay_minutes": 45,
+          "notes": "Take a relaxing afternoon coffee break at this highly-rated cafe, a great spot to recharge after exploring.",
+          "source": "Google Places",
+          "rating": 4.5,
+          "user_ratings_total": 362
+        },
+        {
+          "name": "GangGang Sul Lai",
+          "type": "restaurant",
+          "address": "25 Jandari-ro 6-gil, Mapo-gu",
+          "lat": 37.55239879999999,
+          "lng": 126.9206436,
+          "stay_minutes": 60,
+          "notes": "Enjoy a traditional Korean dinner. This restaurant offers a comfortable setting for a family meal.",
+          "source": "Google Places",
+          "rating": 4.4,
+          "user_ratings_total": 512
+        }
+      ],
+      "estimated_cost": "₩100,000 - ₩150,000"
+    },
+    {
+      "day": 2,
+      "theme": "Trendy Streets and Nature's Escape in Seongsu",
+      "pois": [
+        {
+          "name": "Seoul Upcycling Plaza (서울새활용플라자)",
+          "type": "tourist_spot",
+          "address": "49 Jadongchasijang-gil, Seongdong-gu, Seoul",
+          "lat": 37.55869290265427,
+          "lng": 127.05783039926044,
+          "stay_minutes": 60,
+          "notes": "Seoul Forest area replaced with a concrete representative POI. Evidence for Seoul Upcycling Plaza (서울새활용플라자): area_prior_match:Seoul Forest:rank=1:single_distinctive=['seoul']. Representative score: 0.901."
+        },
+        {
+          "name": "Seongsu Self-Photo Booths (성수동 셀프 포토부스)",
+          "type": "tourist_spot",
+          "address": "Around Yeonmujang-gil, Seongdong-gu, Seoul",
+          "lat": 37.54415874999967,
+          "lng": 127.0499445640484,
+          "stay_minutes": 60,
+          "notes": "Seongsu-dong Handmade Shoes Street area replaced with a concrete representative POI. Evidence for Seongsu Self-Photo Booths (성수동 셀프 포토부스): area_prior_match:Seoul Forest:rank=1:single_distinctive=['seoul']. Representative score: 0.7805."
+        },
+        {
+          "name": "Pizza School yongdap points",
+          "type": "restaurant",
+          "address": "61-6 용답동, Seongdong-gu",
+          "lat": 37.5647222,
+          "lng": 127.0538889,
+          "stay_minutes": 60,
+          "notes": "A family-friendly option for lunch, offering a casual and delicious pizza experience.",
+          "source": "Google Places",
+          "rating": 4,
+          "user_ratings_total": 140
+        },
+        {
+          "name": "Seoul Upcycling Plaza",
+          "type": "tourist_spot",
+          "address": "49 Jadongchasijang-gil, Seongdong-gu, Seoul",
+          "lat": 37.55869290265427,
+          "lng": 127.05783039926044,
+          "stay_minutes": 60,
+          "notes": "Discover creative ways to reuse and recycle at this innovative plaza, offering engaging exhibits and workshops that can be interesting for all family members."
+        },
+        {
+          "name": "Amore Store Beauty Experience (아모레성수 뷰티체험)",
+          "type": "shopping",
+          "address": "7 Achasan-ro 11-gil, Seongdong-gu, Seoul",
+          "lat": 37.54440782489604,
+          "lng": 127.05901731152728,
+          "stay_minutes": 60,
+          "notes": "Cafe Onion Seongsu area replaced with a concrete representative POI. Evidence for Amore Store Beauty Experience (아모레성수 뷰티체험): area_prior_match:아모레 성수:rank=6:single_distinctive=['아모레']. Representative score: 0.6615."
+        },
+        {
+          "name": "Seongsu-dong Handmade Shoes Street (성수동 수제화거리)",
+          "type": "street",
+          "address": "15, Yeonmujang 7-gil, Seongdong-gu, Seoul",
+          "lat": 37.5465473367351,
+          "lng": 127.05772254920214,
+          "stay_minutes": 60,
+          "notes": "Seongsu Self-Photo Booths area replaced with a concrete representative POI. Evidence for Seongsu-dong Handmade Shoes Street (성수동 수제화거리): area_prior_match:Seongsu Handmade Shoes Street:rank=7:distinctive=['seongsu', 'handmade', 'shoes']. Representative score: 0.617."
+        },
+        {
+          "name": "주먹구구",
+          "type": "restaurant",
+          "address": "South Korea",
+          "lat": 37.5469318,
+          "lng": 127.074404,
+          "stay_minutes": 60,
+          "notes": "Enjoy a hearty Korean dinner at this local restaurant, known for its authentic flavors and welcoming atmosphere, suitable for a family meal.",
+          "source": "Google Places",
+          "rating": 4,
+          "user_ratings_total": 74
+        }
+      ],
+      "estimated_cost": "₩80,000 - ₩120,000"
+    },
+    {
+      "day": 3,
+      "theme": "Jongno / Insadong / Bukchon · history",
+      "pois": [
+        {
+          "name": "Cheonggyecheon Stream (청계천)",
+          "type": "park",
+          "lat": 37.5693987304375,
+          "lng": 126.9790936299317,
+          "stay_minutes": 75,
+          "estimated_start_time": "10:00",
+          "estimated_end_time": "11:15",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, family, nature.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jongno",
+          "profile_roles": [
+            "attraction",
+            "family",
+            "nature"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJIwCT4-yifDUR1E63iG76hr0",
+          "address": "37, Mugyo-ro, Jongno-gu, Seoul"
+        },
+        {
+          "name": "FourB, Gwanghwamun",
+          "type": "cafe",
+          "lat": 37.5706409,
+          "lng": 126.9786534,
+          "stay_minutes": 60,
+          "estimated_start_time": "11:40",
+          "estimated_end_time": "12:40",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: cafe.",
+          "source": "Google Places (live)",
+          "profile_cluster": "jongno_area",
+          "profile_roles": [
+            "cafe"
+          ],
+          "representative_score": null,
+          "google_place_id": null,
+          "address": "17 Jong-ro 3-gil, Jongno District"
+        },
+        {
+          "name": "Samcheong-dong (삼청동)",
+          "type": "street",
+          "lat": 37.57609593622847,
+          "lng": 126.9794121359672,
+          "stay_minutes": 90,
+          "estimated_start_time": "13:05",
+          "estimated_end_time": "14:35",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, culture, shopping.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jongno",
+          "profile_roles": [
+            "attraction",
+            "culture",
+            "shopping"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJN1S7ms6ifDURmgWoZo1wF4s",
+          "address": "Samcheong-ro, Jongno-gu, Seoul"
+        },
+        {
+          "name": "Sejong Village Food and Culture Alley (세종마을 음식문화거리)",
+          "type": "street",
+          "lat": 37.57655042647526,
+          "lng": 126.9721042244635,
+          "stay_minutes": 90,
+          "estimated_start_time": "15:00",
+          "estimated_end_time": "16:30",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, culture, shopping.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jongno",
+          "profile_roles": [
+            "attraction",
+            "culture",
+            "shopping"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJGZLaGg-jfDURMAEAPR27oKY",
+          "address": "54-2 Chebu-dong, Jongno-gu, Seoul, South Korea"
+        },
+        {
+          "name": "Insa-dong Culture Street (인사동 문화의거리)",
+          "type": "shopping",
+          "lat": 37.573659025106025,
+          "lng": 126.9861276309419,
+          "stay_minutes": 90,
+          "estimated_start_time": "16:55",
+          "estimated_end_time": "18:25",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, shopping.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "insadong",
+          "profile_roles": [
+            "attraction",
+            "shopping"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJe_DH-eeifDURH6NzBYr0d7I",
+          "address": "30-9 Gwanhun-dong, Jongno-gu, Seoul, South Korea"
+        },
+        {
+          "name": "Gwangjang Market Bindaetteok (광장시장 빈대떡)",
+          "type": "restaurant",
+          "lat": 37.57,
+          "lng": 126.9994,
+          "stay_minutes": 60,
+          "notes": "Famous Korean mung bean pancake stall in Gwangjang Market. Cash only. Queue expected.",
+          "source": "repair_meal_insert",
+          "estimated_start_time": "18:50",
+          "estimated_end_time": "19:50"
+        }
+      ],
+      "estimated_cost": "₩120,000 - ₩180,000",
+      "replanned": true,
+      "replan_target_area": "jongno_area",
+      "replan_reason": [
+        "dinner_missing"
+      ],
+      "repaired": true
+    },
+    {
+      "day": 4,
+      "theme": "Yongsan / Itaewon / Hannam · history",
+      "pois": [
+        {
+          "name": "Gyeongnidan-gil (경리단길)",
+          "type": "street",
+          "lat": 37.53873417103192,
+          "lng": 126.9880455602395,
+          "stay_minutes": 90,
+          "estimated_start_time": "10:00",
+          "estimated_end_time": "11:30",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, culture, shopping.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "itaewon",
+          "profile_roles": [
+            "attraction",
+            "culture",
+            "shopping"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJ2fWfL0yifDURKcf_oHT1GMo",
+          "address": "Hoehwa-ro area, Yongsan-gu, Seoul"
+        },
+        {
+          "name": "Korean Bistro Mr.Ahn's Makgeolli",
+          "type": "restaurant",
+          "lat": 37.5385806,
+          "lng": 126.9874086,
+          "stay_minutes": 60,
+          "estimated_start_time": "11:55",
+          "estimated_end_time": "12:55",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: meal.",
+          "source": "Google Places (live)",
+          "profile_cluster": "yongsan_itaewon_area",
+          "profile_roles": [
+            "meal"
+          ],
+          "representative_score": null,
+          "google_place_id": null,
+          "address": "3 Hoenamu-ro, Yongsan District"
+        },
+        {
+          "name": "Leeum Museum of Art (리움미술관)",
+          "type": "museum",
+          "lat": 37.5385627749698,
+          "lng": 126.99880648717829,
+          "stay_minutes": 90,
+          "estimated_start_time": "13:20",
+          "estimated_end_time": "14:50",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, culture, history.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "itaewon",
+          "profile_roles": [
+            "attraction",
+            "culture",
+            "history"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJU97c4xujfDURu6F4mICL7Ps",
+          "address": "60-16 Itaewon-ro 55-gil, Yongsan-gu, Seoul, South Korea"
+        },
+        {
+          "name": "Leeum, Samsung Museum of Art (삼성미술관 리움)",
+          "type": "museum",
+          "lat": 37.5385627749698,
+          "lng": 126.99880648717829,
+          "stay_minutes": 90,
+          "estimated_start_time": "15:15",
+          "estimated_end_time": "16:45",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, culture, history.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "itaewon",
+          "profile_roles": [
+            "attraction",
+            "culture",
+            "history"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJU97c4xujfDURu6F4mICL7Ps",
+          "address": "60-16, Itaewon-ro 55-gil, Yongsan-gu, Seoul (Hannam-dong)"
+        },
+        {
+          "name": "Seoul Central Mosque (한국이슬람교 서울중앙성원)",
+          "type": "tourist_spot",
+          "lat": 37.533279844656086,
+          "lng": 126.99729798821504,
+          "stay_minutes": 60,
+          "estimated_start_time": "17:10",
+          "estimated_end_time": "18:10",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "itaewon",
+          "profile_roles": [
+            "attraction"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJz9jnMbWjfDURJAyB1SumwgI",
+          "address": "39, Usadan-ro 10-gil, Yongsan-gu, Seoul"
+        },
+        {
+          "name": "Itaewon Global Food Street (이태원 세계음식거리)",
+          "type": "restaurant",
+          "lat": 37.5347,
+          "lng": 126.9946,
+          "stay_minutes": 60,
+          "notes": "International cuisine street in Itaewon. Halal, vegetarian, and diverse options available.",
+          "source": "repair_meal_insert",
+          "estimated_start_time": "18:35",
+          "estimated_end_time": "19:35"
+        }
+      ],
+      "estimated_cost": "₩100,000 - ₩150,000",
+      "replanned": true,
+      "replan_target_area": "yongsan_itaewon_area",
+      "replan_reason": [
+        "dinner_missing"
+      ],
+      "repaired": true
+    },
+    {
+      "day": 5,
+      "theme": "Jamsil · family",
+      "pois": [
+        {
+          "name": "Lotte World Adventure (롯데월드 어드벤처)",
+          "type": "tourist_spot",
+          "lat": 37.511481833760485,
+          "lng": 127.09822412562512,
+          "stay_minutes": 60,
+          "estimated_start_time": "10:00",
+          "estimated_end_time": "11:00",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jamsil",
+          "profile_roles": [
+            "attraction"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJgf4OJaelfDURmDvA_sHyPUM",
+          "address": "240 Olympic-ro, Songpa-gu, Seoul"
+        },
+        {
+          "name": "스테프핫도그 롯데월드점",
+          "type": "restaurant",
+          "lat": 37.511377,
+          "lng": 127.0979038,
+          "stay_minutes": 60,
+          "estimated_start_time": "11:30",
+          "estimated_end_time": "12:30",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: meal.",
+          "source": "Google Places (live)",
+          "profile_cluster": "jamsil",
+          "profile_roles": [
+            "meal"
+          ],
+          "representative_score": null,
+          "google_place_id": null,
+          "address": "40-1 Jamsil-dong, Songpa District"
+        },
+        {
+          "name": "Lotte World (롯데월드)",
+          "type": "tourist_spot",
+          "lat": 37.511481833760485,
+          "lng": 127.09822412562512,
+          "stay_minutes": 60,
+          "estimated_start_time": "12:55",
+          "estimated_end_time": "13:55",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jamsil",
+          "profile_roles": [
+            "attraction"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJgf4OJaelfDURmDvA_sHyPUM",
+          "address": "240 Olympic-ro, Songpa-gu, Seoul"
+        },
+        {
+          "name": "Lotte World Mall (롯데월드몰)",
+          "type": "shopping",
+          "lat": 37.5128360692718,
+          "lng": 127.10171181481532,
+          "stay_minutes": 90,
+          "estimated_start_time": "14:20",
+          "estimated_end_time": "15:50",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, shopping.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jamsil",
+          "profile_roles": [
+            "attraction",
+            "shopping"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJESJ9VqalfDUR9NRANup1KT8",
+          "address": "300 Olympic-ro, Songpa-gu, Seoul"
+        },
+        {
+          "name": "Songnidan-gil Street (송리단길)",
+          "type": "street",
+          "lat": 37.509085675259655,
+          "lng": 127.10821886182912,
+          "stay_minutes": 90,
+          "estimated_start_time": "16:15",
+          "estimated_end_time": "17:45",
+          "notes": "area profile 기반으로 선택된 권역 적합 후보입니다. 역할: attraction, culture, shopping.",
+          "source": "area_profiles_v2_replanner_v3_1",
+          "profile_cluster": "jamsil",
+          "profile_roles": [
+            "attraction",
+            "culture",
+            "shopping"
+          ],
+          "representative_score": 0.966,
+          "google_place_id": "ChIJh30xZTilfDURQpMuod4ElEA",
+          "address": "Baekjegobun-ro 43-gil, Songpa-gu, Seoul, and surrounding areas"
+        },
+        {
+          "name": "Songpa Budaejjigae (송파 부대찌개)",
+          "type": "restaurant",
+          "lat": 37.5133,
+          "lng": 127.1028,
+          "stay_minutes": 60,
+          "notes": "Korean army stew restaurant near Lotte World. Good for groups. English menu available.",
+          "source": "repair_meal_insert",
+          "estimated_start_time": "18:10",
+          "estimated_end_time": "19:10"
+        }
+      ],
+      "estimated_cost": "₩150,000 - ₩250,000",
+      "replanned": true,
+      "replan_target_area": "jamsil",
+      "replan_reason": [
+        "dinner_missing"
+      ],
+      "repaired": true
+    }
+  ],
+  "sources": [
+    {
+      "course_id": "VS_MVP_038_DAY3",
+      "course_title": "If you are a Hallyu star fan",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouareaHallyustarfan/ENN036208"
+    },
+    {
+      "course_id": "VK_THEME_041",
+      "course_title": "Pet-friendly: Top 3 Places to Travel with your Dog in Seoul",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=430003"
+    },
+    {
+      "course_id": "VK_THEME_046",
+      "course_title": "Enjoy Yongsan, Seoul's up-and-coming attraction",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=257"
+    }
+  ],
+  "supplement_restaurants": [
+    {
+      "poi_name": "Coffee Lab Keopilaeb Mapo",
+      "poi_type": "cafe",
+      "address_en": "14 Wausan-ro 29-gil, Mapo-gu",
+      "address_ko": "14 Wausan-ro 29-gil, Mapo-gu",
+      "lat": 37.5549302,
+      "lng": 126.9292214,
+      "rating": 4.5,
+      "user_ratings_total": 417,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJZ04VusGYfDURiDNDSmx2Yio",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "Millo Coffee Roasters",
+      "poi_type": "cafe",
+      "address_en": "36 Yanghwa-ro 18an-gil, Mapo-gu",
+      "address_ko": "36 Yanghwa-ro 18an-gil, Mapo-gu",
+      "lat": 37.5570351,
+      "lng": 126.9266137,
+      "rating": 4.5,
+      "user_ratings_total": 362,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJRVybBcKYfDUR3iL_rB6sGlY",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "Kaldi Coffee",
+      "poi_type": "cafe",
+      "address_en": "54 Wausan-ro 29-gil, Mapo-gu",
+      "address_ko": "54 Wausan-ro 29-gil, Mapo-gu",
+      "lat": 37.5559661,
+      "lng": 126.9272727,
+      "rating": 4.4,
+      "user_ratings_total": 318,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJp8iAisGYfDUR6YflmqBV-qY",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "Godabang Hongdae",
+      "poi_type": "cafe",
+      "address_en": "21 Hongik-ro 6-gil, Mapo-gu",
+      "address_ko": "21 Hongik-ro 6-gil, Mapo-gu",
+      "lat": 37.55549060000001,
+      "lng": 126.9228699,
+      "rating": 4.2,
+      "user_ratings_total": 311,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJGYbUOMOYfDUReT5eZpJZGqo",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "延南サロン",
+      "poi_type": "cafe",
+      "address_en": "122-1 Seongmisan-ro, Mapo-gu",
+      "address_ko": "122-1 Seongmisan-ro, Mapo-gu",
+      "lat": 37.5626245,
+      "lng": 126.9204989,
+      "rating": 4.2,
+      "user_ratings_total": 217,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJv4u2zOeYfDURXFXEChgGwaI",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "Hongs Zzuggumi",
+      "poi_type": "restaurant",
+      "address_en": "146 Eoulmadang-ro, Mapo-gu",
+      "address_ko": "146 Eoulmadang-ro, Mapo-gu",
+      "lat": 37.556165,
+      "lng": 126.9260901,
+      "rating": 4.7,
+      "user_ratings_total": 3815,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJTSTTPsKYfDURQ4cGTxvri70",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "GangGang Sul Lai",
+      "poi_type": "restaurant",
+      "address_en": "25 Jandari-ro 6-gil, Mapo-gu",
+      "address_ko": "25 Jandari-ro 6-gil, Mapo-gu",
+      "lat": 37.55239879999999,
+      "lng": 126.9206436,
+      "rating": 4.4,
+      "user_ratings_total": 512,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJId9859qYfDURTzrl3UtuLow",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "Shanti Restaurant (Hongdae)",
+      "poi_type": "restaurant",
+      "address_en": "2층, 70 Wausan-ro 27-gil, Mapo-gu",
+      "address_ko": "2층, 70 Wausan-ro 27-gil, Mapo-gu",
+      "lat": 37.5554666,
+      "lng": 126.9249992,
+      "rating": 4.4,
+      "user_ratings_total": 207,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJTSSbhMSYfDURr-eLNimivaA",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "오시리야",
+      "poi_type": "restaurant",
+      "address_en": "1층오시리야, 186-22 Donggyo-dong, Mapo-gu",
+      "address_ko": "1층오시리야, 186-22 Donggyo-dong, Mapo-gu",
+      "lat": 37.5548153,
+      "lng": 126.9324599,
+      "rating": 4.4,
+      "user_ratings_total": 127,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJdb6-FcCYfDURAuoXHB9XZhE",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "Pizza School Mapo Branch",
+      "poi_type": "restaurant",
+      "address_en": "48 Seogang-ro 9-gil, Mapo-gu",
+      "address_ko": "48 Seogang-ro 9-gil, Mapo-gu",
+      "lat": 37.5542603,
+      "lng": 126.9311556,
+      "rating": 4.3,
+      "user_ratings_total": 119,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJj5daQsCYfDURWN5st0ySdF4",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "hongdae"
+    },
+    {
+      "poi_name": "Cafe Onion Seongsu",
+      "poi_type": "cafe",
+      "address_en": "8 Achasan-ro 9-gil, Seongdong-gu",
+      "address_ko": "8 Achasan-ro 9-gil, Seongdong-gu",
+      "lat": 37.5447328,
+      "lng": 127.0582091,
+      "rating": 4.2,
+      "user_ratings_total": 3417,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJHb1ypJWkfDURb2d4XCjLluM",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Daelim Changgo",
+      "poi_type": "cafe",
+      "address_en": "78 Seongsui-ro, Seongdong-gu",
+      "address_ko": "78 Seongsui-ro, Seongdong-gu",
+      "lat": 37.5418384,
+      "lng": 127.0564636,
+      "rating": 4.2,
+      "user_ratings_total": 2804,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJi_M445OkfDURBV_ePY2qCHo",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Room Escape Cafe SOLVER (Solver)",
+      "poi_type": "cafe",
+      "address_en": "아차산로 201 지하 1층, Gwangjin District",
+      "address_ko": "아차산로 201 지하 1층, Gwangjin District",
+      "lat": 37.541714,
+      "lng": 127.066009,
+      "rating": 4.5,
+      "user_ratings_total": 187,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJnZoBMeqkfDURFwT9iuywsrQ",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Peer Coffee",
+      "poi_type": "cafe",
+      "address_en": "1층, 24 Gwangnaru-ro 4ga-gil, Seongdong-gu",
+      "address_ko": "1층, 24 Gwangnaru-ro 4ga-gil, Seongdong-gu",
+      "lat": 37.5489186,
+      "lng": 127.0548742,
+      "rating": 4.5,
+      "user_ratings_total": 152,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJV-gBk7OjfDURCOFwVQRXgqk",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Lang Study Cafe",
+      "poi_type": "cafe",
+      "address_en": "26 Achasan-ro 34-gil, 자양제4동, Gwangjin District",
+      "address_ko": "26 Achasan-ro 34-gil, 자양제4동, Gwangjin District",
+      "lat": 37.53902509999999,
+      "lng": 127.0691292,
+      "rating": 4.3,
+      "user_ratings_total": 115,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJ-4KiGOmkfDUR1QleOgcOn9o",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "촬댄양꼬치",
+      "poi_type": "restaurant",
+      "address_en": "573-1 Majang-dong, Seongdong-gu",
+      "address_ko": "573-1 Majang-dong, Seongdong-gu",
+      "lat": 37.56662949999999,
+      "lng": 127.0362234,
+      "rating": 4.4,
+      "user_ratings_total": 100,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJT6s551ajfDURLr0SC8t48Zs",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Bongchu Jjimdak",
+      "poi_type": "restaurant",
+      "address_en": "20-5 Seolleung-ro 157-gil, Gangnam District",
+      "address_ko": "20-5 Seolleung-ro 157-gil, Gangnam District",
+      "lat": 37.5265368,
+      "lng": 127.0382171,
+      "rating": 4.4,
+      "user_ratings_total": 135,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJT7cD24ejfDURiZyRRVk6hUo",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Outback Steakhouse Konkuk Star City",
+      "poi_type": "restaurant",
+      "address_en": "2층, 롯데백화점) 스타시티몰 스타존, 92 Neungdong-ro, Jayang-dong, Gwangjin District, 서울시",
+      "address_ko": "2층, 롯데백화점) 스타시티몰 스타존, 92 Neungdong-ro, Jayang-dong, Gwangjin District, 서울시",
+      "lat": 37.538557,
+      "lng": 127.0729616,
+      "rating": 4.1,
+      "user_ratings_total": 904,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJv3J1p9ukfDURvP24ggfcl14",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "이항아삼겹살",
+      "poi_type": "restaurant",
+      "address_en": "119-5 화양동, Gwangjin District",
+      "address_ko": "119-5 화양동, Gwangjin District",
+      "lat": 37.5474777,
+      "lng": 127.0706024,
+      "rating": 4,
+      "user_ratings_total": 146,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJs6dplMSkfDURW-XD4eAMnMs",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Hanilkwan Apgujeong",
+      "poi_type": "restaurant",
+      "address_en": "14 Apgujeong-ro, Gangnam District",
+      "address_ko": "14 Apgujeong-ro, Gangnam District",
+      "lat": 37.5277582,
+      "lng": 127.032479,
+      "rating": 4,
+      "user_ratings_total": 1709,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJkUSoe4-jfDURujr_bknv6iE",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Pizza School yongdap points",
+      "poi_type": "restaurant",
+      "address_en": "61-6 용답동, Seongdong-gu",
+      "address_ko": "61-6 용답동, Seongdong-gu",
+      "lat": 37.5647222,
+      "lng": 127.0538889,
+      "rating": 4,
+      "user_ratings_total": 140,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJ6bQ6G7OkfDURBqNxBmGp3JQ",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "주먹구구",
+      "poi_type": "restaurant",
+      "address_en": "South Korea",
+      "address_ko": "South Korea",
+      "lat": 37.5469318,
+      "lng": 127.074404,
+      "rating": 4,
+      "user_ratings_total": 74,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJu1GbBdukfDURMlluTokoWsQ",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "seongsu"
+    },
+    {
+      "poi_name": "Starbucks Ima Building",
+      "poi_type": "cafe",
+      "address_en": "42 Jong-ro 1-gil, Jongno District",
+      "address_ko": "42 Jong-ro 1-gil, Jongno District",
+      "lat": 37.5738013,
+      "lng": 126.978811,
+      "rating": 4.2,
+      "user_ratings_total": 596,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJ40SqROqifDURpEwBPFWBuF0",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Starbucks",
+      "poi_type": "cafe",
+      "address_en": "4 Sajik-ro 8-gil, Jongno District",
+      "address_ko": "4 Sajik-ro 8-gil, Jongno District",
+      "lat": 37.5748676,
+      "lng": 126.969321,
+      "rating": 4.2,
+      "user_ratings_total": 230,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJsXjnvZaifDURyj1TUKkoJhU",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "다동커피집",
+      "poi_type": "cafe",
+      "address_en": "24-8 Dadong-gil, Jung District",
+      "address_ko": "24-8 Dadong-gil, Jung District",
+      "lat": 37.5673387,
+      "lng": 126.9806302,
+      "rating": 4.2,
+      "user_ratings_total": 119,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJczT11O2ifDURLQYkK5wOu7Q",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Ogawa",
+      "poi_type": "restaurant",
+      "address_en": "1층, 19 지하 Saemunan-ro 5-gil, Jongno District",
+      "address_ko": "1층, 19 지하 Saemunan-ro 5-gil, Jongno District",
+      "lat": 37.5719813,
+      "lng": 126.9740918,
+      "rating": 4.4,
+      "user_ratings_total": 705,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJDZZ2XZOifDURMG141DzjvOs",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "The Restaurant",
+      "poi_type": "restaurant",
+      "address_en": "54 Samcheong-ro, Jongno District",
+      "address_ko": "54 Samcheong-ro, Jongno District",
+      "lat": 37.5808101,
+      "lng": 126.9803885,
+      "rating": 4.3,
+      "user_ratings_total": 205,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJG9IJmcaifDURfdO3wPGYBYc",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Candle 1978",
+      "poi_type": "restaurant",
+      "address_en": "95 Sopa-ro, Jung District",
+      "address_ko": "95 Sopa-ro, Jung District",
+      "lat": 37.556797,
+      "lng": 126.985328,
+      "rating": 4.2,
+      "user_ratings_total": 749,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJp9VynveifDURO2--INmo4Ho",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "The Spoon",
+      "poi_type": "restaurant",
+      "address_en": "61-1 Migeun-dong, Seodaemun-gu",
+      "address_ko": "61-1 Migeun-dong, Seodaemun-gu",
+      "lat": 37.5625073,
+      "lng": 126.9665819,
+      "rating": 4.1,
+      "user_ratings_total": 91,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJ7bKnOIiifDURVkqxTJFicrY",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Mokkoji",
+      "poi_type": "restaurant",
+      "address_en": "1층, 120-19 지하 Seosomun-dong, Jung District",
+      "address_ko": "1층, 120-19 지하 Seosomun-dong, Jung District",
+      "lat": 37.5618686,
+      "lng": 126.9733868,
+      "rating": 4.1,
+      "user_ratings_total": 57,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJufoOD4uifDUR2RDNop-e7wo",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Goryeo Samgyetang Gwanghwamun",
+      "poi_type": "restaurant",
+      "address_en": "5-1 Sejong-daero 23-gil, Jongno District",
+      "address_ko": "5-1 Sejong-daero 23-gil, Jongno District",
+      "lat": 37.5714453,
+      "lng": 126.9760906,
+      "rating": 4.1,
+      "user_ratings_total": 556,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJx_XVruyifDURWSy_wj7OHy0",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "남산의 사계절",
+      "poi_type": "restaurant",
+      "address_en": "54 Toegye-ro 8-gil, Jung District",
+      "address_ko": "54 Toegye-ro 8-gil, Jung District",
+      "lat": 37.5570313,
+      "lng": 126.979599,
+      "rating": 4,
+      "user_ratings_total": 327,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJF34jjfWifDURqxMfRRb8X_Q",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Sogong-dong Ttukbaegijip Main Branch",
+      "poi_type": "restaurant",
+      "address_en": "18 Seosomun-ro 11-gil, Jung District",
+      "address_ko": "18 Seosomun-ro 11-gil, Jung District",
+      "lat": 37.56364649999999,
+      "lng": 126.9730089,
+      "rating": 4,
+      "user_ratings_total": 137,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJPRsggIyifDURjq17muz317g",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Din Tai Fung Myeongdong",
+      "poi_type": "restaurant",
+      "address_en": "2층 딘타이펑, 호텔28, 13 Myeongdong 7-gil, Jung District",
+      "address_ko": "2층 딘타이펑, 호텔28, 13 Myeongdong 7-gil, Jung District",
+      "lat": 37.5643649,
+      "lng": 126.9839488,
+      "rating": 3.9,
+      "user_ratings_total": 1936,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJZfqyTvCifDURj0A4kmAEV0E",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "jongno"
+    },
+    {
+      "poi_name": "Passion5",
+      "poi_type": "cafe",
+      "address_en": "272 Itaewon-ro, Yongsan District",
+      "address_ko": "272 Itaewon-ro, Yongsan District",
+      "lat": 37.5386494,
+      "lng": 127.0020823,
+      "rating": 4.2,
+      "user_ratings_total": 2783,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJrVB4ELKjfDUREVBLci4IOAw",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "itaewon"
+    },
+    {
+      "poi_name": "Starbucks Dongbinggo",
+      "poi_type": "cafe",
+      "address_en": "12 Jangmun-ro, Yongsan District",
+      "address_ko": "12 Jangmun-ro, Yongsan District",
+      "lat": 37.5289471,
+      "lng": 126.9917838,
+      "rating": 4.2,
+      "user_ratings_total": 937,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJbZsk_jOifDURMpqal2_w3XQ",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "itaewon"
+    },
+    {
+      "poi_name": "Champ Coffee 2nd Workroom",
+      "poi_type": "cafe",
+      "address_en": "24 Noksapyeong-daero 26ga-gil, Yongsan District",
+      "address_ko": "24 Noksapyeong-daero 26ga-gil, Yongsan District",
+      "lat": 37.5324979,
+      "lng": 126.9928235,
+      "rating": 4.4,
+      "user_ratings_total": 565,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJbws5L0yifDURFxLV5w3xrrE",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "itaewon"
+    },
+    {
+      "poi_name": "Ediya Coffee IBK Customer Center",
+      "poi_type": "cafe",
+      "address_en": "72 Hannam-daero, Yongsan District",
+      "address_ko": "72 Hannam-daero, Yongsan District",
+      "lat": 37.53502239999999,
+      "lng": 127.0070392,
+      "rating": 4.3,
+      "user_ratings_total": 211,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJVw1HiLCjfDURzDtFs5HbJyc",
+      "estimated_stay_time": 45,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "itaewon"
+    },
+    {
+      "poi_name": "Troika",
+      "poi_type": "restaurant",
+      "address_en": "164-1 Itaewon-ro, Yongsan District",
+      "address_ko": "164-1 Itaewon-ro, Yongsan District",
+      "lat": 37.5340263,
+      "lng": 126.9923227,
+      "rating": 4.5,
+      "user_ratings_total": 887,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJrZsNPUqifDURLRQUFdXvLJQ",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "itaewon"
+    },
+    {
+      "poi_name": "Maguro Sen",
+      "poi_type": "restaurant",
+      "address_en": "24 Daesagwan-ro 31-gil, Yongsan District",
+      "address_ko": "24 Daesagwan-ro 31-gil, Yongsan District",
+      "lat": 37.5342722,
+      "lng": 127.0059806,
+      "rating": 4.4,
+      "user_ratings_total": 527,
+      "opening_hours": {
+        "open_now": false
+      },
+      "place_id": "ChIJsbJ8wrCjfDUR6V7YS89llXQ",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "itaewon"
+    },
+    {
+      "poi_name": "Taco Amigo",
+      "poi_type": "restaurant",
+      "address_en": "13 Hoenamu-ro, Yongsan District",
+      "address_ko": "13 Hoenamu-ro, Yongsan District",
+      "lat": 37.53884,
+      "lng": 126.98825,
+      "rating": 4.3,
+      "user_ratings_total": 695,
+      "opening_hours": {
+        "open_now": true
+      },
+      "place_id": "ChIJaUNnZEqifDURDHPzYZnM1fE",
+      "estimated_stay_time": 60,
+      "source": "Google Places",
+      "dietary_safe": true,
+      "area_hint": "itaewon"
+    }
+  ],
+  "repair_log": [
+    {
+      "action_type": "rebuild_day",
+      "day": 3,
+      "status": "accepted",
+      "reason": "structural issue가 남아 area profile representative 기반으로 day 전체를 재구성",
+      "before": [
+        "Hanbok Rental",
+        "Samcheong-dong (삼청동)",
+        "Hanbok Rental (한복대여)",
+        "The Restaurant",
+        "Samcheong-dong",
+        "Starbucks Ima Building",
+        "광장시장 (Gwangjang Market)"
+      ],
+      "after": [
+        "Cheonggyecheon Stream (청계천)",
+        "FourB, Gwanghwamun",
+        "Samcheong-dong (삼청동)",
+        "Sejong Village Food and Culture Alley (세종마을 음식문화거리)",
+        "Insa-dong Culture Street (인사동 문화의거리)"
+      ],
+      "target_area": "jongno_area",
+      "evidence": [
+        "area=jongno_area, purpose=history",
+        "raw_representatives=14, representatives=12, attractions=36, meals=14, cafes=13",
+        "first_anchor=Cheonggyecheon Stream (청계천)",
+        "google_live=5개 (dietary=none)",
+        "lunch_candidate=FourB, Gwanghwamun (Google Places live, 0.1km)",
+        "selected=['Cheonggyecheon Stream (청계천)', 'FourB, Gwanghwamun', 'Samcheong-dong (삼청동)', 'Sejong Village Food and Culture Alley (세종마을 음식문화거리)', 'Insa-dong Culture Street (인사동 문화의거리)']"
+      ]
+    },
+    {
+      "action_type": "rebuild_day",
+      "day": 4,
+      "status": "accepted",
+      "reason": "structural issue가 남아 area profile representative 기반으로 day 전체를 재구성",
+      "before": [
+        "National Museum of Korea",
+        "National Hangeul Museum",
+        "Yongsan Family Park",
+        "Taco Amigo",
+        "Amorepacific Museum of Art",
+        "Passion5",
+        "Troika"
+      ],
+      "after": [
+        "Gyeongnidan-gil (경리단길)",
+        "Korean Bistro Mr.Ahn's Makgeolli",
+        "Leeum Museum of Art (리움미술관)",
+        "Leeum, Samsung Museum of Art (삼성미술관 리움)",
+        "Seoul Central Mosque (한국이슬람교 서울중앙성원)"
+      ],
+      "target_area": "yongsan_itaewon_area",
+      "evidence": [
+        "area=yongsan_itaewon_area, purpose=history",
+        "raw_representatives=15, representatives=14, attractions=27, meals=8, cafes=13",
+        "first_anchor=Gyeongnidan-gil (경리단길)",
+        "google_live=8개 (dietary=none)",
+        "lunch_candidate=Korean Bistro Mr.Ahn's Makgeolli (Google Places live, 0.1km)",
+        "selected=['Gyeongnidan-gil (경리단길)', \"Korean Bistro Mr.Ahn's Makgeolli\", 'Leeum Museum of Art (리움미술관)', 'Leeum, Samsung Museum of Art (삼성미술관 리움)', 'Seoul Central Mosque (한국이슬람교 서울중앙성원)']"
+      ]
+    },
+    {
+      "action_type": "rebuild_day",
+      "day": 5,
+      "status": "accepted",
+      "reason": "structural issue가 남아 area profile representative 기반으로 day 전체를 재구성",
+      "before": [
+        "Songpa Naru Park (Seokchonhosu Lake) (송파나루공원 (석촌호수))",
+        "Seokchon Lake",
+        "Outback Steakhouse Konkuk Star City",
+        "Saemaeul Market (새마을시장)",
+        "Soma Museum of Art",
+        "Saemaeul Market"
+      ],
+      "after": [
+        "Lotte World Adventure (롯데월드 어드벤처)",
+        "스테프핫도그 롯데월드점",
+        "Lotte World (롯데월드)",
+        "Lotte World Mall (롯데월드몰)",
+        "Songnidan-gil Street (송리단길)"
+      ],
+      "target_area": "jamsil",
+      "evidence": [
+        "area=jamsil, purpose=family",
+        "raw_representatives=12, representatives=11, attractions=14, meals=5, cafes=11",
+        "first_anchor=Lotte World Adventure (롯데월드 어드벤처)",
+        "google_live=6개 (dietary=none)",
+        "lunch_candidate=스테프핫도그 롯데월드점 (Google Places live, 0.0km)",
+        "selected=['Lotte World Adventure (롯데월드 어드벤처)', '스테프핫도그 롯데월드점', 'Lotte World (롯데월드)', 'Lotte World Mall (롯데월드몰)', 'Songnidan-gil Street (송리단길)']"
+      ]
+    },
+    {
+      "action_type": "rebuild_day",
+      "day": 3,
+      "status": "accepted",
+      "reason": "structural issue가 남아 area profile representative 기반으로 day 전체를 재구성",
+      "before": [
+        "Cheonggyecheon Stream (청계천)",
+        "FourB, Gwanghwamun",
+        "Samcheong-dong (삼청동)",
+        "Sejong Village Food and Culture Alley (세종마을 음식문화거리)",
+        "Insa-dong Culture Street (인사동 문화의거리)"
+      ],
+      "after": [
+        "Cheonggyecheon Stream (청계천)",
+        "FourB, Gwanghwamun",
+        "Samcheong-dong (삼청동)",
+        "Sejong Village Food and Culture Alley (세종마을 음식문화거리)",
+        "Insa-dong Culture Street (인사동 문화의거리)"
+      ],
+      "target_area": "jongno_area",
+      "evidence": [
+        "area=jongno_area, purpose=history",
+        "raw_representatives=14, representatives=12, attractions=36, meals=14, cafes=13",
+        "first_anchor=Cheonggyecheon Stream (청계천)",
+        "google_live=5개 (dietary=none)",
+        "lunch_candidate=FourB, Gwanghwamun (Google Places live, 0.1km)",
+        "selected=['Cheonggyecheon Stream (청계천)', 'FourB, Gwanghwamun', 'Samcheong-dong (삼청동)', 'Sejong Village Food and Culture Alley (세종마을 음식문화거리)', 'Insa-dong Culture Street (인사동 문화의거리)']"
+      ]
+    },
+    {
+      "action_type": "rebuild_day",
+      "day": 4,
+      "status": "accepted",
+      "reason": "structural issue가 남아 area profile representative 기반으로 day 전체를 재구성",
+      "before": [
+        "Gyeongnidan-gil (경리단길)",
+        "Korean Bistro Mr.Ahn's Makgeolli",
+        "Leeum Museum of Art (리움미술관)",
+        "Leeum, Samsung Museum of Art (삼성미술관 리움)",
+        "Seoul Central Mosque (한국이슬람교 서울중앙성원)"
+      ],
+      "after": [
+        "Gyeongnidan-gil (경리단길)",
+        "Korean Bistro Mr.Ahn's Makgeolli",
+        "Leeum Museum of Art (리움미술관)",
+        "Leeum, Samsung Museum of Art (삼성미술관 리움)",
+        "Seoul Central Mosque (한국이슬람교 서울중앙성원)"
+      ],
+      "target_area": "yongsan_itaewon_area",
+      "evidence": [
+        "area=yongsan_itaewon_area, purpose=history",
+        "raw_representatives=15, representatives=14, attractions=27, meals=8, cafes=13",
+        "first_anchor=Gyeongnidan-gil (경리단길)",
+        "google_live=8개 (dietary=none)",
+        "lunch_candidate=Korean Bistro Mr.Ahn's Makgeolli (Google Places live, 0.1km)",
+        "selected=['Gyeongnidan-gil (경리단길)', \"Korean Bistro Mr.Ahn's Makgeolli\", 'Leeum Museum of Art (리움미술관)', 'Leeum, Samsung Museum of Art (삼성미술관 리움)', 'Seoul Central Mosque (한국이슬람교 서울중앙성원)']"
+      ]
+    },
+    {
+      "action_type": "rebuild_day",
+      "day": 5,
+      "status": "accepted",
+      "reason": "structural issue가 남아 area profile representative 기반으로 day 전체를 재구성",
+      "before": [
+        "Lotte World Adventure (롯데월드 어드벤처)",
+        "스테프핫도그 롯데월드점",
+        "Lotte World (롯데월드)",
+        "Lotte World Mall (롯데월드몰)",
+        "Songnidan-gil Street (송리단길)"
+      ],
+      "after": [
+        "Lotte World Adventure (롯데월드 어드벤처)",
+        "스테프핫도그 롯데월드점",
+        "Lotte World (롯데월드)",
+        "Lotte World Mall (롯데월드몰)",
+        "Songnidan-gil Street (송리단길)"
+      ],
+      "target_area": "jamsil",
+      "evidence": [
+        "area=jamsil, purpose=family",
+        "raw_representatives=12, representatives=11, attractions=14, meals=5, cafes=11",
+        "first_anchor=Lotte World Adventure (롯데월드 어드벤처)",
+        "google_live=6개 (dietary=none)",
+        "lunch_candidate=스테프핫도그 롯데월드점 (Google Places live, 0.0km)",
+        "selected=['Lotte World Adventure (롯데월드 어드벤처)', '스테프핫도그 롯데월드점', 'Lotte World (롯데월드)', 'Lotte World Mall (롯데월드몰)', 'Songnidan-gil Street (송리단길)']"
+      ]
+    },
+    {
+      "action_type": "repair_insert_meal",
+      "day": 3,
+      "poi_index": null,
+      "issue_type": "dinner_missing",
+      "status": "applied",
+      "description": "Day 3 dinner 슬롯에 Gwangjang Market Bindaetteok (광장시장 빈대떡) 삽입",
+      "before": null,
+      "after": "Gwangjang Market Bindaetteok (광장시장 빈대떡)",
+      "evidence": [
+        "meal_slot=17:00-20:00",
+        "target_area=jongno_area",
+        "inserted=Gwangjang Market Bindaetteok (광장시장 빈대떡)"
+      ]
+    },
+    {
+      "action_type": "repair_insert_meal",
+      "day": 4,
+      "poi_index": null,
+      "issue_type": "dinner_missing",
+      "status": "applied",
+      "description": "Day 4 dinner 슬롯에 Itaewon Global Food Street (이태원 세계음식거리) 삽입",
+      "before": null,
+      "after": "Itaewon Global Food Street (이태원 세계음식거리)",
+      "evidence": [
+        "meal_slot=17:00-20:00",
+        "target_area=yongsan_itaewon_area",
+        "inserted=Itaewon Global Food Street (이태원 세계음식거리)"
+      ]
+    },
+    {
+      "action_type": "repair_insert_meal",
+      "day": 5,
+      "poi_index": null,
+      "issue_type": "dinner_missing",
+      "status": "applied",
+      "description": "Day 5 dinner 슬롯에 Songpa Budaejjigae (송파 부대찌개) 삽입",
+      "before": null,
+      "after": "Songpa Budaejjigae (송파 부대찌개)",
+      "evidence": [
+        "meal_slot=17:00-20:00",
+        "target_area=jamsil",
+        "inserted=Songpa Budaejjigae (송파 부대찌개)"
+      ]
+    }
+  ],
+  "replanner_result": {
+    "changed": true,
+    "passed_to_critic": true,
+    "needs_replan": false,
+    "warnings": []
+  },
+  "repaired": true,
+  "pipeline_log": {
+    "cycles": [
+      {
+        "step": "initial_critic",
+        "result": {
+          "overall_score": 0.906,
+          "passed": false,
+          "needs_replan": true,
+          "needs_repair": true,
+          "days_needing_replan": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "days_needing_repair": [
+            4,
+            5
+          ],
+          "issue_count": 16,
+          "issues": [
+            {
+              "day": 1,
+              "type": "too_dense_day",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "complex_transfer",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 2,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 3,
+              "type": "off_theme_cluster_poi",
+              "severity": "medium"
+            },
+            {
+              "day": 3,
+              "type": "weak_representative_anchor",
+              "severity": "low"
+            },
+            {
+              "day": 4,
+              "type": "no_representative_anchor",
+              "severity": "medium"
+            },
+            {
+              "day": 4,
+              "type": "lunch_missing",
+              "severity": "medium"
+            },
+            {
+              "day": 4,
+              "type": "complex_transfer",
+              "severity": "low"
+            },
+            {
+              "day": 4,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 5,
+              "type": "no_representative_anchor",
+              "severity": "medium"
+            },
+            {
+              "day": 5,
+              "type": "dinner_missing",
+              "severity": "medium"
+            },
+            {
+              "day": 5,
+              "type": "complex_transfer",
+              "severity": "low"
+            },
+            {
+              "day": 5,
+              "type": "complex_transfer",
+              "severity": "low"
+            },
+            {
+              "day": 5,
+              "type": "complex_transfer",
+              "severity": "low"
+            },
+            {
+              "day": 5,
+              "type": "complex_transfer",
+              "severity": "low"
+            }
+          ]
+        }
+      },
+      {
+        "step": "replanner_1",
+        "result": {
+          "changed": true,
+          "actions": 3,
+          "warnings": []
+        }
+      },
+      {
+        "step": "critic_after_replan_1",
+        "result": {
+          "overall_score": 0.968,
+          "passed": false,
+          "needs_replan": true,
+          "needs_repair": true,
+          "days_needing_replan": [
+            1,
+            2
+          ],
+          "days_needing_repair": [
+            3,
+            4,
+            5
+          ],
+          "issue_count": 7,
+          "issues": [
+            {
+              "day": 1,
+              "type": "too_dense_day",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "complex_transfer",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 2,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 3,
+              "type": "dinner_missing",
+              "severity": "medium"
+            },
+            {
+              "day": 4,
+              "type": "dinner_missing",
+              "severity": "medium"
+            },
+            {
+              "day": 5,
+              "type": "dinner_missing",
+              "severity": "medium"
+            }
+          ]
+        }
+      },
+      {
+        "step": "replanner_2",
+        "result": {
+          "changed": true,
+          "actions": 3,
+          "warnings": []
+        }
+      },
+      {
+        "step": "critic_after_replan_2",
+        "result": {
+          "overall_score": 0.968,
+          "passed": false,
+          "needs_replan": true,
+          "needs_repair": true,
+          "days_needing_replan": [
+            1,
+            2
+          ],
+          "days_needing_repair": [
+            3,
+            4,
+            5
+          ],
+          "issue_count": 7,
+          "issues": [
+            {
+              "day": 1,
+              "type": "too_dense_day",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "complex_transfer",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 2,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 3,
+              "type": "dinner_missing",
+              "severity": "medium"
+            },
+            {
+              "day": 4,
+              "type": "dinner_missing",
+              "severity": "medium"
+            },
+            {
+              "day": 5,
+              "type": "dinner_missing",
+              "severity": "medium"
+            }
+          ]
+        }
+      },
+      {
+        "step": "repair_1",
+        "result": {
+          "changed": true,
+          "actions": [
+            {
+              "type": "repair_insert_meal",
+              "status": "applied",
+              "desc": "Day 3 dinner 슬롯에 Gwangjang Market Bindaetteok (광장시장 빈대떡) 삽입"
+            },
+            {
+              "type": "repair_insert_meal",
+              "status": "applied",
+              "desc": "Day 4 dinner 슬롯에 Itaewon Global Food Street (이태원 세계음식거리) 삽입"
+            },
+            {
+              "type": "repair_insert_meal",
+              "status": "applied",
+              "desc": "Day 5 dinner 슬롯에 Songpa Budaejjigae (송파 부대찌개) 삽입"
+            }
+          ]
+        }
+      },
+      {
+        "step": "critic_after_repair_1",
+        "result": {
+          "overall_score": 0.974,
+          "passed": false,
+          "needs_replan": true,
+          "needs_repair": false,
+          "days_needing_replan": [
+            1,
+            2,
+            3,
+            5
+          ],
+          "days_needing_repair": [],
+          "issue_count": 6,
+          "issues": [
+            {
+              "day": 1,
+              "type": "too_dense_day",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "complex_transfer",
+              "severity": "low"
+            },
+            {
+              "day": 1,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 2,
+              "type": "consecutive_meal_like_pois",
+              "severity": "low"
+            },
+            {
+              "day": 3,
+              "type": "off_theme_cluster_poi",
+              "severity": "medium"
+            },
+            {
+              "day": 5,
+              "type": "not_in_profile",
+              "severity": "medium"
+            }
+          ]
+        }
+      }
+    ],
+    "final_score": 0.974,
+    "final_passed": false,
+    "total_changes": 3,
+    "final_issues": [
+      {
+        "day": 1,
+        "type": "too_dense_day",
+        "severity": "low",
+        "description": "Day 1의 POI 수가 8개로 많아 일정이 과밀할 수 있습니다."
+      },
+      {
+        "day": 1,
+        "type": "complex_transfer",
+        "severity": "low",
+        "description": "Day 1의 Oil Tank Culture Park → Millo Coffee Roasters 이동거리가 3.3km로 길 수 있습니다."
+      },
+      {
+        "day": 1,
+        "type": "consecutive_meal_like_pois",
+        "severity": "low",
+        "description": "Day 1에 식사/카페/시장 성격의 POI가 연속 배치되어 흐름이 단조롭습니다."
+      },
+      {
+        "day": 2,
+        "type": "consecutive_meal_like_pois",
+        "severity": "low",
+        "description": "Day 2에 식사/카페/시장 성격의 POI가 연속 배치되어 흐름이 단조롭습니다."
+      },
+      {
+        "day": 3,
+        "type": "off_theme_cluster_poi",
+        "severity": "medium",
+        "description": "Day 3의 Gwangjang Market Bindaetteok (광장시장 빈대떡)은 day target area(jongno_area)와 다른 권역 (dongdaemun)의 POI입니다."
+      },
+      {
+        "day": 5,
+        "type": "not_in_profile",
+        "severity": "medium",
+        "description": "Songpa Budaejjigae (송파 부대찌개)은 area_profiles_v2 후보 pool에서 확인되지 않았습니다."
+      }
+    ]
+  }
+}

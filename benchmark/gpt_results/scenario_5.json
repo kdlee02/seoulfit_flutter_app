@@ -1,0 +1,225 @@
+{
+"summary": "A 5-day family-friendly Seoul itinerary covering traditional heritage, modern neighborhoods, shopping, parks, museums, and famous attractions across Hongdae, Jongno, Itaewon, Yongsan, Seongsu, and Jamsil.",
+"days": [
+{
+"day": 1,
+"theme": "Jongno traditional culture and royal history",
+"pois": [
+{
+"name": "Gyeongbokgung Palace (경복궁)",
+"type": "history",
+"lat": 37.5796,
+"lng": 126.9770,
+"stay_minutes": 120,
+"estimated_start_time": "09:30",
+"estimated_end_time": "11:30",
+"notes": "Explore Korea's grand royal palace, traditional architecture, and changing of the guard ceremony."
+},
+{
+"name": "Bukchon Hanok Village (북촌한옥마을)",
+"type": "history",
+"lat": 37.5826,
+"lng": 126.9830,
+"stay_minutes": 90,
+"estimated_start_time": "12:00",
+"estimated_end_time": "13:30",
+"notes": "Walk through a preserved traditional Korean village with beautiful hanok houses and scenic alleys."
+},
+{
+"name": "Insadong Street (인사동 거리)",
+"type": "street",
+"lat": 37.5743,
+"lng": 126.9849,
+"stay_minutes": 120,
+"estimated_start_time": "14:00",
+"estimated_end_time": "16:00",
+"notes": "Enjoy traditional tea houses, craft shops, souvenirs, and Korean cultural experiences."
+},
+{
+"name": "Ikseon-dong Hanok Street (익선동 한옥거리)",
+"type": "street",
+"lat": 37.5740,
+"lng": 126.9897,
+"stay_minutes": 90,
+"estimated_start_time": "16:30",
+"estimated_end_time": "18:00",
+"notes": "Experience a blend of historic hanok buildings, trendy cafes, and local restaurants."
+}
+]
+},
+{
+"day": 2,
+"theme": "Hongdae youth culture and Seongsu creative district",
+"pois": [
+{
+"name": "Hongdae Walking Street (홍대 걷고싶은거리)",
+"type": "street",
+"lat": 37.5563,
+"lng": 126.9220,
+"stay_minutes": 90,
+"estimated_start_time": "10:00",
+"estimated_end_time": "11:30",
+"notes": "Enjoy street performances, shopping, cafes, and the lively atmosphere around Hongik University."
+},
+{
+"name": "AK Plaza Hongdae (AK플라자 홍대)",
+"type": "shopping",
+"lat": 37.5573,
+"lng": 126.9258,
+"stay_minutes": 90,
+"estimated_start_time": "11:30",
+"estimated_end_time": "13:00",
+"notes": "Shop for fashion, character goods, cosmetics, and Korean lifestyle products."
+},
+{
+"name": "Seongsu Cafe Street (성수 카페거리)",
+"type": "street",
+"lat": 37.5448,
+"lng": 127.0568,
+"stay_minutes": 120,
+"estimated_start_time": "14:00",
+"estimated_end_time": "16:00",
+"notes": "Discover Seoul's trendy district featuring unique cafes, boutiques, and renovated industrial spaces."
+},
+{
+"name": "Seoul Forest (서울숲)",
+"type": "park",
+"lat": 37.5444,
+"lng": 127.0374,
+"stay_minutes": 90,
+"estimated_start_time": "16:30",
+"estimated_end_time": "18:00",
+"notes": "Relax with family in a large urban park with walking paths, gardens, and seasonal scenery."
+}
+]
+},
+{
+"day": 3,
+"theme": "Itaewon diversity and Yongsan cultural attractions",
+"pois": [
+{
+"name": "Itaewon Main Street (이태원 거리)",
+"type": "street",
+"lat": 37.5345,
+"lng": 126.9946,
+"stay_minutes": 90,
+"estimated_start_time": "10:00",
+"estimated_end_time": "11:30",
+"notes": "Explore an international neighborhood with diverse restaurants, cafes, and unique shops."
+},
+{
+"name": "Leeum Museum of Art (리움미술관)",
+"type": "museum",
+"lat": 37.5383,
+"lng": 126.9990,
+"stay_minutes": 120,
+"estimated_start_time": "12:00",
+"estimated_end_time": "14:00",
+"notes": "Discover Korean traditional art and contemporary masterpieces in a world-class museum."
+},
+{
+"name": "National Museum of Korea (국립중앙박물관)",
+"type": "museum",
+"lat": 37.5239,
+"lng": 126.9804,
+"stay_minutes": 150,
+"estimated_start_time": "14:30",
+"estimated_end_time": "17:00",
+"notes": "Learn about Korean history through extensive exhibitions, artifacts, and family-friendly galleries."
+},
+{
+"name": "Yongsan Family Park (용산가족공원)",
+"type": "park",
+"lat": 37.5227,
+"lng": 126.9785,
+"stay_minutes": 60,
+"estimated_start_time": "17:00",
+"estimated_end_time": "18:00",
+"notes": "Take a peaceful walk in a spacious park suitable for children and family relaxation."
+}
+]
+},
+{
+"day": 4,
+"theme": "Jamsil entertainment and family attractions",
+"pois": [
+{
+"name": "Lotte World Adventure (롯데월드 어드벤처)",
+"type": "tourist_spot",
+"lat": 37.5110,
+"lng": 127.0982,
+"stay_minutes": 240,
+"estimated_start_time": "10:00",
+"estimated_end_time": "14:00",
+"notes": "Spend a fun family day enjoying rides, performances, and indoor attractions at Seoul's famous theme park."
+},
+{
+"name": "Lotte World Mall (롯데월드몰)",
+"type": "shopping",
+"lat": 37.5131,
+"lng": 127.1048,
+"stay_minutes": 120,
+"estimated_start_time": "14:30",
+"estimated_end_time": "16:30",
+"notes": "Explore luxury shops, local brands, restaurants, and entertainment facilities."
+},
+{
+"name": "Seoul Sky (서울스카이)",
+"type": "tourist_spot",
+"lat": 37.5133,
+"lng": 127.1029,
+"stay_minutes": 90,
+"estimated_start_time": "17:00",
+"estimated_end_time": "18:30",
+"notes": "Enjoy spectacular panoramic views of Seoul from the observation deck inside Lotte World Tower."
+}
+]
+},
+{
+"day": 5,
+"theme": "Relaxed Seoul experience with shopping and local neighborhoods",
+"pois": [
+{
+"name": "Mangwon Market (망원시장)",
+"type": "restaurant",
+"lat": 37.5566,
+"lng": 126.9046,
+"stay_minutes": 90,
+"estimated_start_time": "10:00",
+"estimated_end_time": "11:30",
+"notes": "Try various Korean snacks and experience a local traditional market atmosphere."
+},
+{
+"name": "Yeonnam-dong Street (연남동 거리)",
+"type": "street",
+"lat": 37.5622,
+"lng": 126.9250,
+"stay_minutes": 120,
+"estimated_start_time": "12:00",
+"estimated_end_time": "14:00",
+"notes": "Walk through a charming neighborhood filled with cafes, small shops, and quiet residential alleys."
+},
+{
+"name": "Gyeongui Line Forest Park (경의선숲길)",
+"type": "park",
+"lat": 37.5585,
+"lng": 126.9254,
+"stay_minutes": 90,
+"estimated_start_time": "14:30",
+"estimated_end_time": "16:00",
+"notes": "Enjoy a relaxing stroll through an urban park connecting Hongdae and Yeonnam areas."
+},
+{
+"name": "Myeongdong Street (명동거리)",
+"type": "shopping",
+"lat": 37.5637,
+"lng": 126.9827,
+"stay_minutes": 120,
+"estimated_start_time": "16:30",
+"estimated_end_time": "18:30",
+"notes": "Finish the trip with Korean cosmetics, fashion shopping, and famous street food."
+}
+]
+}
+]
+}
