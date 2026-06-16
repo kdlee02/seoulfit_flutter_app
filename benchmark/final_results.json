@@ -1,0 +1,1811 @@
+{
+  "scenario_1": {
+    "gpt": {
+      "overall": 0.709,
+      "F": 0.681,
+      "ECS": 0.837,
+      "FG": 0.609,
+      "MC": {
+        "score": 1.0,
+        "missing": []
+      },
+      "TF": {
+        "score": 0.375,
+        "violations": [
+          {
+            "day": 1,
+            "from": "Daelim Changgo (대림",
+            "to": "Seongsu Cafe Stree",
+            "dist_km": 0.1,
+            "gap": 0,
+            "need": 10.0,
+            "score": 0.0
+          },
+          {
+            "day": 1,
+            "from": "Seongsu Cafe Stree",
+            "to": "Cafe Onion Seongsu",
+            "dist_km": 0.03,
+            "gap": 0,
+            "need": 10.0,
+            "score": 0.0
+          },
+          {
+            "day": 1,
+            "from": "Blue Bottle Coffee",
+            "to": "Seongsu Yeonbang (",
+            "dist_km": 0.25,
+            "gap": 0,
+            "need": 10.0,
+            "score": 0.0
+          }
+        ],
+        "tight": []
+      },
+      "OH": {
+        "score": 0.667,
+        "conflict": 1,
+        "unknown": 2
+      },
+      "RD": {
+        "score": 1,
+        "avg_km": 0.719
+      },
+      "VD": {
+        "score": 1.0
+      },
+      "SS": {
+        "score": 0.563
+      },
+      "CP": {
+        "score": 0.98,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 0.638,
+            "max_km": 1.711,
+            "score": 0.98
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.64,
+        "bad": [
+          "Day1:cafe→cafe",
+          "Day1:cafe→cafe"
+        ]
+      },
+      "LA": {
+        "score": 0.083,
+        "supported": 0,
+        "not_supported": 5,
+        "violations": [
+          {
+            "day": 1,
+            "poi": "Seongsu Cafe Street (성수 카"
+          },
+          {
+            "day": 1,
+            "poi": "Cafe Onion Seongsu (카페 어니"
+          },
+          {
+            "day": 1,
+            "poi": "Seoul Forest (서울숲)"
+          },
+          {
+            "day": 1,
+            "poi": "Blue Bottle Coffee Seongs"
+          },
+          {
+            "day": 1,
+            "poi": "Seongsu Yeonbang (성수연방)"
+          }
+        ],
+        "ws": []
+      },
+      "AB": {
+        "score": 0.958,
+        "barriers": []
+      },
+      "MB": {
+        "score": 0.94
+      },
+      "CF": {
+        "score": 0.942,
+        "unresolved": []
+      },
+      "CC": {
+        "score": 1.0
+      }
+    },
+    "sf": {
+      "overall": 0.864,
+      "F": 0.897,
+      "ECS": 0.926,
+      "FG": 0.77,
+      "MC": {
+        "score": 1.0,
+        "missing": []
+      },
+      "TF": {
+        "score": 0.94,
+        "violations": [],
+        "tight": [
+          {
+            "day": 1,
+            "from": "Daelim Changgo Gal",
+            "to": "Seoul Upcycling Pl",
+            "dist_km": 1.86,
+            "gap": 25,
+            "need": 21.0,
+            "score": 0.88
+          },
+          {
+            "day": 1,
+            "from": "Seoul Upcycling Pl",
+            "to": "Peer Coffee",
+            "dist_km": 1.12,
+            "gap": 25,
+            "need": 15.8,
+            "score": 0.94
+          },
+          {
+            "day": 1,
+            "from": "Peer Coffee",
+            "to": "이항아삼겹살",
+            "dist_km": 1.4,
+            "gap": 25,
+            "need": 17.8,
+            "score": 0.919
+          }
+        ]
+      },
+      "OH": {
+        "score": 0.75,
+        "conflict": 1,
+        "unknown": 1
+      },
+      "RD": {
+        "score": 0.985,
+        "avg_km": 1.105
+      },
+      "VD": {
+        "score": 1.0
+      },
+      "SS": {
+        "score": 0.796
+      },
+      "CP": {
+        "score": 0.98,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 1.173,
+            "max_km": 1.864,
+            "score": 0.98
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.87,
+        "bad": [
+          "Day1:cafe→meal"
+        ]
+      },
+      "LA": {
+        "score": 0.583,
+        "supported": 2,
+        "not_supported": 1,
+        "violations": [
+          {
+            "day": 1,
+            "poi": "Seongsu-dong Cafe Street "
+          }
+        ],
+        "ws": [
+          "Peer Coffee",
+          "이항아삼겹살"
+        ]
+      },
+      "AB": {
+        "score": 0.825,
+        "barriers": [
+          {
+            "day": 1,
+            "poi": "Amore Store Beauty Experi",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 1,
+            "poi": "Seoul Upcycling Plaza (서울",
+            "barriers": [
+              "예약필수"
+            ]
+          }
+        ]
+      },
+      "MB": {
+        "score": 0.91
+      },
+      "CF": {
+        "score": 0.808,
+        "unresolved": []
+      },
+      "CC": {
+        "score": 1.0
+      }
+    }
+  },
+  "scenario_2": {
+    "gpt": {
+      "overall": 0.829,
+      "F": 0.604,
+      "ECS": 0.932,
+      "FG": 0.951,
+      "MC": {
+        "score": 0.25,
+        "missing": [
+          "Day1 저녁",
+          "Day2 점심",
+          "Day2 저녁"
+        ]
+      },
+      "TF": {
+        "score": 0.613,
+        "violations": [
+          {
+            "day": 1,
+            "from": "Gyeongbokgung Pala",
+            "to": "National Palace Mu",
+            "dist_km": 0.46,
+            "gap": 0,
+            "need": 11.2,
+            "score": 0.0
+          },
+          {
+            "day": 1,
+            "from": "Bukchon Hanok Vill",
+            "to": "Samcheong-dong Str",
+            "dist_km": 0.2,
+            "gap": 0,
+            "need": 10.0,
+            "score": 0.0
+          },
+          {
+            "day": 2,
+            "from": "Insadong Street (인",
+            "to": "Ssamziegil (쌈지길)",
+            "dist_km": 0.06,
+            "gap": 0,
+            "need": 10.0,
+            "score": 0.0
+          }
+        ],
+        "tight": []
+      },
+      "OH": {
+        "score": 0.95,
+        "conflict": 0,
+        "unknown": 1
+      },
+      "RD": {
+        "score": 1,
+        "avg_km": 0.441
+      },
+      "VD": {
+        "score": 1.0
+      },
+      "SS": {
+        "score": 0.989
+      },
+      "CP": {
+        "score": 0.98,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 0.732,
+            "max_km": 1.115,
+            "score": 0.98
+          },
+          {
+            "day": 2,
+            "avg_km": 0.349,
+            "max_km": 0.625,
+            "score": 0.98
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.69,
+        "bad": [
+          "Day1:culture→culture",
+          "Day2:culture→culture"
+        ]
+      },
+      "LA": {
+        "score": 0.9,
+        "supported": 9,
+        "not_supported": 1,
+        "violations": [
+          {
+            "day": 1,
+            "poi": "Tongin Market (통인시장)"
+          }
+        ],
+        "ws": []
+      },
+      "AB": {
+        "score": 1.0,
+        "barriers": []
+      },
+      "MB": {
+        "score": 0.981
+      },
+      "CF": {
+        "score": 0.95,
+        "unresolved": []
+      },
+      "CC": {
+        "score": 1.0
+      }
+    },
+    "sf": {
+      "overall": 0.926,
+      "F": 0.879,
+      "ECS": 0.945,
+      "FG": 0.955,
+      "MC": {
+        "score": 0.75,
+        "missing": [
+          "Day2 저녁"
+        ]
+      },
+      "TF": {
+        "score": 0.971,
+        "violations": [],
+        "tight": [
+          {
+            "day": 2,
+            "from": "Insa-dong Culture ",
+            "to": "PKM Gallery (PKM갤러",
+            "dist_km": 1.28,
+            "gap": 25,
+            "need": 16.9,
+            "score": 0.927
+          },
+          {
+            "day": 2,
+            "from": "PKM Gallery (PKM갤러",
+            "to": "Sejong Village Foo",
+            "dist_km": 1.09,
+            "gap": 25,
+            "need": 15.7,
+            "score": 0.942
+          }
+        ]
+      },
+      "OH": {
+        "score": 0.917,
+        "conflict": 0,
+        "unknown": 2
+      },
+      "RD": {
+        "score": 1,
+        "avg_km": 0.646
+      },
+      "VD": {
+        "score": 1.0
+      },
+      "SS": {
+        "score": 0.968
+      },
+      "CP": {
+        "score": 0.98,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 0.87,
+            "max_km": 1.523,
+            "score": 0.98
+          },
+          {
+            "day": 2,
+            "avg_km": 1.033,
+            "max_km": 1.636,
+            "score": 0.98
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.775,
+        "bad": [
+          "Day1:culture→culture",
+          "Day1:attraction→attraction",
+          "Day1:cafe→meal"
+        ]
+      },
+      "LA": {
+        "score": 0.917,
+        "supported": 11,
+        "not_supported": 1,
+        "violations": [
+          {
+            "day": 1,
+            "poi": "Samcheong-dong (삼청동)"
+          }
+        ],
+        "ws": []
+      },
+      "AB": {
+        "score": 0.992,
+        "barriers": [
+          {
+            "day": 1,
+            "poi": "Changdeokgung Palace (창덕궁",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 1,
+            "poi": "Starbucks Ima Building",
+            "barriers": [
+              "예약필수"
+            ]
+          }
+        ]
+      },
+      "MB": {
+        "score": 0.97
+      },
+      "CF": {
+        "score": 0.958,
+        "unresolved": []
+      },
+      "CC": {
+        "score": 1.0
+      }
+    }
+  },
+  "scenario_3": {
+    "gpt": {
+      "overall": 0.798,
+      "F": 0.73,
+      "ECS": 0.918,
+      "FG": 0.745,
+      "MC": {
+        "score": 0.5,
+        "missing": [
+          "Day1 저녁",
+          "Day2 저녁",
+          "Day3 저녁"
+        ]
+      },
+      "TF": {
+        "score": 0.87,
+        "violations": [
+          {
+            "day": 1,
+            "from": "Hongdae Walking St",
+            "to": "KT&G Sangsangmadan",
+            "dist_km": 0.61,
+            "gap": 0,
+            "need": 12.3,
+            "score": 0.0
+          }
+        ],
+        "tight": [
+          {
+            "day": 2,
+            "from": "Itaewon Main Stree",
+            "to": "Hybe Insight Area ",
+            "dist_km": 2.85,
+            "gap": 30,
+            "need": 28.0,
+            "score": 0.843
+          },
+          {
+            "day": 3,
+            "from": "Yongsan Electronic",
+            "to": "Yongsan Family Par",
+            "dist_km": 1.91,
+            "gap": 30,
+            "need": 21.3,
+            "score": 0.919
+          }
+        ]
+      },
+      "OH": {
+        "score": 0.821,
+        "conflict": 1,
+        "unknown": 3
+      },
+      "RD": {
+        "score": 1,
+        "avg_km": 0.905
+      },
+      "VD": {
+        "score": 1.0
+      },
+      "SS": {
+        "score": 0.831
+      },
+      "CP": {
+        "score": 0.98,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 0.394,
+            "max_km": 0.773,
+            "score": 0.98
+          },
+          {
+            "day": 2,
+            "avg_km": 1.46,
+            "max_km": 2.853,
+            "score": 0.98
+          },
+          {
+            "day": 3,
+            "avg_km": 1.171,
+            "max_km": 1.983,
+            "score": 0.98
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.778,
+        "bad": [
+          "Day1:attraction→attraction",
+          "Day1:meal→meal",
+          "Day2:attraction→attraction"
+        ]
+      },
+      "LA": {
+        "score": 0.464,
+        "supported": 5,
+        "not_supported": 6,
+        "violations": [
+          {
+            "day": 1,
+            "poi": "Hongdae Walking Street (홍"
+          },
+          {
+            "day": 1,
+            "poi": "KT&G Sangsangmadang Hongd"
+          },
+          {
+            "day": 1,
+            "poi": "Plant Cafe Hongdae (플랜트 카"
+          },
+          {
+            "day": 1,
+            "poi": "Myeongdong Kyoja Hongdae "
+          },
+          {
+            "day": 2,
+            "poi": "Plant Cafe Itaewon (플랜트 카"
+          },
+          {
+            "day": 3,
+            "poi": "Yongsan Electronics Marke"
+          }
+        ],
+        "ws": [
+          "Hybe Insight Area (하이브 인사이트 주변)",
+          "HYBE Headquarters (하이브 사옥)",
+          "Vegenarang (베지나랑)"
+        ]
+      },
+      "AB": {
+        "score": 0.921,
+        "barriers": [
+          {
+            "day": 3,
+            "poi": "Yongsan Electronics Marke",
+            "barriers": [
+              "현금only"
+            ]
+          }
+        ]
+      },
+      "MB": {
+        "score": 0.945
+      },
+      "CF": {
+        "score": 0.914,
+        "unresolved": []
+      },
+      "CC": {
+        "score": 0.94,
+        "violations": []
+      }
+    },
+    "sf": {
+      "overall": 0.851,
+      "F": 0.848,
+      "ECS": 0.932,
+      "FG": 0.774,
+      "MC": {
+        "score": 0.833,
+        "missing": [
+          "Day3 저녁"
+        ]
+      },
+      "TF": {
+        "score": 0.945,
+        "violations": [
+          {
+            "day": 3,
+            "from": "Itaewon Shopping S",
+            "to": "HYBE (하이브)",
+            "dist_km": 2.47,
+            "gap": 25,
+            "need": 25.3,
+            "score": 0.771
+          }
+        ],
+        "tight": [
+          {
+            "day": 1,
+            "from": "Crazy Katsu",
+            "to": "Hongdae Street Per",
+            "dist_km": 1.18,
+            "gap": 25,
+            "need": 16.2,
+            "score": 0.935
+          },
+          {
+            "day": 1,
+            "from": "Gyeongui Line Book",
+            "to": "KPOP Dance One-day",
+            "dist_km": 2.07,
+            "gap": 25,
+            "need": 22.5,
+            "score": 0.856
+          },
+          {
+            "day": 2,
+            "from": "Korean Bistro Mr.A",
+            "to": "Leeum Museum of Ar",
+            "dist_km": 1.0,
+            "gap": 25,
+            "need": 15.0,
+            "score": 0.95
+          },
+          {
+            "day": 3,
+            "from": "Hannam-dong Cafe R",
+            "to": "Gyeongnidan Street",
+            "dist_km": 1.12,
+            "gap": 25,
+            "need": 15.8,
+            "score": 0.939
+          },
+          {
+            "day": 3,
+            "from": "Gyeongnidan Street",
+            "to": "Itaewon Shopping S",
+            "dist_km": 1.04,
+            "gap": 25,
+            "need": 15.3,
+            "score": 0.946
+          }
+        ]
+      },
+      "OH": {
+        "score": 0.765,
+        "conflict": 1,
+        "unknown": 6
+      },
+      "RD": {
+        "score": 1,
+        "avg_km": 0.813
+      },
+      "VD": {
+        "score": 1.0
+      },
+      "SS": {
+        "score": 0.894
+      },
+      "CP": {
+        "score": 0.966,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 1.612,
+            "max_km": 3.325,
+            "score": 0.97
+          },
+          {
+            "day": 2,
+            "avg_km": 0.677,
+            "max_km": 1.053,
+            "score": 0.98
+          },
+          {
+            "day": 3,
+            "avg_km": 1.887,
+            "max_km": 3.927,
+            "score": 0.947
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.799,
+        "bad": [
+          "Day1:attraction→attraction",
+          "Day1:attraction→attraction",
+          "Day2:culture→culture",
+          "Day3:meal→cafe"
+        ]
+      },
+      "LA": {
+        "score": 0.618,
+        "supported": 10,
+        "not_supported": 6,
+        "violations": [
+          {
+            "day": 1,
+            "poi": "Mangnidan Street Accessor"
+          },
+          {
+            "day": 1,
+            "poi": "Hongdae Street Performanc"
+          },
+          {
+            "day": 1,
+            "poi": "Gyeongui Line Book Street"
+          },
+          {
+            "day": 1,
+            "poi": "Sinchon Haemil Kalguksu ("
+          },
+          {
+            "day": 3,
+            "poi": "Hannam-dong Cafe Row (한남동"
+          },
+          {
+            "day": 3,
+            "poi": "Gyeongnidan Street (경리단길)"
+          }
+        ],
+        "ws": [
+          "Crazy Katsu"
+        ]
+      },
+      "AB": {
+        "score": 0.947,
+        "barriers": [
+          {
+            "day": 1,
+            "poi": "KPOP Dance One-day Class ",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 2,
+            "poi": "Leeum Museum of Art (리움미술",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 2,
+            "poi": "Leeum, Samsung Museum of ",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 3,
+            "poi": "HYBE (하이브)",
+            "barriers": [
+              "예약필수"
+            ]
+          }
+        ]
+      },
+      "MB": {
+        "score": 0.936
+      },
+      "CF": {
+        "score": 0.85,
+        "unresolved": [
+          {
+            "day": 2,
+            "poi": "Korean Bistro Mr.Ahn's Ma"
+          },
+          {
+            "day": 2,
+            "poi": "Seoul Central Mosque (한국이"
+          }
+        ]
+      },
+      "CC": {
+        "score": 0.75,
+        "violations": []
+      }
+    }
+  },
+  "scenario_4": {
+    "gpt": {
+      "overall": 0.713,
+      "F": 0.533,
+      "ECS": 0.861,
+      "FG": 0.745,
+      "MC": {
+        "score": 0.125,
+        "missing": [
+          "Day1 점심",
+          "Day1 저녁",
+          "Day2 점심",
+          "Day3 점심",
+          "Day3 저녁",
+          "Day4 점심",
+          "Day4 저녁"
+        ]
+      },
+      "TF": {
+        "score": 0.828,
+        "violations": [
+          {
+            "day": 1,
+            "from": "Hongdae Walking St",
+            "to": "AK Plaza Hongdae (",
+            "dist_km": 0.35,
+            "gap": 0,
+            "need": 10.5,
+            "score": 0.0
+          },
+          {
+            "day": 3,
+            "from": "COEX Mall (코엑스몰)",
+            "to": "SMTOWN@coex Artium",
+            "dist_km": 0.03,
+            "gap": 0,
+            "need": 10.0,
+            "score": 0.0
+          }
+        ],
+        "tight": []
+      },
+      "OH": {
+        "score": 0.647,
+        "conflict": 3,
+        "unknown": 6
+      },
+      "RD": {
+        "score": 1,
+        "avg_km": 0.556
+      },
+      "VD": {
+        "score": 0.941
+      },
+      "SS": {
+        "score": 0.734
+      },
+      "CP": {
+        "score": 0.98,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 0.655,
+            "max_km": 1.316,
+            "score": 0.98
+          },
+          {
+            "day": 2,
+            "avg_km": 0.151,
+            "max_km": 0.292,
+            "score": 0.98
+          },
+          {
+            "day": 3,
+            "avg_km": 1.489,
+            "max_km": 2.354,
+            "score": 0.98
+          },
+          {
+            "day": 4,
+            "avg_km": 0.428,
+            "max_km": 0.627,
+            "score": 0.98
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.649,
+        "bad": [
+          "Day1:shopping→shopping",
+          "Day1:shopping→shopping",
+          "Day2:shopping→shopping",
+          "Day3:attraction→attraction",
+          "Day4:attraction→attraction"
+        ]
+      },
+      "LA": {
+        "score": 0.412,
+        "supported": 6,
+        "not_supported": 9,
+        "violations": [
+          {
+            "day": 1,
+            "poi": "Hongdae Walking Street (홍"
+          },
+          {
+            "day": 1,
+            "poi": "Hongdae Club Street (홍대 클"
+          },
+          {
+            "day": 2,
+            "poi": "Seongsu Cafe Street (성수 카"
+          },
+          {
+            "day": 2,
+            "poi": "Musinsa Store Seongsu (무신"
+          },
+          {
+            "day": 2,
+            "poi": "Seongsu Yeonbang (성수연방)"
+          },
+          {
+            "day": 2,
+            "poi": "SM Entertainment Seongsu "
+          },
+          {
+            "day": 2,
+            "poi": "Cafe Onion Seongsu (카페 어니"
+          },
+          {
+            "day": 3,
+            "poi": "K-Star Road (강남돌 K스타로드)"
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World Mall (롯데월드몰)"
+          }
+        ],
+        "ws": [
+          "Mecenatpolis Mall (메세나폴리스몰)",
+          "SMTOWN@coex Artium Area (SMTOWN 코엑스 아티움 주변)"
+        ]
+      },
+      "AB": {
+        "score": 0.947,
+        "barriers": [
+          {
+            "day": 1,
+            "poi": "AK Plaza Hongdae (AK플라자 홍",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 1,
+            "poi": "Kakao Friends Hongdae Fla",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World Adventure (롯데",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 4,
+            "poi": "Seoul Sky (서울스카이)",
+            "barriers": [
+              "예약필수"
+            ]
+          }
+        ]
+      },
+      "MB": {
+        "score": 0.965
+      },
+      "CF": {
+        "score": 0.953,
+        "unresolved": []
+      },
+      "CC": {
+        "score": 1.0
+      }
+    },
+    "sf": {
+      "overall": 0.868,
+      "F": 0.909,
+      "ECS": 0.92,
+      "FG": 0.775,
+      "MC": {
+        "score": 1.0,
+        "missing": []
+      },
+      "TF": {
+        "score": 0.955,
+        "violations": [],
+        "tight": [
+          {
+            "day": 1,
+            "from": "Bongeunsa Temple (",
+            "to": "Sulwhasoo Dosan Fl",
+            "dist_km": 2.09,
+            "gap": 25,
+            "need": 22.6,
+            "score": 0.853
+          },
+          {
+            "day": 1,
+            "from": "Sulwhasoo Dosan Fl",
+            "to": "Bongeunsa Temple B",
+            "dist_km": 2.17,
+            "gap": 25,
+            "need": 23.2,
+            "score": 0.845
+          },
+          {
+            "day": 2,
+            "from": "Crazy Katsu",
+            "to": "Hongdae Street Per",
+            "dist_km": 1.18,
+            "gap": 25,
+            "need": 16.2,
+            "score": 0.935
+          },
+          {
+            "day": 2,
+            "from": "Gyeongui Line Book",
+            "to": "KPOP Dance One-day",
+            "dist_km": 2.07,
+            "gap": 25,
+            "need": 22.5,
+            "score": 0.856
+          },
+          {
+            "day": 3,
+            "from": "Seoul Forest (서울숲)",
+            "to": "Amore Store Beauty",
+            "dist_km": 1.53,
+            "gap": 25,
+            "need": 18.7,
+            "score": 0.911
+          }
+        ]
+      },
+      "OH": {
+        "score": 0.771,
+        "conflict": 2,
+        "unknown": 7
+      },
+      "RD": {
+        "score": 1,
+        "avg_km": 0.72
+      },
+      "VD": {
+        "score": 1.0
+      },
+      "SS": {
+        "score": 0.739
+      },
+      "CP": {
+        "score": 0.978,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 0.99,
+            "max_km": 2.509,
+            "score": 0.98
+          },
+          {
+            "day": 2,
+            "avg_km": 1.612,
+            "max_km": 3.325,
+            "score": 0.97
+          },
+          {
+            "day": 3,
+            "avg_km": 0.811,
+            "max_km": 1.525,
+            "score": 0.98
+          },
+          {
+            "day": 4,
+            "avg_km": 0.452,
+            "max_km": 0.945,
+            "score": 0.98
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.885,
+        "bad": [
+          "Day2:attraction→attraction",
+          "Day2:attraction→attraction"
+        ]
+      },
+      "LA": {
+        "score": 0.562,
+        "supported": 12,
+        "not_supported": 9,
+        "violations": [
+          {
+            "day": 2,
+            "poi": "Mangnidan Street Accessor"
+          },
+          {
+            "day": 2,
+            "poi": "Hongdae Street Performanc"
+          },
+          {
+            "day": 2,
+            "poi": "Gyeongui Line Book Street"
+          },
+          {
+            "day": 2,
+            "poi": "Sinchon Haemil Kalguksu ("
+          },
+          {
+            "day": 3,
+            "poi": "Seongsu Self-Photo Booths"
+          },
+          {
+            "day": 3,
+            "poi": "Seoul Forest (서울숲)"
+          },
+          {
+            "day": 3,
+            "poi": "Cafe Onion Seongsu (카페 어니"
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World Mall (롯데월드몰)"
+          },
+          {
+            "day": 4,
+            "poi": "Songnidan-gil Street (송리단"
+          }
+        ],
+        "ws": [
+          "The Coffee Bean & Tea Leaf",
+          "Crazy Katsu",
+          "스테프핫도그 롯데월드점"
+        ]
+      },
+      "AB": {
+        "score": 0.869,
+        "barriers": [
+          {
+            "day": 1,
+            "poi": "Sulwhasoo Dosan Flagship ",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 2,
+            "poi": "KPOP Dance One-day Class ",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 3,
+            "poi": "Amore Store Beauty Experi",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World Adventure (롯데",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World (롯데월드)",
+            "barriers": [
+              "예약필수"
+            ]
+          }
+        ]
+      },
+      "MB": {
+        "score": 0.963
+      },
+      "CF": {
+        "score": 0.771,
+        "unresolved": [
+          {
+            "day": 1,
+            "poi": "Starfield Library (별마당도서관"
+          },
+          {
+            "day": 3,
+            "poi": "Seongsu Self-Photo Booths"
+          },
+          {
+            "day": 3,
+            "poi": "Pizza School Ttukseom Sta"
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World Adventure (롯데"
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World (롯데월드)"
+          }
+        ]
+      },
+      "CC": {
+        "score": 1.0
+      }
+    }
+  },
+  "scenario_5": {
+    "gpt": {
+      "overall": 0.736,
+      "F": 0.559,
+      "ECS": 0.848,
+      "FG": 0.8,
+      "MC": {
+        "score": 0.1,
+        "missing": [
+          "Day1 점심",
+          "Day1 저녁",
+          "Day2 저녁",
+          "Day3 점심",
+          "Day3 저녁",
+          "Day4 점심",
+          "Day4 저녁",
+          "Day5 점심",
+          "Day5 저녁"
+        ]
+      },
+      "TF": {
+        "score": 0.762,
+        "violations": [
+          {
+            "day": 2,
+            "from": "Hongdae Walking St",
+            "to": "AK Plaza Hongdae (",
+            "dist_km": 0.35,
+            "gap": 0,
+            "need": 10.5,
+            "score": 0.0
+          },
+          {
+            "day": 2,
+            "from": "AK Plaza Hongdae (",
+            "to": "Seongsu Cafe Stree",
+            "dist_km": 11.63,
+            "gap": 60,
+            "need": 89.4,
+            "score": 0.523
+          },
+          {
+            "day": 3,
+            "from": "National Museum of",
+            "to": "Yongsan Family Par",
+            "dist_km": 0.21,
+            "gap": 0,
+            "need": 10.0,
+            "score": 0.0
+          },
+          {
+            "day": 5,
+            "from": "Gyeongui Line Fore",
+            "to": "Myeongdong Street ",
+            "dist_km": 5.08,
+            "gap": 30,
+            "need": 43.6,
+            "score": 0.537
+          }
+        ],
+        "tight": [
+          {
+            "day": 3,
+            "from": "Leeum Museum of Ar",
+            "to": "National Museum of",
+            "dist_km": 2.29,
+            "gap": 30,
+            "need": 24.0,
+            "score": 0.899
+          },
+          {
+            "day": 5,
+            "from": "Mangwon Market (망원",
+            "to": "Yeonnam-dong Stree",
+            "dist_km": 1.9,
+            "gap": 30,
+            "need": 21.3,
+            "score": 0.919
+          }
+        ]
+      },
+      "OH": {
+        "score": 0.816,
+        "conflict": 0,
+        "unknown": 7
+      },
+      "RD": {
+        "score": 0.868,
+        "avg_km": 1.926
+      },
+      "VD": {
+        "score": 0.947
+      },
+      "SS": {
+        "score": 0.939
+      },
+      "CP": {
+        "score": 0.78,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 0.884,
+            "max_km": 1.281,
+            "score": 0.98
+          },
+          {
+            "day": 2,
+            "avg_km": 7.642,
+            "max_km": 11.952,
+            "score": 0.252
+          },
+          {
+            "day": 3,
+            "avg_km": 1.54,
+            "max_km": 2.505,
+            "score": 0.977
+          },
+          {
+            "day": 4,
+            "avg_km": 0.428,
+            "max_km": 0.627,
+            "score": 0.98
+          },
+          {
+            "day": 5,
+            "avg_km": 3.544,
+            "max_km": 6.929,
+            "score": 0.71
+          }
+        ],
+        "warnings": [
+          {
+            "day": 2,
+            "avg_km": 7.642,
+            "max_km": 11.952,
+            "score": 0.252
+          }
+        ]
+      },
+      "FS": {
+        "score": 0.707,
+        "bad": [
+          "Day1:culture→culture",
+          "Day1:attraction→attraction",
+          "Day3:culture→culture"
+        ]
+      },
+      "LA": {
+        "score": 0.579,
+        "supported": 11,
+        "not_supported": 8,
+        "violations": [
+          {
+            "day": 2,
+            "poi": "Hongdae Walking Street (홍"
+          },
+          {
+            "day": 2,
+            "poi": "Seongsu Cafe Street (성수 카"
+          },
+          {
+            "day": 2,
+            "poi": "Seoul Forest (서울숲)"
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World Mall (롯데월드몰)"
+          },
+          {
+            "day": 5,
+            "poi": "Mangwon Market (망원시장)"
+          },
+          {
+            "day": 5,
+            "poi": "Yeonnam-dong Street (연남동 "
+          },
+          {
+            "day": 5,
+            "poi": "Gyeongui Line Forest Park"
+          },
+          {
+            "day": 5,
+            "poi": "Myeongdong Street (명동거리)"
+          }
+        ],
+        "ws": []
+      },
+      "AB": {
+        "score": 0.989,
+        "barriers": [
+          {
+            "day": 2,
+            "poi": "AK Plaza Hongdae (AK플라자 홍",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 3,
+            "poi": "Leeum Museum of Art (리움미술",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 4,
+            "poi": "Lotte World Adventure (롯데",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 4,
+            "poi": "Seoul Sky (서울스카이)",
+            "barriers": [
+              "예약필수"
+            ]
+          }
+        ]
+      },
+      "MB": {
+        "score": 0.868
+      },
+      "CF": {
+        "score": 0.968,
+        "unresolved": []
+      },
+      "CC": {
+        "score": 1.0
+      }
+    },
+    "sf": {
+      "overall": 0.84,
+      "F": 0.749,
+      "ECS": 0.93,
+      "FG": 0.84,
+      "MC": {
+        "score": 0.7,
+        "missing": [
+          "Day1 점심",
+          "Day2 점심",
+          "Day2 저녁"
+        ]
+      },
+      "TF": {
+        "score": 0.927,
+        "violations": [
+          {
+            "day": 1,
+            "from": "K-POP Square Hongd",
+            "to": "Oil Tank Culture P",
+            "dist_km": 2.96,
+            "gap": 25,
+            "need": 28.7,
+            "score": 0.679
+          },
+          {
+            "day": 1,
+            "from": "Oil Tank Culture P",
+            "to": "Millo Coffee Roast",
+            "dist_km": 3.25,
+            "gap": 25,
+            "need": 30.8,
+            "score": 0.634
+          }
+        ],
+        "tight": [
+          {
+            "day": 1,
+            "from": "Mangwon Hangang Pa",
+            "to": "K-POP Square Hongd",
+            "dist_km": 1.96,
+            "gap": 25,
+            "need": 21.7,
+            "score": 0.869
+          },
+          {
+            "day": 1,
+            "from": "K-POP Square Hongd",
+            "to": "KPOP Dance One-day",
+            "dist_km": 2.13,
+            "gap": 25,
+            "need": 22.9,
+            "score": 0.85
+          },
+          {
+            "day": 1,
+            "from": "KPOP Dance One-day",
+            "to": "Hongs Zzuggumi",
+            "dist_km": 1.73,
+            "gap": 25,
+            "need": 20.1,
+            "score": 0.897
+          },
+          {
+            "day": 2,
+            "from": "Seoul Upcycling Pl",
+            "to": "Seongsu Self-Photo",
+            "dist_km": 1.76,
+            "gap": 25,
+            "need": 20.3,
+            "score": 0.894
+          },
+          {
+            "day": 2,
+            "from": "Seongsu Self-Photo",
+            "to": "Pizza School yongd",
+            "dist_km": 2.31,
+            "gap": 25,
+            "need": 24.2,
+            "score": 0.831
+          },
+          {
+            "day": 2,
+            "from": "Seoul Upcycling Pl",
+            "to": "Amore Store Beauty",
+            "dist_km": 1.59,
+            "gap": 25,
+            "need": 19.1,
+            "score": 0.907
+          },
+          {
+            "day": 2,
+            "from": "Seongsu-dong Handm",
+            "to": "주먹구구",
+            "dist_km": 1.47,
+            "gap": 25,
+            "need": 18.3,
+            "score": 0.914
+          },
+          {
+            "day": 3,
+            "from": "Sejong Village Foo",
+            "to": "Insa-dong Culture ",
+            "dist_km": 1.28,
+            "gap": 25,
+            "need": 16.9,
+            "score": 0.927
+          },
+          {
+            "day": 3,
+            "from": "Insa-dong Culture ",
+            "to": "Gwangjang Market B",
+            "dist_km": 1.24,
+            "gap": 25,
+            "need": 16.7,
+            "score": 0.93
+          },
+          {
+            "day": 4,
+            "from": "Korean Bistro Mr.A",
+            "to": "Leeum Museum of Ar",
+            "dist_km": 1.0,
+            "gap": 25,
+            "need": 15.0,
+            "score": 0.95
+          }
+        ]
+      },
+      "OH": {
+        "score": 0.621,
+        "conflict": 8,
+        "unknown": 9
+      },
+      "RD": {
+        "score": 0.995,
+        "avg_km": 1.034
+      },
+      "VD": {
+        "score": 1.0
+      },
+      "SS": {
+        "score": 0.795
+      },
+      "CP": {
+        "score": 0.97,
+        "details": [
+          {
+            "day": 1,
+            "avg_km": 1.818,
+            "max_km": 4.705,
+            "score": 0.93
+          },
+          {
+            "day": 2,
+            "avg_km": 1.477,
+            "max_km": 2.68,
+            "score": 0.98
+          },
+          {
+            "day": 3,
+            "avg_km": 1.116,
+            "max_km": 2.513,
+            "score": 0.98
+          },
+          {
+            "day": 4,
+            "avg_km": 0.677,
+            "max_km": 1.053,
+            "score": 0.98
+          },
+          {
+            "day": 5,
+            "avg_km": 0.452,
+            "max_km": 0.945,
+            "score": 0.98
+          }
+        ],
+        "warnings": []
+      },
+      "FS": {
+        "score": 0.892,
+        "bad": [
+          "Day1:cafe→meal",
+          "Day2:attraction→attraction",
+          "Day4:culture→culture"
+        ]
+      },
+      "LA": {
+        "score": 0.712,
+        "supported": 21,
+        "not_supported": 7,
+        "violations": [
+          {
+            "day": 2,
+            "poi": "Seongsu Self-Photo Booths"
+          },
+          {
+            "day": 2,
+            "poi": "Pizza School yongdap poin"
+          },
+          {
+            "day": 2,
+            "poi": "Seongsu-dong Handmade Sho"
+          },
+          {
+            "day": 3,
+            "poi": "Samcheong-dong (삼청동)"
+          },
+          {
+            "day": 3,
+            "poi": "Gwangjang Market Bindaett"
+          },
+          {
+            "day": 5,
+            "poi": "Lotte World Mall (롯데월드몰)"
+          },
+          {
+            "day": 5,
+            "poi": "Songnidan-gil Street (송리단"
+          }
+        ],
+        "ws": [
+          "Hongs Zzuggumi",
+          "Millo Coffee Roasters",
+          "GangGang Sul Lai",
+          "주먹구구",
+          "스테프핫도그 롯데월드점"
+        ]
+      },
+      "AB": {
+        "score": 0.9,
+        "barriers": [
+          {
+            "day": 1,
+            "poi": "KPOP Dance One-day Class ",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 2,
+            "poi": "Seoul Upcycling Plaza (서울",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 2,
+            "poi": "Seoul Upcycling Plaza",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 2,
+            "poi": "Amore Store Beauty Experi",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 4,
+            "poi": "Leeum Museum of Art (리움미술",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 4,
+            "poi": "Leeum, Samsung Museum of ",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 5,
+            "poi": "Lotte World Adventure (롯데",
+            "barriers": [
+              "예약필수"
+            ]
+          },
+          {
+            "day": 5,
+            "poi": "Lotte World (롯데월드)",
+            "barriers": [
+              "예약필수"
+            ]
+          }
+        ]
+      },
+      "MB": {
+        "score": 0.929
+      },
+      "CF": {
+        "score": 0.841,
+        "unresolved": [
+          {
+            "day": 4,
+            "poi": "Korean Bistro Mr.Ahn's Ma"
+          },
+          {
+            "day": 4,
+            "poi": "Seoul Central Mosque (한국이"
+          },
+          {
+            "day": 5,
+            "poi": "Lotte World Adventure (롯데"
+          },
+          {
+            "day": 5,
+            "poi": "Lotte World (롯데월드)"
+          }
+        ]
+      },
+      "CC": {
+        "score": 1.0
+      }
+    }
+  }
+}
