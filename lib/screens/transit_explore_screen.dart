@@ -2,63 +2,45 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import '../config/api_keys.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../providers/travel_provider.dart';
 
 // ---------------------------------------------------------------------------
-// Data models
+// Models
 // ---------------------------------------------------------------------------
 
 class _Category {
   final String label;
   final String emoji;
-  final List<String> keywords;
-
-  const _Category({
-    required this.label,
-    required this.emoji,
-    required this.keywords,
-  });
-
-  bool matches(String codename) {
-    final lower = codename.toLowerCase();
-    return keywords.any((k) => lower.contains(k));
-  }
+  const _Category({required this.label, required this.emoji});
 }
 
-class _EventItem {
-  final String title;
+class _BackendEvent {
+  final String name;
   final String date;
-  final String place;
-  final String category;
+  final String venue;
+  final String description;
   final String imageUrl;
 
-  const _EventItem({
-    required this.title,
+  const _BackendEvent({
+    required this.name,
     required this.date,
-    required this.place,
-    required this.category,
+    required this.venue,
+    required this.description,
     required this.imageUrl,
   });
 
-  factory _EventItem.fromSeoulApi(Map<String, dynamic> json) {
-    final start = (json['STRTDATE'] ?? '').toString().replaceAll('-', '.').split('T').first;
-    final end   = (json['END_DATE']  ?? '').toString().replaceAll('-', '.').split('T').first;
-    final date  = (start.isNotEmpty && end.isNotEmpty && start != end)
-        ? '$start ~ $end'
-        : start;
-
-    return _EventItem(
-      title:    (json['TITLE']     ?? '').toString().trim(),
-      date:     date,
-      place:    (json['PLACE']     ?? '').toString().trim(),
-      category: (json['CODENAME']  ?? '').toString().trim(),
-      imageUrl: (json['MAIN_IMG1'] ?? '').toString().trim(),
-    );
-  }
+  factory _BackendEvent.fromJson(Map<String, dynamic> json) => _BackendEvent(
+        name: (json['name'] as String?) ?? '',
+        date: (json['date'] as String?) ?? '',
+        venue: (json['venue'] as String?) ?? '',
+        description: (json['description'] as String?) ?? '',
+        imageUrl: (json['image_url'] as String?) ?? '',
+      );
 }
 
 // ---------------------------------------------------------------------------
@@ -73,77 +55,20 @@ class TransitExploreScreen extends StatefulWidget {
 }
 
 class _TransitExploreScreenState extends State<TransitExploreScreen> {
+  static const _baseUrl = 'http://10.0.2.2:8000';
+
   static const _categories = [
-    _Category(label: 'Musical',    emoji: '🎭', keywords: ['뮤지컬', 'musical']),
-    _Category(label: 'Concert',    emoji: '🎤', keywords: ['콘서트', 'concert']),
-    _Category(label: 'Exhibition', emoji: '🖼',  keywords: ['전시', 'exhibition']),
-    _Category(label: 'Classic',    emoji: '🎹', keywords: ['클래식', '무용', 'classic']),
-    _Category(label: 'Family',     emoji: '👪',  keywords: ['아동', '가족', 'family']),
-    _Category(label: 'Theater',    emoji: '🎬', keywords: ['연극', 'theater']),
+    _Category(label: 'Musical',    emoji: '🎭'),
+    _Category(label: 'Concert',    emoji: '🎤'),
+    _Category(label: 'Exhibition', emoji: '🖼'),
+    _Category(label: 'Classic',    emoji: '🎹'),
+    _Category(label: 'Family',     emoji: '👪'),
+    _Category(label: 'Theater',    emoji: '🎬'),
   ];
 
-  static const _dummyEvents = [
-    _EventItem(
-      title: 'TAKUYA KIMURA Live Tour 2026',
-      date: '06.29',
-      place: 'KSPO DOME',
-      category: '콘서트',
-      imageUrl: '',
-    ),
-    _EventItem(
-      title: '2026 82MAJOR FAN-CONCERT',
-      date: '06.15',
-      place: 'Seoul Olympic Hall',
-      category: '콘서트',
-      imageUrl: '',
-    ),
-    _EventItem(
-      title: 'Seoul International Garden Show',
-      date: '06.01 ~ 06.30',
-      place: 'Seoul Forest',
-      category: '전시',
-      imageUrl: '',
-    ),
-    _EventItem(
-      title: 'DDP Summer Exhibition',
-      date: '06.15 ~ 08.31',
-      place: 'DDP',
-      category: '전시',
-      imageUrl: '',
-    ),
-    _EventItem(
-      title: 'The Phantom of the Opera Seoul',
-      date: '06.01 ~ 08.31',
-      place: 'Charlotte Theater',
-      category: '뮤지컬',
-      imageUrl: '',
-    ),
-    _EventItem(
-      title: 'Seoul Philharmonic Orchestra',
-      date: '06.20',
-      place: 'Seoul Arts Center',
-      category: '클래식',
-      imageUrl: '',
-    ),
-    _EventItem(
-      title: 'Korean Folk Village Festival',
-      date: '06.15 ~ 07.31',
-      place: 'Korean Folk Village',
-      category: '아동',
-      imageUrl: '',
-    ),
-    _EventItem(
-      title: 'Nanta Show',
-      date: '매일',
-      place: 'Nanta Theater',
-      category: '연극',
-      imageUrl: '',
-    ),
-  ];
-
-  List<_EventItem> _allEvents = [];
-  bool _loading = true;
   int _selectedCategory = 0;
+  List<_BackendEvent> _events = [];
+  bool _loading = false;
 
   @override
   void initState() {
@@ -153,40 +78,44 @@ class _TransitExploreScreenState extends State<TransitExploreScreen> {
 
   Future<void> _fetchEvents() async {
     setState(() => _loading = true);
+    final travelDates =
+        context.read<TravelProvider>().state?.travelDates ?? '';
+    final category = _categories[_selectedCategory].label;
     try {
-      final url =
-          'http://openapi.seoul.go.kr:8088/${ApiKeys.culturalEvent}/json/culturalEventInfo/1/100/';
       final res = await http
-          .get(Uri.parse(url))
-          .timeout(const Duration(seconds: 10));
-
+          .post(
+            Uri.parse('$_baseUrl/events'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(
+                {'category': category, 'travel_dates': travelDates}),
+          )
+          .timeout(const Duration(seconds: 40));
       if (res.statusCode == 200) {
-        final body = jsonDecode(res.body) as Map<String, dynamic>;
-        final rows = (body['culturalEventInfo']?['row'] as List?) ?? [];
-        final events = rows
-            .map((e) => _EventItem.fromSeoulApi(e as Map<String, dynamic>))
-            .where((e) => e.title.isNotEmpty)
-            .toList();
-
-        if (events.isNotEmpty) {
+        final list = jsonDecode(res.body) as List;
+        if (mounted) {
           setState(() {
-            _allEvents = events;
+            _events = list
+                .map((e) =>
+                    _BackendEvent.fromJson(e as Map<String, dynamic>))
+                .toList();
             _loading = false;
           });
-          return;
         }
+        return;
       }
     } catch (_) {}
-
-    setState(() {
-      _allEvents = [..._dummyEvents];
-      _loading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _events = [];
+        _loading = false;
+      });
+    }
   }
 
-  List<_EventItem> get _filteredEvents {
-    final cat = _categories[_selectedCategory];
-    return _allEvents.where((e) => cat.matches(e.category)).toList();
+  void _selectCategory(int i) {
+    if (i == _selectedCategory) return;
+    setState(() => _selectedCategory = i);
+    _fetchEvents();
   }
 
   @override
@@ -254,14 +183,14 @@ class _TransitExploreScreenState extends State<TransitExploreScreen> {
                       itemBuilder: (_, i) => _CategoryChip(
                         category: _categories[i],
                         selected: i == _selectedCategory,
-                        onTap: () => setState(() => _selectedCategory = i),
+                        onTap: () => _selectCategory(i),
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   // Event list
                   Expanded(
-                    child: _loading ? _buildShimmer() : _buildEventList(),
+                    child: _loading ? _buildShimmer() : _buildEventGrid(),
                   ),
                 ],
               ),
@@ -273,22 +202,27 @@ class _TransitExploreScreenState extends State<TransitExploreScreen> {
     );
   }
 
-  Widget _buildEventList() {
-    final events = _filteredEvents;
-    if (events.isEmpty) {
+  Widget _buildEventGrid() {
+    if (_events.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.event_busy_rounded, size: 48, color: kSubtext),
             const SizedBox(height: 12),
-            Text('No events for this category',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15, fontWeight: FontWeight.w700, color: kInk)),
+            Text(
+              'No events available during your trip',
+              style: GoogleFonts.plusJakartaSans(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: kInk),
+            ),
             const SizedBox(height: 6),
-            Text('Try another category or refresh.',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13, color: kSubtext)),
+            Text(
+              'Try another category or refresh.',
+              style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13, color: kSubtext),
+            ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: _fetchEvents,
@@ -306,11 +240,17 @@ class _TransitExploreScreenState extends State<TransitExploreScreen> {
         ),
       );
     }
-    return ListView.separated(
+
+    return GridView.builder(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      itemCount: events.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
-      itemBuilder: (_, i) => _EventCard(event: events[i]),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.52,
+      ),
+      itemCount: _events.length,
+      itemBuilder: (_, i) => _EventPosterCard(event: _events[i]),
     );
   }
 
@@ -318,12 +258,16 @@ class _TransitExploreScreenState extends State<TransitExploreScreen> {
     return Shimmer.fromColors(
       baseColor: kCardBorder,
       highlightColor: kCanvas,
-      child: ListView.separated(
+      child: GridView.builder(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        itemCount: 3,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.52,
+        ),
+        itemCount: 4,
         itemBuilder: (_, __) => Container(
-          height: 200,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -380,9 +324,9 @@ class _CategoryChip extends StatelessWidget {
   }
 }
 
-class _EventCard extends StatelessWidget {
-  final _EventItem event;
-  const _EventCard({required this.event});
+class _EventPosterCard extends StatelessWidget {
+  final _BackendEvent event;
+  const _EventPosterCard({required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -394,77 +338,82 @@ class _EventCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: kMint.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 16:9 image
-          ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(16)),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
+          // Poster image — 3:4 ratio
+          Expanded(
+            flex: 4,
+            child: ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               child: event.imageUrl.isNotEmpty
                   ? Image.network(
                       event.imageUrl,
+                      width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const _ImagePlaceholder(),
+                      errorBuilder: (_, __, ___) =>
+                          const _PosterPlaceholder(),
                     )
-                  : const _ImagePlaceholder(),
+                  : const _PosterPlaceholder(),
             ),
           ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (event.date.isNotEmpty) ...[
-                  Text(
-                    event.date,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFE53E3E),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                ],
-                Text(
-                  event.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: kInk,
-                    height: 1.3,
-                  ),
-                ),
-                if (event.category.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 9, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: kMintLight,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      event.category,
+          // Text area
+          Expanded(
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (event.date.isNotEmpty)
+                    Text(
+                      event.date,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: kMint,
+                        color: const Color(0xFFE53E3E),
                       ),
                     ),
+                  const SizedBox(height: 3),
+                  Text(
+                    event.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: kInk,
+                      height: 1.3,
+                    ),
                   ),
+                  const Spacer(),
+                  if (event.venue.isNotEmpty)
+                    Row(
+                      children: [
+                        const Icon(Icons.place_rounded,
+                            size: 10, color: kSubtext),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            event.venue,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10, color: kSubtext),
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
-              ],
+              ),
             ),
           ),
         ],
@@ -473,8 +422,8 @@ class _EventCard extends StatelessWidget {
   }
 }
 
-class _ImagePlaceholder extends StatelessWidget {
-  const _ImagePlaceholder();
+class _PosterPlaceholder extends StatelessWidget {
+  const _PosterPlaceholder();
 
   @override
   Widget build(BuildContext context) {

@@ -152,13 +152,13 @@ def collect_node(state: TravelState) -> TravelState:
 
     if step == "start":
         greeting = (
-            "Hi! I'm SeoulFit Buddy\n"
+            "Hi! I'm SeoulFit Buddy \U0001f425\n"
             "To plan your perfect Seoul trip, tell me:\n"
-            "- Travel dates (or I'll pick for you!)\n"
-            "- Interests (beauty, history, food, shopping, activity...)\n"
-            "- Any restrictions? (dietary, physical, etc.)\n"
-            "- Who are you traveling with? (solo/couple/friends/family)\n"
-            "- Trip style: packed schedule or relaxed pace?"
+            "\U0001f5d3 Travel dates (or I'll pick for you!)\n"
+            "\U0001f3af Interests (beauty, history, food, shopping, activity...)\n"
+            "⚠️ Any restrictions? (dietary, physical, etc.)\n"
+            "\U0001f465 Who are you traveling with? (solo/couple/friends/family)\n"
+            "\U0001f4cb Trip style: packed schedule or relaxed pace?"
         )
         return {**state, "current_step": "collecting_basics",
                 "messages": [AIMessage(content=greeting)]}
@@ -186,7 +186,7 @@ def collect_node(state: TravelState) -> TravelState:
         region_ask = (
             "Do you have a specific area in Seoul in mind?\n"
             "(e.g. Hongdae, Seongsu, Gangnam, Itaewon)\n"
-            "Or I can recommend based on your interests!"
+            "Or I can recommend based on your interests! \U0001f60a"
         )
         return {**state, **updates, "current_step": "collecting_region",
                 "messages": [AIMessage(content=region_ask)]}

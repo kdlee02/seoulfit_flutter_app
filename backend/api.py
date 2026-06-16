@@ -410,6 +410,75 @@ def poi_detail(req: PoiSummaryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class EventsRequest(BaseModel):
+    category: str = "Concert"
+    travel_dates: Optional[str] = None
+
+
+@app.post("/events")
+def get_events(req: EventsRequest):
+    """Generate up to 5 Seoul events for a category using Gemini, then fetch
+    a poster image for each via SerpApi google_images."""
+    import json as _json
+    serpapi_key = os.getenv("SERPAPI_KEY", "")
+    try:
+        from google import genai as _genai
+        import serpapi as _serpapi
+
+        client = _genai.Client(api_key=GEMINI_API_KEY)
+        date_hint = f"\nTravel period context: {req.travel_dates}" if req.travel_dates else ""
+        prompt = (
+            f'Generate up to 5 real or realistic upcoming Seoul events for the category "{req.category}".{date_hint}\n'
+            "Return a JSON array where each element has exactly these fields:\n"
+            '- "name": event name in English\n'
+            '- "date": date string e.g. "Jun 20" or "Jun 20 - Jul 31"\n'
+            '- "venue": venue name in Seoul\n'
+            '- "description": one sentence describing the event\n'
+            "Return only the JSON array, no markdown, no extra text."
+        )
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config={"response_mime_type": "application/json"},
+        )
+        try:
+            events = _json.loads(resp.text or "[]")
+            if not isinstance(events, list):
+                events = []
+        except Exception:
+            events = []
+
+        results = []
+        for event in events[:5]:
+            image_url = ""
+            if serpapi_key:
+                try:
+                    serp = _serpapi.Client(api_key=serpapi_key)
+                    search = serp.search({
+                        "engine": "google_images",
+                        "q": f"{event.get('name', '')} Seoul event poster",
+                        "hl": "en",
+                        "num": 3,
+                    })
+                    imgs = search.get("images_results") or []
+                    if imgs:
+                        image_url = (imgs[0].get("original") or
+                                     imgs[0].get("thumbnail") or "")
+                except Exception:
+                    pass
+
+            results.append({
+                "name": event.get("name", ""),
+                "date": event.get("date", ""),
+                "venue": event.get("venue", ""),
+                "description": event.get("description", ""),
+                "image_url": image_url,
+            })
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/transit-legs")
 def transit_legs(req: TransitLegsRequest):
     """Recompute distance / walk / car / Kakao links / ODsay public-transit

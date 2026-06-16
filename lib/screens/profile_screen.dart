@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../services/trip_storage_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -12,18 +14,24 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // 실제 로그인 연동 시 이 변수들을 교체
   final String _userName = 'jihyun';
   final int _userAge = 23;
 
   bool _notificationsEnabled = true;
   String _language = 'English';
 
-  static const _trips = [
-    _TripRecord('Hongdae · Seongsu', '2 Days', 'Cafe & K-POP', '2025.05.28'),
-    _TripRecord('Gangnam · Itaewon', '1 Day', 'Shopping', '2025.05.15'),
-    _TripRecord('Jongno · Insadong', '1 Day', 'Heritage', '2025.04.30'),
-  ];
+  List<SavedTrip> _trips = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTrips();
+  }
+
+  Future<void> _loadTrips() async {
+    final trips = await TripStorageService.getTrips();
+    if (mounted) setState(() => _trips = trips);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +52,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 28),
                     _sectionLabel('My Trips'),
                     const SizedBox(height: 12),
-                    ..._trips.map((t) => _TripCard(trip: t)),
+                    if (_trips.isEmpty)
+                      _buildEmptyTrips()
+                    else
+                      ..._trips.map((t) => _TripCard(trip: t)),
                     const SizedBox(height: 28),
                     _sectionLabel('Settings'),
                     const SizedBox(height: 12),
@@ -59,6 +70,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const AppBottomNav(currentIndex: 4),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyTrips() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      width: double.infinity,
+      child: Column(
+        children: [
+          const Icon(Icons.map_outlined, size: 40, color: kSubtext),
+          const SizedBox(height: 10),
+          Text(
+            'No saved trips yet',
+            style: GoogleFonts.plusJakartaSans(
+                fontSize: 14, fontWeight: FontWeight.w600, color: kSubtext),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Complete an itinerary to see it here.',
+            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: kSubtext),
+          ),
+        ],
       ),
     );
   }
@@ -285,17 +319,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class _TripRecord {
-  final String areas;
-  final String duration;
-  final String theme;
-  final String date;
-  const _TripRecord(this.areas, this.duration, this.theme, this.date);
-}
-
 class _TripCard extends StatelessWidget {
-  final _TripRecord trip;
+  final SavedTrip trip;
   const _TripCard({required this.trip});
+
+  Future<void> _openLink(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -307,37 +340,77 @@ class _TripCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: kCardBorder),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: kMintLight,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.map_rounded, color: kMint, size: 22),
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: kMintLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.map_rounded, color: kMint, size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(trip.title,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: kInk)),
+                    const SizedBox(height: 3),
+                    Text(trip.date,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12, color: kSubtext)),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(trip.areas,
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: kInk)),
-                const SizedBox(height: 3),
-                Text('${trip.duration} · ${trip.theme}',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12, color: kSubtext)),
-              ],
-            ),
-          ),
-          Text(trip.date,
+          if (trip.sourceLinks.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const Divider(height: 1, color: kCardBorder),
+            const SizedBox(height: 8),
+            Text(
+              'Sources',
               style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11, color: kSubtext)),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: kSubtext,
+                  letterSpacing: 0.5),
+            ),
+            const SizedBox(height: 6),
+            ...trip.sourceLinks.take(3).map((url) => GestureDetector(
+                  onTap: () => _openLink(url),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.link_rounded,
+                            size: 13, color: kMint),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            url,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                color: kMint,
+                                decoration: TextDecoration.underline),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )),
+          ],
         ],
       ),
     );

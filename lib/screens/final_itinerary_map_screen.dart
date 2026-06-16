@@ -12,6 +12,7 @@ import '../widgets/itinerary_map.dart';
 import '../models/travel_state.dart';
 import '../providers/travel_provider.dart';
 import '../services/api_service.dart';
+import '../services/trip_storage_service.dart';
 
 class FinalItineraryMapScreen extends StatefulWidget {
   const FinalItineraryMapScreen({super.key});
@@ -23,6 +24,7 @@ class FinalItineraryMapScreen extends StatefulWidget {
 
 class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
   int? _selectedDay;
+  bool _hasSaved = false;
 
   Future<void> _exportJson(BuildContext context, Itinerary itinerary) async {
     const encoder = JsonEncoder.withIndent('  ');
@@ -101,9 +103,30 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
     );
   }
 
+  void _doSaveTrip(Itinerary itinerary) async {
+    final provider = context.read<TravelProvider>();
+    final region = provider.state?.region ?? '';
+    final category = provider.state?.category ?? '';
+    final title = region.isNotEmpty
+        ? region
+        : (category.isNotEmpty ? category : 'Seoul Trip');
+    final date = DateTime.now().toIso8601String().substring(0, 10);
+    final links = itinerary.sources
+        .map((s) => s.sourceUrl)
+        .where((u) => u.isNotEmpty)
+        .toList();
+    await TripStorageService.saveTrip(title, date, links);
+  }
+
   @override
   Widget build(BuildContext context) {
     final itinerary = context.watch<TravelProvider>().itinerary;
+
+    if (itinerary != null && !_hasSaved) {
+      _hasSaved = true;
+      WidgetsBinding.instance.addPostFrameCallback(
+          (_) { if (mounted) _doSaveTrip(itinerary); });
+    }
 
     if (itinerary == null) {
       return Scaffold(
