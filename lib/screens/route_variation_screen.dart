@@ -443,16 +443,29 @@ String? _exitNumber(List<String> segments) {
 
 /// Named (non-numbered) subway lines, mapped to a label a foreign rider can
 /// match against the platform signage.
+/// Matched case-insensitively against the cleaned line name, in both the Korean
+/// (lang=0) and English (lang=1) forms ODsay returns. Order matters: more
+/// specific keys come first because matching is substring-based — e.g. "bundang"
+/// is a substring of "sinbundang"/"suin-bundang", so the bare forms come last.
 const _namedLines = {
-  '수인.분당': 'the Suin-Bundang Line',
-  '수인·분당': 'the Suin-Bundang Line',
   '수인분당': 'the Suin-Bundang Line',
-  '분당': 'the Bundang Line',
-  '경의중앙': 'the Gyeongui-Jungang Line',
+  '수인·분당': 'the Suin-Bundang Line',
+  '수인.분당': 'the Suin-Bundang Line',
+  'suin-bundang': 'the Suin-Bundang Line',
   '신분당': 'the Sinbundang Line',
+  'sinbundang': 'the Sinbundang Line',
+  'shinbundang': 'the Sinbundang Line',
+  '경의중앙': 'the Gyeongui-Jungang Line',
+  'gyeongui-jungang': 'the Gyeongui-Jungang Line',
+  'gyeongui': 'the Gyeongui-Jungang Line',
   '공항철도': 'the Airport Railroad (AREX)',
+  'airport railroad': 'the Airport Railroad (AREX)',
   '경춘': 'the Gyeongchun Line',
+  'gyeongchun': 'the Gyeongchun Line',
   '우이신설': 'the Ui-Sinseol Line',
+  'ui-sinseol': 'the Ui-Sinseol Line',
+  '분당': 'the Bundang Line',
+  'bundang': 'the Bundang Line',
 };
 
 /// One parsed transit segment (start/end station + a rider-friendly line label).
@@ -466,7 +479,9 @@ class _Seg {
 /// English-ish line label from an ODsay lane chunk
 /// (e.g. "🚇 지하철 수도권 2호선" → "Line 2", "🚌 버스 472" → "Bus 472").
 String _lineLabel(String chunk) {
-  final isBus = chunk.contains('🚌') || chunk.contains('버스');
+  final isBus = chunk.contains('🚌') ||
+      chunk.contains('버스') ||
+      RegExp(r'\bbus\b', caseSensitive: false).hasMatch(chunk);
   var c = chunk
       .replaceAll('🚇', '')
       .replaceAll('🚌', '')
@@ -474,12 +489,16 @@ String _lineLabel(String chunk) {
       .replaceFirst('지하철', '')
       .replaceFirst('버스', '')
       .replaceAll('수도권', '')
+      // English structural labels ODsay emits in lang=1 ("Subway"/"Bus").
+      .replaceAll(RegExp(r'\b(Subway|Bus)\b', caseSensitive: false), '')
       .trim();
   if (isBus) return c.isEmpty ? 'the bus' : 'Bus $c';
-  final m = RegExp(r'(\d+)호선').firstMatch(c);
+  // Korean "2호선" or English "Line 2".
+  final m = RegExp(r'(\d+)\s*호선').firstMatch(c) ??
+      RegExp(r'Line\s*(\d+)', caseSensitive: false).firstMatch(c);
   if (m != null) return 'Line ${m.group(1)}';
   for (final e in _namedLines.entries) {
-    if (c.contains(e.key)) return e.value;
+    if (c.toLowerCase().contains(e.key.toLowerCase())) return e.value;
   }
   return c;
 }
@@ -540,6 +559,28 @@ const _hardTransferStations = <String>{
   '충무로', '공덕', '디지털미디어시티', '사당', '잠실', '김포공항',
   '청량리', '교대', '강남', '약수',
 };
+
+/// Same interchanges in ODsay's English romanisation (lang=1), substring-matched
+/// against the raw station name. Best effort — a miss only downgrades a transfer
+/// to a simple "EASY" change, never an error.
+// Tokens verified against ODsay's actual lang=1 station names. Substring-matched,
+// so the shortest distinctive form is used (more robust to trailing decorations).
+// 'university of education' = 교대 (Seoul National University of Education) — kept
+// distinct from 서울대입구 ("Seoul Nat'l Univ.") to avoid a false positive.
+const _hardTransferStationsEn = <String>[
+  'seoul station', 'sindorim', 'dongdaemun history', 'express bus terminal',
+  'wangsimni', 'jongno 3', 'chungmuro', 'gongdeok', 'digital media city',
+  'sadang', 'jamsil', 'gimpo international airport', 'cheongnyangni',
+  'university of education', 'gangnam', 'yaksu',
+];
+
+/// Whether a transfer station is one of Seoul's big/complex interchanges,
+/// checking the Korean name (lang=0) and the English romanisation (lang=1).
+bool _isHardTransfer(String station) {
+  if (_hardTransferStations.contains(_normStation(station))) return true;
+  final en = station.toLowerCase();
+  return _hardTransferStationsEn.any(en.contains);
+}
 
 /// Inline transit options for one hop, woven into the route-summary timeline.
 /// Shows one mode button per available ODsay option (지하철 / 버스 / 버스+지하철)
@@ -1032,7 +1073,7 @@ class _TransferRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hard = _hardTransferStations.contains(_normStation(transfer.station));
+    final hard = _isHardTransfer(transfer.station);
     final chipColor = hard ? kWarningBorder : kSuccess;
     final chipText = hard ? 'COMPLEX' : 'EASY';
     final signs = transfer.toLine.isNotEmpty

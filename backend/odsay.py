@@ -29,9 +29,9 @@ ODSAY_ENDPOINT = "https://api.odsay.com/v1/api/searchPubTransPathT"
 
 
 _PATH_TYPE_LABEL = {
-    1: "🚇 지하철",
-    2: "🚌 버스",
-    3: "🚇🚌 지하철+버스",
+    1: "🚇 Subway",
+    2: "🚌 Bus",
+    3: "🚇🚌 Subway+Bus",
 }
 
 
@@ -48,11 +48,13 @@ def _fetch_all_paths(start_lat: float, start_lng: float,
         return []
 
     encoded_key = quote(ODSAY_API_KEY, safe="")
+    # lang=1 → English station/line names (default 0 = Korean). The structural
+    # labels below are emitted in English to match.
     url = (
         f"{ODSAY_ENDPOINT}"
         f"?SX={start_lng}&SY={start_lat}"
         f"&EX={end_lng}&EY={end_lat}"
-        f"&OPT={opt}&apiKey={encoded_key}"
+        f"&OPT={opt}&lang=1&apiKey={encoded_key}"
     )
     headers: dict[str, str] = {}
     if ODSAY_SERVICE_URI:
@@ -103,7 +105,7 @@ def _lane_name(lane: Any) -> str:
 
 def _format_subpath(subpath: list[dict[str, Any]] | None) -> list[str]:
     """subPath → 한 줄짜리 segment 문자열 리스트."""
-    icons = {1: "🚇 지하철", 2: "🚌 버스", 3: "🚶 도보"}
+    icons = {1: "🚇 Subway", 2: "🚌 Bus", 3: "🚶 Walk"}
     lines: list[str] = []
     for seg in subpath or []:
         ttype = seg.get("trafficType")
@@ -112,15 +114,15 @@ def _format_subpath(subpath: list[dict[str, Any]] | None) -> list[str]:
         icon = icons.get(ttype, "·")
 
         if ttype == 3:
-            lines.append(f"{icon} {sec_time}분 ({dist}m)")
+            lines.append(f"{icon} {sec_time} min ({dist}m)")
             continue
 
         lane = _lane_name(seg.get("lane"))
         start = seg.get("startName") or "?"
         end   = seg.get("endName")   or "?"
         n_stop = seg.get("stationCount")
-        extra = f", {n_stop}정거장" if n_stop is not None else ""
-        lines.append(f"{icon} {lane}  {start} → {end}  ({sec_time}분{extra})")
+        extra = f", {n_stop} stops" if n_stop is not None else ""
+        lines.append(f"{icon} {lane}  {start} → {end}  ({sec_time} min{extra})")
     return lines
 
 
@@ -154,7 +156,7 @@ def fetch_odsay_options(start_lat: float, start_lng: float,
 
         options.append({
             "type":          ptype,
-            "type_label":    _PATH_TYPE_LABEL.get(ptype, f"기타({ptype})"),
+            "type_label":    _PATH_TYPE_LABEL.get(ptype, f"Other({ptype})"),
             "total_minutes": info.get("totalTime"),
             "fare_won":      info.get("payment"),
             "walk_meters":   info.get("totalWalk"),
