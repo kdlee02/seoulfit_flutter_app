@@ -1665,16 +1665,16 @@ def _normalize_sources(
 def make_retrieve_node(api_key: str):
     def retrieve_node(state: TravelState) -> TravelState:
         query = build_query(
-            purpose=state.get("purpose"),
-            dietary=state.get("dietary"),
-            location=state.get("location"),
-            duration=state.get("duration"),
+            purpose=state.get("category"),
+            dietary=state.get("restrictions"),
+            location=state.get("region"),
+            duration=state.get("travel_dates"),
         )
         try:
             courses = retrieve_courses(
                 api_key=api_key, query=query, k=5,
-                location=state.get("location"),
-                purpose=state.get("purpose"),
+                location=state.get("region"),
+                purpose=state.get("category"),
             )
         except Exception as e:
             return {
@@ -1695,8 +1695,8 @@ def plan_node(state: TravelState) -> TravelState:
             "messages": [AIMessage(content="⚠️ No candidate courses found. Try different details.")],
         }
 
-    location = state.get("location") or ""
-    purpose = state.get("purpose") or ""
+    location = state.get("region") or ""
+    purpose = state.get("category") or ""
 
     area_representatives = build_area_representative_supplement(
         location=location,
@@ -1705,7 +1705,7 @@ def plan_node(state: TravelState) -> TravelState:
     )
 
     google_supplement = []
-    dietary = state.get("dietary") or "none"
+    dietary = state.get("restrictions") or "none"
     if GOOGLE_PLACES_API_KEY:
         print("[planner] Google Places 보완 데이터 수집 중...")
         original_message = state.get("original_message") or ""
@@ -1716,7 +1716,7 @@ def plan_node(state: TravelState) -> TravelState:
                 detected_areas_for_google = _detect_area_keys(original_message)
         if not detected_areas_for_google:
             try:
-                dur_days = int(str(state.get("duration") or "3").split()[0])
+                dur_days = int(str(state.get("travel_dates") or "3").split()[0])
             except Exception:
                 dur_days = 3
             detected_areas_for_google = ["hongdae", "gangnam", "itaewon", "myeongdong", "seongsu"][:dur_days]
@@ -1749,7 +1749,7 @@ def plan_node(state: TravelState) -> TravelState:
     valid_names = _build_valid_poi_names(courses, supplemental_pois)
 
     try:
-        duration_days = int(str(state.get("duration") or "3").split()[0])
+        duration_days = int(str(state.get("travel_dates") or "3").split()[0])
     except Exception:
         duration_days = 3
 
@@ -1781,10 +1781,10 @@ def plan_node(state: TravelState) -> TravelState:
     try:
         with lm_context():
             result = get_planner()(
-                duration=state.get("duration") or "",
+                duration=state.get("travel_dates") or "",
                 location=location,
                 budget=state.get("budget") or "",
-                dietary=state.get("dietary") or "none",
+                dietary=state.get("restrictions") or "none",
                 purpose=purpose,
                 candidate_courses=courses_prompt,
             )
@@ -1844,10 +1844,10 @@ def plan_node(state: TravelState) -> TravelState:
     try:
         from pipeline import run_pipeline
         user_state_for_pipeline = {
-            "purpose": state.get("purpose") or "general",
-            "location": state.get("location") or "",
-            "duration": state.get("duration") or "",
-            "dietary": state.get("dietary") or "none",
+            "purpose": state.get("category") or "general",
+            "location": state.get("region") or "",
+            "duration": state.get("travel_dates") or "",
+            "dietary": state.get("restrictions") or "none",
         }
         print("[planner] pipeline 실행 중...")
         itinerary, pipeline_log = run_pipeline(
