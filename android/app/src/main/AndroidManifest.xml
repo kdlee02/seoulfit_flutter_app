@@ -12,9 +12,14 @@
 
     <queries>
         <package android:name="net.daum.android.map" />
+        <package android:name="com.nhn.android.nmap" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="kakaomap" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="nmap" />
         </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />

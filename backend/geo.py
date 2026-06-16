@@ -148,15 +148,23 @@ def extract_requested_areas(
     location: str | None,
     purpose: str | None = None,
 ) -> list[str]:
-    """Extract requested Seoul neighborhoods from user free-text."""
+    """Extract requested Seoul neighborhoods from user free-text.
+
+    Areas are returned in the order they first appear in the text (location is
+    scanned before purpose), so a "Gangnam and Hongdae" request maps Day 1 to
+    Gangnam — matching what the user actually typed rather than an arbitrary
+    alias-table order.
+    """
     text = f"{location or ''} {purpose or ''}".lower()
-    found: list[str] = []
+    positions: dict[str, int] = {}
     for area, _alias, pattern in _ALIAS_PATTERNS:
-        if area in found:
+        match = pattern.search(text)
+        if not match:
             continue
-        if pattern.search(text):
-            found.append(area)
-    return found
+        pos = match.start()
+        if area not in positions or pos < positions[area]:
+            positions[area] = pos
+    return sorted(positions, key=lambda area: positions[area])
 
 
 def infer_area(

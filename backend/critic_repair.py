@@ -236,6 +236,26 @@ def area_matches_requested(area: str | None, requested: str) -> bool:
     return area in adjacent.get(requested, {requested})
 
 
+def belongs_to_other_requested_area(
+    poi_area: str | None,
+    target_area: str | None,
+    requested_areas: list[str],
+) -> bool:
+    """True if the POI clearly belongs to a requested area other than the day's.
+
+    Keeps the global fallback fillers from dragging another requested area's POIs
+    (e.g. Gangnam) into a day that should stay focused on its own area.
+    """
+    if not poi_area:
+        return False
+    for area in requested_areas:
+        if area == target_area:
+            continue
+        if area_matches_requested(poi_area, area):
+            return True
+    return False
+
+
 def is_meal_poi(poi: dict[str, Any]) -> bool:
     ptype = normalize_text(poi.get("type") or poi.get("poi_type"))
     name = normalize_text(poi.get("name") or poi.get("poi_name"))
@@ -779,6 +799,9 @@ class RepairAgent:
                     item for item in pool.values()
                     if normalize_text(item.get("name")) not in used
                     and normalize_text(item.get("type")) in {"restaurant", "cafe"}
+                    and not belongs_to_other_requested_area(
+                        item.get("area"), target_area, requested_areas
+                    )
                 ]
 
             if candidates:
@@ -823,6 +846,9 @@ class RepairAgent:
                 candidates = [
                     item for item in pool.values()
                     if normalize_text(item.get("name")) not in used
+                    and not belongs_to_other_requested_area(
+                        item.get("area"), target_area, requested_areas
+                    )
                 ]
 
             added = 0

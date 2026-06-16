@@ -27,9 +27,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from geo import (
     AREA_ALIASES,
     area_label,
-    area_matches_requested,
     extract_requested_areas,
-    infer_poi_area,
 )
 
 
@@ -40,7 +38,6 @@ from geo import (
 _BASE_DIR = Path(__file__).resolve().parent
 COURSE_DATA_PATH = _BASE_DIR / "course_data.json"
 VECTORSTORE_DIR = _BASE_DIR / "vectorstore"
-POI_VECTORSTORE_DIR = _BASE_DIR / "vectorstore_poi"
 
 EMBEDDING_MODEL = "models/gemini-embedding-001"
 
@@ -216,138 +213,6 @@ def build_or_load_vectorstore(
 
 
 # ---------------------------------------------------------------------------
-# Index B — POI-level document construction and vector store
-# ---------------------------------------------------------------------------
-
-# Area inference (alias matching + haversine fallback) lives in geo.py.
-# Imported at the top of this file.
-
-
-def _time_slot(sequence_order: int, total: int) -> str:
-    """Classify a POI's position in a course as morning / afternoon / evening."""
-    if total <= 1:
-        return "morning"
-    ratio = (sequence_order - 1) / (total - 1)
-    if ratio < 0.34:
-        return "morning"
-    if ratio < 0.67:
-        return "afternoon"
-    return "evening"
-
-
-def _poi_to_document(
-    poi: dict[str, Any],
-    course: dict[str, Any],
-    sequence: list[dict[str, Any]],
-) -> Document:
-    """Build one Index B Document for a single POI.
-
-    page_content encodes location, theme, type, and sequence context so
-    all four dimensions are searchable via embedding similarity.
-    metadata stores structured fields for filtering and downstream use.
-    """
-    total = len(sequence)
-    order = int(poi.get("sequence_order") or 1)
-    slot = _time_slot(order, total)
-    area = infer_poi_area(poi)
-
-    sorted_seq = sorted(sequence, key=lambda p: int(p.get("sequence_order") or 0))
-    idx = next((i for i, p in enumerate(sorted_seq)
-                if int(p.get("sequence_order") or 0) == order), 0)
-    prev_name = sorted_seq[idx - 1].get("poi_name") if idx > 0 else None
-    next_name = sorted_seq[idx + 1].get("poi_name") if idx < total - 1 else None
-
-    themes = ", ".join(course.get("theme_category") or [])
-    address = poi.get("address_en") or poi.get("address_ko") or ""
-
-    page_content = (
-        f"POI: {poi.get('poi_name', '')}\n"
-        f"Type: {poi.get('poi_type', '')}\n"
-        f"Area: {area or 'Seoul'}\n"
-        f"Address: {address}\n"
-        f"Course: {course.get('course_title', '')}\n"
-        f"Source: {course.get('source', '')}\n"
-        f"Themes: {themes}\n"
-        f"Position: {order} of {total} ({slot} slot)\n"
-        f"Comes after: {prev_name or 'start of day'}\n"
-        f"Comes before: {next_name or 'end of day'}\n"
-        f"Estimated stay: {poi.get('estimated_stay_time', 60)} min\n"
-    )
-
-    metadata: dict[str, Any] = {
-        "poi_name":       poi.get("poi_name", ""),
-        "poi_type":       poi.get("poi_type", ""),
-        "area":           area,
-        "themes":         course.get("theme_category") or [],
-        "time_slot":      slot,
-        "course_id":      course.get("course_id", ""),
-        "course_title":   course.get("course_title", ""),
-        "sequence_order": order,
-        "poi":            poi,
-        "course":         course,
-    }
-
-    return Document(page_content=page_content, metadata=metadata)
-
-
-def _build_poi_documents(courses: list[dict[str, Any]]) -> list[Document]:
-    """Expand all courses into one Document per POI."""
-    docs: list[Document] = []
-    for course in courses:
-        sequence = course.get("sequence") or []
-        for poi in sequence:
-            docs.append(_poi_to_document(poi, course, sequence))
-    return docs
-
-
-_poi_vectorstore: FAISS | None = None
-_poi_vectorstore_api_key: str | None = None
-
-
-def build_or_load_poi_vectorstore(
-    api_key: str,
-    persist_dir: Path = POI_VECTORSTORE_DIR,
-    rebuild: bool = False,
-) -> FAISS:
-    """Return a FAISS index where each document is one POI from course_data.json.
-
-    Loads from disk if vectorstore_poi/index.faiss exists and rebuild=False.
-    Otherwise embeds all POIs and saves to disk.
-    """
-    global _poi_vectorstore, _poi_vectorstore_api_key
-
-    if _poi_vectorstore is not None and _poi_vectorstore_api_key == api_key and not rebuild:
-        return _poi_vectorstore
-
-    embeddings = _get_embeddings(api_key)
-    index_file = persist_dir / "index.faiss"
-
-    if index_file.exists() and not rebuild:
-        store = FAISS.load_local(
-            str(persist_dir),
-            embeddings,
-            allow_dangerous_deserialization=True,
-        )
-    else:
-        courses = _load_courses()
-        docs = _build_poi_documents(courses)
-        metadatas = [d.metadata for d in docs]
-
-        text_embeddings = _embed_documents_chunked(docs, embeddings)
-        store = FAISS.from_embeddings(
-            text_embeddings=text_embeddings,
-            embedding=embeddings,
-            metadatas=metadatas,
-        )
-        persist_dir.mkdir(parents=True, exist_ok=True)
-        store.save_local(str(persist_dir))
-
-    _poi_vectorstore = store
-    _poi_vectorstore_api_key = api_key
-    return store
-
-
-# ---------------------------------------------------------------------------
 # Retrieval
 # ---------------------------------------------------------------------------
 
@@ -511,8 +376,7 @@ def parse_day_segments(
     """Split a trip request into per-area / per-purpose day segments.
 
     Returns a list of segment dicts with day_numbers + area + purpose_hint and
-    empty anchor_courses / supplement_pois slots. Downstream retrieval fills
-    those in.
+    an empty anchor_courses slot. Downstream retrieval fills it in.
 
     If no areas are detected in the user's text, returns a single segment
     covering every day with area=None and purpose_hint=purpose.
@@ -526,7 +390,6 @@ def parse_day_segments(
             "area":            None,
             "purpose_hint":    purpose or "",
             "anchor_courses":  [],
-            "supplement_pois": [],
         }]
 
     purpose_hints = _split_purpose_by_area(purpose or "", areas)
@@ -549,89 +412,8 @@ def parse_day_segments(
             "area":            area,
             "purpose_hint":    purpose_hints.get(area, purpose or ""),
             "anchor_courses":  [],
-            "supplement_pois": [],
         })
     return segments
-
-
-def _audit_gaps(
-    anchor_courses: list[dict[str, Any]],
-    segment: dict[str, Any],
-) -> dict[str, bool]:
-    """Check whether anchor courses cover the segment's purpose.
-
-    Returns {purpose_gap}. True means Index B should run a targeted query.
-    Area coverage and meal slots are enforced downstream by the validator and
-    critic-repair, so those checks are not duplicated here.
-    """
-    purpose_hint = (segment.get("purpose_hint") or "").lower()
-    # Drop short tokens — single chars and conjunctions hurt more than they help.
-    purpose_keywords = [w for w in re.findall(r"[a-z가-힣]+", purpose_hint) if len(w) > 2]
-
-    if not purpose_keywords:
-        return {"purpose_gap": False}
-
-    if not anchor_courses:
-        return {"purpose_gap": True}
-
-    for course in anchor_courses:
-        themes_lower = [t.lower() for t in (course.get("theme_category") or [])]
-        for poi in (course.get("sequence") or []):
-            poi_name = (poi.get("poi_name") or "").lower()
-            poi_type = (poi.get("poi_type") or "").lower()
-            if any(
-                kw in poi_name
-                or kw in poi_type
-                or any(kw in t for t in themes_lower)
-                for kw in purpose_keywords
-            ):
-                return {"purpose_gap": False}
-
-    return {"purpose_gap": True}
-
-
-def _segment_poi_search(
-    store_b: FAISS,
-    query: str,
-    requested_area: str | None,
-    k: int,
-) -> list[Document]:
-    """POI similarity search with adjacency-aware area filtering.
-
-    If a segment area is given, the filter accepts the area AND its walkably
-    adjacent neighbors (e.g. hongdae also accepts hapjeong/mangwon/yeonnam/mapo).
-    Without adjacency expansion, a Hongdae query would only see ~13 strict-Hongdae
-    POIs in the corpus.
-
-    Falls back to unfiltered top-k * 4 + post-filter if the filtered search
-    returns fewer than k results, or if the LangChain version refuses callables.
-    """
-    if not requested_area:
-        return store_b.similarity_search(query, k=k)
-
-    def _matches(meta: dict[str, Any]) -> bool:
-        return area_matches_requested(meta.get("area"), requested_area)
-
-    try:
-        docs = store_b.similarity_search(query, k=k, filter=_matches)
-    except (TypeError, ValueError):
-        docs = []
-
-    if len(docs) >= k:
-        return docs
-
-    raw = store_b.similarity_search(query, k=k * 4)
-    seen_names = {(d.metadata.get("poi_name") or "") for d in docs}
-    for d in raw:
-        name = d.metadata.get("poi_name") or ""
-        if name in seen_names:
-            continue
-        if _matches(d.metadata):
-            docs.append(d)
-            seen_names.add(name)
-            if len(docs) >= k:
-                break
-    return docs[:k]
 
 
 def retrieve_for_segments(
@@ -639,21 +421,19 @@ def retrieve_for_segments(
     segments: list[dict[str, Any]],
     purpose: str | None = None,
     courses_per_segment: int = 3,
-    pois_per_gap: int = 5,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Per-segment dual-index retrieval.
+    """Per-segment Index A retrieval.
 
-    For each segment:
-      1. Index A → top-k whole courses for the (area, purpose) pair.
-      2. _audit_gaps decides whether any coverage dimension is missing.
-      3. Index B → gap-fill POIs, one targeted query per gap, deduplicated.
+    For each segment, pull the top-k whole anchor courses for the (area, purpose)
+    pair from Index A. Gaps the courses don't cover (cafes, restaurants, K-POP,
+    shopping) are filled later by Google Places in plan_node and by the validator
+    / critic-repair.
 
     Returns (segments_with_data, all_anchor_courses_flat). The flat list is
     deduplicated by course_id and is what TravelState.retrieved_courses should
     be set to for backward compat with critic_repair / _normalize_sources.
     """
     store_a = build_or_load_vectorstore(api_key)
-    store_b = build_or_load_poi_vectorstore(api_key)
 
     seen_course_ids: set[str] = set()
     all_courses: list[dict[str, Any]] = []
@@ -663,7 +443,6 @@ def retrieve_for_segments(
         purpose_hint = seg.get("purpose_hint") or ""
         area_lbl = area_label(area) if area else ""
 
-        # --- Index A: anchor courses ---
         query_a = f"{area_lbl} {purpose_hint} Seoul travel itinerary".strip()
         docs_a = store_a.similarity_search(query_a, k=courses_per_segment)
 
@@ -679,44 +458,9 @@ def retrieve_for_segments(
                 all_courses.append(course)
         seg["anchor_courses"] = anchors
 
-        # --- Gap audit ---
-        gaps = _audit_gaps(anchors, seg)
         print(
             f"[RAG] segment days={seg.get('day_numbers')} area={area or '-'} "
-            f"anchors={len(anchors)} purpose_gap={gaps['purpose_gap']}"
+            f"anchors={len(anchors)}"
         )
-
-        if not gaps["purpose_gap"]:
-            seg["supplement_pois"] = []
-            continue
-
-        # --- Index B: purpose gap-fill query ---
-        gap_queries: list[str] = [f"{area_lbl} {purpose_hint}".strip()]
-
-        seen_poi_names: set[str] = set()
-        suppl: list[dict[str, Any]] = []
-        for q in gap_queries:
-            docs_b = _segment_poi_search(store_b, q, area, pois_per_gap)
-            for d in docs_b:
-                poi = d.metadata.get("poi") or {}
-                name = (poi.get("poi_name") or "").strip()
-                if not name or name in seen_poi_names:
-                    continue
-                seen_poi_names.add(name)
-                course = d.metadata.get("course") or {}
-                cid = course.get("course_id")
-                # Annotate the POI with parent course attribution so the prompt
-                # can surface it and the LLM can generate a valid sources entry.
-                suppl.append({
-                    **poi,
-                    "course_id":    cid or "",
-                    "course_title": course.get("course_title", ""),
-                    "source":       course.get("source", ""),
-                    "source_url":   course.get("source_url", ""),
-                })
-                if cid and cid not in seen_course_ids:
-                    seen_course_ids.add(cid)
-                    all_courses.append(course)
-        seg["supplement_pois"] = suppl
 
     return segments, all_courses

@@ -40,11 +40,10 @@ from geo import (
     haversine_km as _haversine_km,
     infer_area_from_fields as _infer_area_from_text_or_coords,
 )
-from llm import lm_context
+from llm import get_lm, lm_context
 from rag import (
     build_query,
     parse_day_segments,
-    retrieve_courses,
     retrieve_for_segments,
 )
 from state import TravelState
@@ -714,7 +713,11 @@ def get_fixer() -> dspy.Predict:
 # Candidate formatting
 # ---------------------------------------------------------------------------
 
-def _format_one_course(c: dict[str, Any], idx: int) -> str:
+def _format_one_course(
+    c: dict[str, Any],
+    idx: int,
+    restrict_area: str | None = None,
+) -> str:
     title = c.get("course_title", "")
     course_id = c.get("course_id", "")
     source = c.get("source", "")
@@ -729,6 +732,13 @@ def _format_one_course(c: dict[str, Any], idx: int) -> str:
         lat = p.get("lat")
         lng = p.get("lng")
         area = _infer_area_from_text_or_coords(name, address, lat, lng) or ""
+
+        # Anchor courses are whole-city itineraries; when this block belongs to a
+        # specific requested area, drop POIs that clearly sit in a different area
+        # so the day's candidate list stays area-pure. POIs whose area can't be
+        # inferred are kept (benefit of the doubt).
+        if restrict_area and area and not _area_matches_requested(area, restrict_area):
+            continue
 
         poi_lines.append(
             f"    - {name} "
@@ -749,28 +759,6 @@ def _format_one_course(c: dict[str, Any], idx: int) -> str:
     )
 
 
-def _format_one_poi(poi: dict[str, Any]) -> str:
-    name = poi.get("poi_name", "")
-    address = poi.get("address_en") or poi.get("address_ko", "")
-    lat = poi.get("lat")
-    lng = poi.get("lng")
-    area = _infer_area_from_text_or_coords(name, address, lat, lng) or ""
-    source_str = (
-        f" course_id={poi['course_id']} source_url={poi['source_url']}"
-        if poi.get("source_url")
-        else ""
-    )
-    return (
-        f"  - {name} "
-        f"[{poi.get('poi_type', '')}] "
-        f"area={area} "
-        f"addr={address} "
-        f"lat={lat} lng={lng} "
-        f"stay={poi.get('estimated_stay_time')}min"
-        f"{source_str}"
-    )
-
-
 def _format_segment_block(seg: dict[str, Any]) -> str:
     days = seg.get("day_numbers") or []
     if not days:
@@ -787,21 +775,21 @@ def _format_segment_block(seg: dict[str, Any]) -> str:
     lines: list[str] = [f"=== {day_label} CANDIDATES: {header} ==="]
 
     anchors = seg.get("anchor_courses") or []
-    if anchors:
+    rendered: list[str] = []
+    for i, c in enumerate(anchors, start=1):
+        block = _format_one_course(c, i, restrict_area=area)
+        # Drop a course that has no POIs left in this area after filtering.
+        if block.rstrip().endswith("POIs:"):
+            continue
+        rendered.append(block)
+
+    if rendered:
         lines.append("")
         lines.append("[ANCHOR COURSE — use sequence as the day backbone if relevant]")
-        for i, c in enumerate(anchors, start=1):
-            lines.append(_format_one_course(c, i))
+        lines.extend(rendered)
     else:
         lines.append("")
-        lines.append("[ANCHOR COURSE — none available; rely on supplement POIs + Google Places]")
-
-    suppl = seg.get("supplement_pois") or []
-    if suppl:
-        lines.append("")
-        lines.append("[SUPPLEMENT POIs — individual additions for gaps in anchor courses]")
-        for poi in suppl:
-            lines.append(_format_one_poi(poi))
+        lines.append("[ANCHOR COURSE — none available; rely on Google Places]")
 
     return "\n".join(lines)
 
@@ -939,6 +927,26 @@ def _poi_area(poi: dict[str, Any]) -> str | None:
         poi.get("lat"),
         poi.get("lng"),
     )
+
+
+def _belongs_to_other_requested_area(
+    poi_area: str | None,
+    target_area: str | None,
+    requested_areas: list[str],
+) -> bool:
+    """True if the POI clearly belongs to a requested area other than the day's.
+
+    Used to keep the global fallback fillers from dragging (e.g.) Gangnam POIs
+    into the Hongdae day when an area-specific candidate runs short.
+    """
+    if not poi_area:
+        return False
+    for area in requested_areas:
+        if area == target_area:
+            continue
+        if _area_matches_requested(poi_area, area):
+            return True
+    return False
 
 
 def _is_meal_poi(poi: dict[str, Any]) -> bool:
@@ -1148,6 +1156,9 @@ def _validate_and_repair_itinerary(
                 item for item in pool.values()
                 if _normalize_text(item.get("name")) not in used_names
                 and _normalize_text(item.get("type")) in {"restaurant", "cafe"}
+                and not _belongs_to_other_requested_area(
+                    item.get("area"), day_area, requested_areas
+                )
             ]
 
         if candidates:
@@ -1181,6 +1192,9 @@ def _validate_and_repair_itinerary(
             candidates = [
                 item for item in pool.values()
                 if _normalize_text(item.get("name")) not in used_names
+                and not _belongs_to_other_requested_area(
+                    item.get("area"), target_area, requested_areas
+                )
             ]
 
         while len(pois) < 5 and candidates:
@@ -1431,17 +1445,32 @@ def plan_node(state: TravelState) -> TravelState:
     )
 
     try:
-        with lm_context():
-            result = get_planner()(
-                duration=duration,
-                location=location,
-                budget=budget,
-                dietary=dietary,
-                purpose=purpose,
-                candidate_courses=prompt_context,
-            )
+        raw_json_str: str | None = None
+        try:
+            with lm_context():
+                result = get_planner()(
+                    duration=duration,
+                    location=location,
+                    budget=budget,
+                    dietary=dietary,
+                    purpose=purpose,
+                    candidate_courses=prompt_context,
+                )
+            raw_json_str = result.itinerary_json
+        except Exception as dspy_err:
+            # ChatAdapter fails when Gemini outputs plain JSON without DSPy's
+            # [[ ## field ## ]] markers. Recover by pulling the raw text from
+            # the LM's response history and letting _parse_itinerary_json handle it.
+            lm = get_lm()
+            if lm.history:
+                last_entry = lm.history[-1]
+                outputs = last_entry.get("outputs") or []
+                if outputs:
+                    raw_json_str = outputs[0].get("text") or ""
+            if not raw_json_str:
+                raise dspy_err
 
-        itinerary = _parse_itinerary_json(result.itinerary_json)
+        itinerary = _parse_itinerary_json(raw_json_str)
 
         itinerary = _validate_and_repair_itinerary(
             itinerary,

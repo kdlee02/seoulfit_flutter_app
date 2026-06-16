@@ -16,7 +16,7 @@ class TravelState(TypedDict, total=False):
 
     # RAG + planning
     retrieved_courses: list[dict[str, Any]]   # FAISS 검색 결과 코스 리스트 (flat merge of all segment anchors)
-    day_segments: Optional[list[dict[str, Any]]]  # per-day-segment anchor courses + supplement POIs
+    day_segments: Optional[list[dict[str, Any]]]  # per-day-segment anchor courses (Index A)
     itinerary: Optional[dict[str, Any]]       # 최종 일정 (구조화된 JSON)
 
     # Planner → critic_repair handoff

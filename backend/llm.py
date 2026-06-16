@@ -15,6 +15,9 @@ context, so the global settings stay untouched and restarts are safe.
 from __future__ import annotations
 
 import dspy
+from dspy.adapters.chat_adapter import ChatAdapter
+
+_chat_adapter = ChatAdapter()
 
 
 _lm: dspy.LM | None = None
@@ -59,4 +62,7 @@ def lm_context():
         with lm_context():
             result = my_predictor(...)
     """
-    return dspy.settings.context(lm=get_lm())
+    # Use ChatAdapter so DSPy never sends a response_format schema to Gemini.
+    # The JSONAdapter includes DSPy-internal `desc`/`prefix` fields in the schema
+    # which Gemini rejects with a 400 INVALID_ARGUMENT error.
+    return dspy.settings.context(lm=get_lm(), adapter=_chat_adapter)

@@ -72,7 +72,7 @@ class _ItineraryGenerationScreenState extends State<ItineraryGenerationScreen>
     if (!mounted) return;
     final provider = context.read<TravelProvider>();
     if (_ctrl.isCompleted && _generationDone && provider.hasItinerary) {
-      Navigator.pushReplacementNamed(context, '/critic-repair');
+      Navigator.pushReplacementNamed(context, '/itinerary-map');
     }
   }
 
