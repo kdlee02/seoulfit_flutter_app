@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:http/http.dart' as http;
 
 import '../models/travel_state.dart';
@@ -12,15 +14,22 @@ class ApiService {
   static final Map<String, String> _arrivalTipCache = {};
   /// Base URL for the backend.
   ///
-  /// - In local dev, defaults to `http://localhost:8000` so `flutter run`
-  ///   works without flags.
-  /// - In production, build with
-  ///   `--dart-define=API_BASE_URL=https://<backend-host>`.
-  /// - An empty string is treated as "same origin".
-  static const String _baseRaw = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000',
-  );
+  /// - When `API_BASE_URL` is passed via `--dart-define`, that value wins
+  ///   (use this in production: `--dart-define=API_BASE_URL=https://<host>`).
+  ///   An empty value is treated as "same origin".
+  /// - Without an override, local dev picks a platform-aware default so
+  ///   `flutter run` works without flags: the Android emulator reaches the
+  ///   host via `10.0.2.2`, while iOS simulator / desktop / web use
+  ///   `localhost`.
+  static String get _baseRaw {
+    if (const bool.hasEnvironment('API_BASE_URL')) {
+      return const String.fromEnvironment('API_BASE_URL');
+    }
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000';
+    }
+    return 'http://localhost:8000';
+  }
 
   /// Empty string → same-origin; otherwise the literal value (no trailing slash).
   static String get _base {
