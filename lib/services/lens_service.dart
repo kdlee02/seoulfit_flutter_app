@@ -15,7 +15,7 @@ class LensService {
   /// - Empty string → same-origin.
   static const String _baseRaw = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8000',
+    defaultValue: 'http://10.0.2.2:8000',
   );
 
   static String get _base {

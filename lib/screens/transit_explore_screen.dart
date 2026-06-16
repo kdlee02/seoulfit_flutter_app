@@ -1,11 +1,122 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../providers/travel_provider.dart';
 
-class TransitExploreScreen extends StatelessWidget {
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+class _Category {
+  final String label;
+  final String emoji;
+  const _Category({required this.label, required this.emoji});
+}
+
+class _BackendEvent {
+  final String name;
+  final String date;
+  final String venue;
+  final String description;
+  final String imageUrl;
+
+  const _BackendEvent({
+    required this.name,
+    required this.date,
+    required this.venue,
+    required this.description,
+    required this.imageUrl,
+  });
+
+  factory _BackendEvent.fromJson(Map<String, dynamic> json) => _BackendEvent(
+        name: (json['name'] as String?) ?? '',
+        date: (json['date'] as String?) ?? '',
+        venue: (json['venue'] as String?) ?? '',
+        description: (json['description'] as String?) ?? '',
+        imageUrl: (json['image_url'] as String?) ?? '',
+      );
+}
+
+// ---------------------------------------------------------------------------
+// Screen
+// ---------------------------------------------------------------------------
+
+class TransitExploreScreen extends StatefulWidget {
   const TransitExploreScreen({super.key});
+
+  @override
+  State<TransitExploreScreen> createState() => _TransitExploreScreenState();
+}
+
+class _TransitExploreScreenState extends State<TransitExploreScreen> {
+  static const _baseUrl = 'http://10.0.2.2:8000';
+
+  static const _categories = [
+    _Category(label: 'Musical',    emoji: '🎭'),
+    _Category(label: 'Concert',    emoji: '🎤'),
+    _Category(label: 'Exhibition', emoji: '🖼'),
+    _Category(label: 'Classic',    emoji: '🎹'),
+    _Category(label: 'Family',     emoji: '👪'),
+    _Category(label: 'Theater',    emoji: '🎬'),
+  ];
+
+  int _selectedCategory = 0;
+  List<_BackendEvent> _events = [];
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+  }
+
+  Future<void> _fetchEvents() async {
+    setState(() => _loading = true);
+    final travelDates =
+        context.read<TravelProvider>().state?.travelDates ?? '';
+    final category = _categories[_selectedCategory].label;
+    try {
+      final res = await http
+          .post(
+            Uri.parse('$_baseUrl/events'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(
+                {'category': category, 'travel_dates': travelDates}),
+          )
+          .timeout(const Duration(seconds: 40));
+      if (res.statusCode == 200) {
+        final list = jsonDecode(res.body) as List;
+        if (mounted) {
+          setState(() {
+            _events = list
+                .map((e) =>
+                    _BackendEvent.fromJson(e as Map<String, dynamic>))
+                .toList();
+            _loading = false;
+          });
+        }
+        return;
+      }
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _events = [];
+        _loading = false;
+      });
+    }
+  }
+
+  void _selectCategory(int i) {
+    if (i == _selectedCategory) return;
+    setState(() => _selectedCategory = i);
+    _fetchEvents();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,84 +127,72 @@ class TransitExploreScreen extends StatelessWidget {
           children: [
             const AppStatusBar(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 12),
-                    Text('Explore',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: kInk)),
-                    const SizedBox(height: 2),
-                    Text('Events & experiences near you',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13, color: kSubtext)),
-                    const SizedBox(height: 20),
-                    // Events Near You
-                    Row(children: [
-                      const Icon(Icons.celebration_rounded,
-                          size: 16, color: kMint),
-                      const SizedBox(width: 6),
-                      Text('Events Near You',
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: kInk)),
-                    ]),
-                    const SizedBox(height: 10),
-                    const SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _EventCard(
-                            'K-POP Popup\nToday',
-                            'SM Town Coex',
-                            '2km away',
-                            kYellow,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Events in Seoul',
+                                style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: kInk),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Discover performances, exhibitions and\nfestivals during your trip',
+                                style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 13, color: kSubtext),
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 10),
-                          _EventCard(
-                            'Seoul DDP\nExhibition',
-                            'Design Plaza',
-                            'Now open',
-                            kMintLight,
-                          ),
-                          SizedBox(width: 10),
-                          _EventCard(
-                            'Seongsu\nArtisan Fair',
-                            'Seongsu-dong',
-                            'Sat & Sun',
-                            kYellowLight,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () =>
-                            Navigator.pushNamed(context, '/seoul-lens'),
-                        icon: const Icon(Icons.camera_alt_rounded, size: 18),
-                        label: const Text('Try Seoul Lens AR'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kMint,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50)),
-                          elevation: 0,
-                          textStyle: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.w700, fontSize: 15),
                         ),
+                        if (!_loading)
+                          IconButton(
+                            onPressed: _fetchEvents,
+                            icon: const Icon(Icons.refresh_rounded,
+                                color: kSubtext, size: 20),
+                            tooltip: 'Refresh',
+                          ),
+                      ],
+                    ),
+                  ),
+                  // Category grid — 3 columns × 2 rows
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        childAspectRatio: 2.4,
+                      ),
+                      itemCount: _categories.length,
+                      itemBuilder: (_, i) => _CategoryChip(
+                        category: _categories[i],
+                        selected: i == _selectedCategory,
+                        onTap: () => _selectCategory(i),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Event list
+                  Expanded(
+                    child: _loading ? _buildShimmer() : _buildEventGrid(),
+                  ),
+                ],
               ),
             ),
             const AppBottomNav(currentIndex: 3),
@@ -102,53 +201,236 @@ class TransitExploreScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildEventGrid() {
+    if (_events.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.event_busy_rounded, size: 48, color: kSubtext),
+            const SizedBox(height: 12),
+            Text(
+              'No events available during your trip',
+              style: GoogleFonts.plusJakartaSans(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: kInk),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Try another category or refresh.',
+              style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13, color: kSubtext),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _fetchEvents,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kMint,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50)),
+                elevation: 0,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.52,
+      ),
+      itemCount: _events.length,
+      itemBuilder: (_, i) => _EventPosterCard(event: _events[i]),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: kCardBorder,
+      highlightColor: kCanvas,
+      child: GridView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.52,
+        ),
+        itemCount: 4,
+        itemBuilder: (_, __) => Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _EventCard extends StatelessWidget {
-  final String title;
-  final String venue;
-  final String meta;
-  final Color bgColor;
-  const _EventCard(this.title, this.venue, this.meta, this.bgColor);
+// ---------------------------------------------------------------------------
+// Widgets
+// ---------------------------------------------------------------------------
+
+class _CategoryChip extends StatelessWidget {
+  final _Category category;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _CategoryChip({
+    required this.category,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          color: selected ? kMint : kCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected ? kMint : kCardBorder),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(category.emoji, style: const TextStyle(fontSize: 15)),
+            const SizedBox(width: 5),
+            Text(
+              category.label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: selected ? Colors.white : kInk,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EventPosterCard extends StatelessWidget {
+  final _BackendEvent event;
+  const _EventPosterCard({required this.event});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 130,
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: kCard,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kCardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: kMint.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.event_rounded, size: 20, color: kInk),
-          const SizedBox(height: 6),
-          Text(title,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13, fontWeight: FontWeight.w700, color: kInk),
-              maxLines: 2),
-          const SizedBox(height: 4),
-          Text(venue,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11, color: kSubtext),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(20),
+          // Poster image — 3:4 ratio
+          Expanded(
+            flex: 4,
+            child: ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+              child: event.imageUrl.isNotEmpty
+                  ? Image.network(
+                      event.imageUrl,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const _PosterPlaceholder(),
+                    )
+                  : const _PosterPlaceholder(),
             ),
-            child: Text(meta,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: kInk)),
+          ),
+          // Text area
+          Expanded(
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (event.date.isNotEmpty)
+                    Text(
+                      event.date,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFE53E3E),
+                      ),
+                    ),
+                  const SizedBox(height: 3),
+                  Text(
+                    event.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: kInk,
+                      height: 1.3,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (event.venue.isNotEmpty)
+                    Row(
+                      children: [
+                        const Icon(Icons.place_rounded,
+                            size: 10, color: kSubtext),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            event.venue,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10, color: kSubtext),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PosterPlaceholder extends StatelessWidget {
+  const _PosterPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: kMintLight,
+      child: const Center(
+        child: Icon(Icons.event_rounded, size: 36, color: kMint),
       ),
     );
   }

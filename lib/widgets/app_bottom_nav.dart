@@ -15,7 +15,7 @@ class AppBottomNav extends StatelessWidget {
     _NavItem(icon: Icons.chat_bubble_rounded, label: 'Chat'),
     _NavItem(icon: Icons.explore_rounded, label: 'Explore'),
     _NavItem(icon: Icons.camera_alt_rounded, label: 'Lens'),
-    _NavItem(icon: Icons.directions_transit_rounded, label: 'Transit'),
+    _NavItem(icon: Icons.event_available_rounded, label: 'Events'),
     _NavItem(icon: Icons.person_rounded, label: 'Profile'),
   ];
 

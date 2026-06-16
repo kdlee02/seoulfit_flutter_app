@@ -5,6 +5,8 @@ Pipeline: Gemini Vision → seoul.json RAG → Gemini narration.
 Mounted into api.py via app.include_router(router).
 """
 
+from __future__ import annotations
+
 import os
 import json
 import re

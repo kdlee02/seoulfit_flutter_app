@@ -30,6 +30,7 @@ if not hasattr(_lc, "verbose"):
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, AIMessage
 
@@ -109,25 +110,26 @@ def healthz():
 
 class ChatRequest(BaseModel):
     thread_id: str = "travel-session-1"
-    message: str | None = None  # None on first call → triggers greeting
+    message: Optional[str] = None  # None on first call → triggers greeting
 
 
 class StateResponse(BaseModel):
-    duration: str | None
-    location: str | None
-    budget: str | None
-    dietary: str | None
-    purpose: str | None
+    travel_dates: Optional[str] = None
+    category: Optional[str] = None
+    restrictions: Optional[str] = None
+    companion: Optional[str] = None
+    pace: Optional[str] = None
+    region: Optional[str] = None
     current_step: str
     confirmed: bool
-    reply: str | None           # latest AI message text
-    itinerary: dict | None = None  # full day-by-day plan once available
+    reply: Optional[str]
+    itinerary: Optional[dict] = None
 
 
 class TransitStop(BaseModel):
-    name: str | None = None
-    lat: float | None = None
-    lng: float | None = None
+    name: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
 
 
 class TransitLegsRequest(BaseModel):
@@ -147,20 +149,20 @@ def _get_state(thread_id: str) -> dict:
     if snapshot and snapshot.values:
         return snapshot.values
     return {
-        "duration": None, "location": None, "budget": None,
-        "dietary": None, "purpose": None,
+        "travel_dates": None, "category": None, "restrictions": None,
+        "companion": None, "pace": None, "region": None,
         "current_step": "start", "confirmed": False, "messages": [],
     }
 
 
-def _latest_ai_message(state: dict) -> str | None:
+def _latest_ai_message(state: dict) -> Optional[str]:
     for msg in reversed(state.get("messages", [])):
         if isinstance(msg, AIMessage):
             return msg.content
     return None
 
 
-def _run(thread_id: str, user_input: str | None) -> dict:
+def _run(thread_id: str, user_input: Optional[str]) -> dict:
     state = _get_state(thread_id)
     messages = list(state.get("messages", []))
     if user_input:
@@ -185,11 +187,12 @@ def chat(req: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
     return StateResponse(
-        duration=new_state.get("duration"),
-        location=new_state.get("location"),
-        budget=new_state.get("budget"),
-        dietary=new_state.get("dietary"),
-        purpose=new_state.get("purpose"),
+        travel_dates=new_state.get("travel_dates"),
+        category=new_state.get("category"),
+        restrictions=new_state.get("restrictions"),
+        companion=new_state.get("companion"),
+        pace=new_state.get("pace"),
+        region=new_state.get("region"),
         current_step=new_state.get("current_step", "start"),
         confirmed=new_state.get("confirmed", False),
         reply=_latest_ai_message(new_state),
@@ -202,11 +205,12 @@ def get_state(thread_id: str = "travel-session-1"):
     """Return current state without invoking the graph."""
     state = _get_state(thread_id)
     return StateResponse(
-        duration=state.get("duration"),
-        location=state.get("location"),
-        budget=state.get("budget"),
-        dietary=state.get("dietary"),
-        purpose=state.get("purpose"),
+        travel_dates=state.get("travel_dates"),
+        category=state.get("category"),
+        restrictions=state.get("restrictions"),
+        companion=state.get("companion"),
+        pace=state.get("pace"),
+        region=state.get("region"),
         current_step=state.get("current_step", "start"),
         confirmed=state.get("confirmed", False),
         reply=_latest_ai_message(state),
@@ -402,6 +406,75 @@ def poi_detail(req: PoiSummaryRequest):
             contents=format_prompt,
         )
         return {"detail": (fmt_resp.text or "").strip()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class EventsRequest(BaseModel):
+    category: str = "Concert"
+    travel_dates: Optional[str] = None
+
+
+@app.post("/events")
+def get_events(req: EventsRequest):
+    """Generate up to 5 Seoul events for a category using Gemini, then fetch
+    a poster image for each via SerpApi google_images."""
+    import json as _json
+    serpapi_key = os.getenv("SERPAPI_KEY", "")
+    try:
+        from google import genai as _genai
+        import serpapi as _serpapi
+
+        client = _genai.Client(api_key=GEMINI_API_KEY)
+        date_hint = f"\nTravel period context: {req.travel_dates}" if req.travel_dates else ""
+        prompt = (
+            f'Generate up to 5 real or realistic upcoming Seoul events for the category "{req.category}".{date_hint}\n'
+            "Return a JSON array where each element has exactly these fields:\n"
+            '- "name": event name in English\n'
+            '- "date": date string e.g. "Jun 20" or "Jun 20 - Jul 31"\n'
+            '- "venue": venue name in Seoul\n'
+            '- "description": one sentence describing the event\n'
+            "Return only the JSON array, no markdown, no extra text."
+        )
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config={"response_mime_type": "application/json"},
+        )
+        try:
+            events = _json.loads(resp.text or "[]")
+            if not isinstance(events, list):
+                events = []
+        except Exception:
+            events = []
+
+        results = []
+        for event in events[:5]:
+            image_url = ""
+            if serpapi_key:
+                try:
+                    serp = _serpapi.Client(api_key=serpapi_key)
+                    search = serp.search({
+                        "engine": "google_images",
+                        "q": f"{event.get('name', '')} Seoul event poster",
+                        "hl": "en",
+                        "num": 3,
+                    })
+                    imgs = search.get("images_results") or []
+                    if imgs:
+                        image_url = (imgs[0].get("original") or
+                                     imgs[0].get("thumbnail") or "")
+                except Exception:
+                    pass
+
+            results.append({
+                "name": event.get("name", ""),
+                "date": event.get("date", ""),
+                "venue": event.get("venue", ""),
+                "description": event.get("description", ""),
+                "image_url": image_url,
+            })
+        return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -1,85 +1,144 @@
-import dspy
+from __future__ import annotations
+
+import re
+import json
+from types import SimpleNamespace
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 from state import TravelState
 from planner import make_retrieve_node, plan_node
 from critic_repair import make_critic_repair_node
-from llm import set_api_key, lm_context
 
 # ---------------------------------------------------------------------------
-# DSPy Signatures
+# Module-level API key (set by build_graph)
 # ---------------------------------------------------------------------------
 
-class TripDetails(dspy.Signature):
-    """Extract trip details from user input. Use 'MISSING' if not mentioned."""
-    text: str = dspy.InputField()
-    duration: str = dspy.OutputField(desc="Trip length, e.g. '3 days', '1 week'. 'MISSING' if not mentioned.")
-    location: str = dspy.OutputField(desc="Destination or accommodation area. 'MISSING' if not mentioned.")
-    budget: str = dspy.OutputField(desc="Total budget, e.g. '$500'. 'MISSING' if not mentioned.")
-    dietary: str = dspy.OutputField(desc="Dietary restrictions or preferences. 'MISSING' if not mentioned.")
-    purpose: str = dspy.OutputField(desc="Purpose of the trip, e.g. family trip, leisure. 'MISSING' if not mentioned.")
+_api_key: str = ""
 
 
-class ConfirmIntent(dspy.Signature):
-    """Classify whether the user is confirming or editing."""
-    user_message: str = dspy.InputField()
-    intent: str = dspy.OutputField(
-        desc="Return 'CONFIRM' or exactly one of: duration, location, budget, dietary, purpose"
+# ---------------------------------------------------------------------------
+# Direct Gemini helpers (replaces DSPy — avoids response_schema incompatibility)
+# ---------------------------------------------------------------------------
+
+def _gemini_json(prompt: str) -> dict:
+    from google import genai as _genai
+    client = _genai.Client(api_key=_api_key)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config={"response_mime_type": "application/json"},
+    )
+    try:
+        return json.loads(response.text or "{}")
+    except json.JSONDecodeError:
+        return {}
+
+
+def _extract_trip_info(text: str) -> SimpleNamespace:
+    prompt = (
+        f'Extract Seoul trip details from this user message: "{text}"\n\n'
+        "Return JSON with exactly these fields:\n"
+        '- travel_dates: dates or duration like "June 15-17", "3 days". "MISSING" if not mentioned.\n'
+        '- category: interests normalized to K-POP/Cafe/Beauty/Food/Shopping/History/Activity. '
+        'Comma-separated if multiple. "MISSING" if not mentioned.\n'
+        '- restrictions: dietary or physical restrictions. "none" if user says no restrictions. '
+        '"MISSING" if not mentioned.\n'
+        '- companion: solo/couple/friends/family. "MISSING" if not mentioned.\n'
+        '- pace: "packed" for busy or "relaxed" for slow pace. "MISSING" if not mentioned.'
+    )
+    data = _gemini_json(prompt)
+    return SimpleNamespace(
+        travel_dates=str(data.get("travel_dates", "MISSING")),
+        category=str(data.get("category", "MISSING")),
+        restrictions=str(data.get("restrictions", "MISSING")),
+        companion=str(data.get("companion", "MISSING")),
+        pace=str(data.get("pace", "MISSING")),
     )
 
 
-# DSPy predictors — Predict() doesn't bind to an LM at construction time,
-# so we can build them once and let lm_context() supply the LM per call.
-_extractor: dspy.Predict | None = None
-_classifier: dspy.Predict | None = None
+def _extract_region(text: str) -> SimpleNamespace:
+    prompt = (
+        f'Extract Seoul area preferences from this user message: "{text}"\n\n'
+        "Return JSON with exactly this field:\n"
+        "- region: one or more areas from Hongdae/Seongsu/Gangnam/Itaewon/Myeongdong/"
+        "Jongno/Bukchon/Mapo/Insadong/Dongdaemun/Sinchon/Apgujeong. "
+        'Comma-separated if multiple. "NONE" if user asks for recommendation or doesn\'t specify.'
+    )
+    data = _gemini_json(prompt)
+    return SimpleNamespace(region=str(data.get("region", "NONE")))
 
-def get_extractor() -> dspy.Predict:
-    global _extractor
-    if _extractor is None:
-        _extractor = dspy.Predict(TripDetails)
-    return _extractor
 
-def get_classifier() -> dspy.Predict:
-    global _classifier
-    if _classifier is None:
-        _classifier = dspy.Predict(ConfirmIntent)
-    return _classifier
+def _classify_intent(user_message: str) -> SimpleNamespace:
+    prompt = (
+        f'Classify what the user wants to do with their Seoul trip plan.\n'
+        f'Message: "{user_message}"\n\n'
+        "Return JSON with exactly this field:\n"
+        '- intent: "CONFIRM" if user confirms/agrees/wants to proceed. '
+        "Otherwise return exactly one of: travel_dates, category, restrictions, companion, pace, region "
+        "(the field they want to change)."
+    )
+    data = _gemini_json(prompt)
+    return SimpleNamespace(intent=str(data.get("intent", "CONFIRM")))
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Field metadata
 # ---------------------------------------------------------------------------
 
 FIELD_LABELS = {
-    "duration": "📅 Trip Duration",
-    "location": "📍 Destination",
-    "budget": "💰 Budget",
-    "dietary": "🥗 Dietary Restrictions",
-    "purpose": "🎯 Travel Purpose",
+    "travel_dates": "Travel Dates",
+    "category":     "Interests",
+    "restrictions": "Restrictions",
+    "companion":    "Traveling With",
+    "pace":         "Trip Style",
+    "region":       "Seoul Area",
 }
+
+ALL_FIELDS = list(FIELD_LABELS.keys())
 
 FIELD_QUESTIONS = {
-    "duration": "How long is your trip? (e.g. 3 days, 1 week)",
-    "location": "Where are you planning to stay or visit? (e.g. Tokyo, Paris)",
-    "budget": "What is your total budget? (e.g. $500, $1000)",
-    "dietary": "Do you have any dietary restrictions? (e.g. vegetarian, none)",
-    "purpose": "What is the purpose of your trip? (e.g. vacation, family trip, birthday)",
+    "travel_dates": "What are your travel dates or how many days?",
+    "category":     "What are your main interests? (beauty, history, food, shopping, activity)",
+    "restrictions": "Any dietary or physical restrictions? (or 'none')",
+    "companion":    "Who are you traveling with? (solo/couple/friends/family)",
+    "pace":         "Packed schedule or relaxed pace?",
+    "region":       "Which area of Seoul? (e.g. Hongdae, Gangnam, Itaewon) -- or I can recommend!",
 }
 
-ALL_FIELDS = list(FIELD_QUESTIONS.keys())
+_CATEGORY_REGIONS: dict[str, str] = {
+    "beauty":   "Hongdae or Gangnam",
+    "history":  "Jongno or Bukchon",
+    "food":     "Gwangjang Market or Myeongdong",
+    "shopping": "Myeongdong or Gangnam",
+    "activity": "Hongdae or Mapo",
+}
 
 
-def get_missing_fields(state: TravelState) -> list[str]:
-    return [f for f in ALL_FIELDS if not state.get(f)]
+def _recommend_region(category: str | None) -> str:
+    if not category:
+        return "Hongdae or Myeongdong"
+    cat = category.lower()
+    for key, region in _CATEGORY_REGIONS.items():
+        if key in cat:
+            return region
+    return "Hongdae or Myeongdong"
+
+
+def _parse_regions(raw: str) -> str:
+    parts = re.split(r'\s+and\s+|\s*&\s*|\s*,\s*', raw.strip(), flags=re.IGNORECASE)
+    cleaned = [p.strip().title() for p in parts if p.strip()]
+    return ", ".join(cleaned) if cleaned else raw.strip()
 
 
 def build_summary(state: TravelState) -> str:
-    lines = "\n".join(f"{FIELD_LABELS[f]}: {state.get(f)}" for f in ALL_FIELDS)
+    lines = "\n".join(
+        f"{FIELD_LABELS[f]}: {state.get(f) or '--'}" for f in ALL_FIELDS
+    )
     return (
-        f"✅ All travel details collected! Please review:\n\n{lines}\n\n"
-        "If everything looks good, type **'confirm'**.\n"
-        "If you want to change something, just tell me (e.g. 'change budget', 'edit duration')."
+        f"Here's your Seoul trip summary:\n\n{lines}\n\n"
+        "Ready to generate your itinerary? Type 'confirm'.\n"
+        "Want to change something? Just tell me (e.g. 'change region', 'edit dates')."
     )
 
 
@@ -88,53 +147,71 @@ def build_summary(state: TravelState) -> str:
 # ---------------------------------------------------------------------------
 
 def collect_node(state: TravelState) -> TravelState:
+    step = state.get("current_step", "start")
     messages = state.get("messages", [])
 
-    # First turn
-    if state.get("current_step") == "start":
+    if step == "start":
         greeting = (
-            "Hi! I’ll help you plan your trip 😊\n\n"
-            "Please provide the following information in one message:\n"
-            "- Trip duration (e.g. 3 days)\n"
-            "- Destination (e.g. Tokyo)\n"
-            "- Total budget (e.g. $500)\n"
-            "- Dietary restrictions (e.g. vegetarian, none)\n"
-            "- Travel purpose (e.g. vacation, family trip)"
+            "Hi! I'm SeoulFit Buddy \U0001f425\n"
+            "To plan your perfect Seoul trip, tell me:\n"
+            "\U0001f5d3 Travel dates (or I'll pick for you!)\n"
+            "\U0001f3af Interests (beauty, history, food, shopping, activity...)\n"
+            "⚠️ Any restrictions? (dietary, physical, etc.)\n"
+            "\U0001f465 Who are you traveling with? (solo/couple/friends/family)\n"
+            "\U0001f4cb Trip style: packed schedule or relaxed pace?"
         )
-        return {**state, "current_step": "collecting", "messages": [AIMessage(content=greeting)]}
+        return {**state, "current_step": "collecting_basics",
+                "messages": [AIMessage(content=greeting)]}
 
-    # Extract
     last_human = next((m.content for m in reversed(messages) if isinstance(m, HumanMessage)), None)
     if not last_human:
         return state
 
-    updates = {}
-    try:
-        with lm_context():
-            result = get_extractor()(text=last_human)
-        for field in ALL_FIELDS:
-            value = getattr(result, field, "").strip()
-            if value and value.upper() != "MISSING" and not state.get(field):
-                updates[field] = value
-    except Exception as e:
-        return {**state, "messages": [AIMessage(content=f"Error extracting info. Please try again. ({e})")]}
+    if last_human.strip().lower() in ("confirm", "yes", "ok", "go", "generate"):
+        return {**state, "current_step": "confirm"}
 
-    merged = {**state, **updates}
-    missing = get_missing_fields(merged)
+    if step == "collecting_basics":
+        try:
+            result = _extract_trip_info(last_human)
+            updates: dict = {}
+            for field in ["travel_dates", "category", "restrictions", "companion", "pace"]:
+                value = getattr(result, field, "").strip()
+                if value and value.upper() != "MISSING":
+                    updates[field] = value
+        except Exception as e:
+            return {**state, "messages": [AIMessage(
+                content=f"Sorry, I had trouble understanding that. Could you try again? ({e})"
+            )]}
 
-    if missing:
-        questions = "\n".join(f"- {FIELD_QUESTIONS[f]}" for f in missing)
-        return {
-            **merged,
-            "current_step": "collecting",
-            "messages": [AIMessage(content=f"Almost done! I still need:\n\n{questions}")]
-        }
+        region_ask = (
+            "Do you have a specific area in Seoul in mind?\n"
+            "(e.g. Hongdae, Seongsu, Gangnam, Itaewon)\n"
+            "Or I can recommend based on your interests! \U0001f60a"
+        )
+        return {**state, **updates, "current_step": "collecting_region",
+                "messages": [AIMessage(content=region_ask)]}
 
-    return {**merged, "current_step": "confirm"}
+    if step == "collecting_region":
+        try:
+            result = _extract_region(last_human)
+            raw = result.region.strip()
+        except Exception:
+            raw = "NONE"
+
+        if not raw or raw.upper() == "NONE":
+            recommended = _recommend_region(state.get("category"))
+            region_val = f"{recommended} (recommended)"
+        else:
+            region_val = _parse_regions(raw)
+
+        return {**state, "region": region_val, "current_step": "confirm"}
+
+    return state
 
 
 def confirm_node(state: TravelState) -> TravelState:
-    return {**state, "current_step": "confirm", "messages": [AIMessage(content=build_summary(state))]}
+    return {**state, "current_step": "confirm",
+            "messages": [AIMessage(content=build_summary(state))]}
 
 
 def handle_confirm_node(state: TravelState) -> TravelState:
@@ -144,34 +221,38 @@ def handle_confirm_node(state: TravelState) -> TravelState:
         return state
 
     try:
-        with lm_context():
-            result = get_classifier()(user_message=last_human)
+        result = _classify_intent(last_human)
         intent = result.intent.strip().upper()
     except Exception as e:
-        return {**state, "messages": [AIMessage(content=f"Error occurred. Please try again. ({e})")]}
+        return {**state, "messages": [AIMessage(
+            content=f"Error occurred. Please try again. ({e})"
+        )]}
 
     if intent == "CONFIRM":
-        lines = "\n".join(f"{FIELD_LABELS[f]}: {state.get(f)}" for f in ALL_FIELDS)
+        lines = "\n".join(f"{FIELD_LABELS[f]}: {state.get(f) or '--'}" for f in ALL_FIELDS)
         return {
             **state,
             "confirmed": True,
             "current_step": "retrieving",
             "messages": [AIMessage(
-                content=f"🎉 Perfect! Your trip is confirmed.\n\n{lines}\n\n"
-                        "🔍 Searching course catalogue and drafting your itinerary..."
+                content=f"Let's build your Seoul itinerary!\n\n{lines}\n\n"
+                        "Searching the Seoul course catalogue..."
             )]
         }
 
-    if intent.lower() in ALL_FIELDS:
-        field = intent.lower()
+    field = intent.lower()
+    if field in ALL_FIELDS:
+        next_step = "collecting_region" if field == "region" else "collecting_basics"
         return {
             **state,
             field: None,
-            "current_step": "collecting",
+            "current_step": next_step,
             "messages": [AIMessage(content=f"Got it! {FIELD_QUESTIONS[field]}")]
         }
 
-    return {**state, "messages": [AIMessage(content="I didn’t understand. Type 'confirm' or tell me what to change.")]}
+    return {**state, "messages": [AIMessage(
+        content="Type 'confirm' to proceed, or tell me what you'd like to change."
+    )]}
 
 
 # ---------------------------------------------------------------------------
@@ -179,13 +260,11 @@ def handle_confirm_node(state: TravelState) -> TravelState:
 # ---------------------------------------------------------------------------
 
 def route_entry(state: TravelState) -> str:
-    # Finished trip planning — nothing more to do.
     if state.get("itinerary"):
         return END
 
     step = state.get("current_step", "start")
 
-    # Resume mid-pipeline if the graph was interrupted.
     if step == "retrieving":
         return "retrieve"
     if step == "planning":
@@ -203,11 +282,16 @@ def route_entry(state: TravelState) -> str:
 
 
 def _after_collect(state: TravelState) -> str:
-    return "confirm" if state.get("current_step") == "confirm" else END
+    if state.get("current_step") != "confirm":
+        return END
+    messages = state.get("messages", [])
+    last_human = next((m.content for m in reversed(messages) if isinstance(m, HumanMessage)), None)
+    if last_human and last_human.strip().lower() in ("confirm", "yes", "ok", "go", "generate"):
+        return "handle_confirm"
+    return "confirm"
 
 
 def _after_handle_confirm(state: TravelState) -> str:
-    # On CONFIRM, handle_confirm sets current_step="retrieving" → continue.
     if state.get("current_step") == "retrieving":
         return "retrieve"
     return END
@@ -218,7 +302,6 @@ def _after_retrieve(state: TravelState) -> str:
 
 
 def _after_plan(state: TravelState) -> str:
-    # plan_node sets current_step="critic" when an itinerary is ready.
     return "critic_repair" if state.get("current_step") == "critic" else END
 
 
@@ -227,15 +310,8 @@ def _after_plan(state: TravelState) -> str:
 # ---------------------------------------------------------------------------
 
 def build_graph(api_key: str):
-    global _extractor, _classifier
-    # Register the key with the shared LM module. set_api_key() invalidates
-    # the cached dspy.LM if the key changed, so a new key takes effect.
-    set_api_key(api_key)
-    # Predict() instances don't bind to an LM at construction time, but we
-    # still reset them so subsequent runs build fresh ones if anything
-    # signature-related changed on disk.
-    _extractor = None
-    _classifier = None
+    global _api_key
+    _api_key = api_key
 
     builder = StateGraph(TravelState)
 
@@ -247,19 +323,19 @@ def build_graph(api_key: str):
     builder.add_node("critic_repair", make_critic_repair_node())
 
     builder.set_conditional_entry_point(route_entry, {
-        "collect": "collect",
-        "confirm": "confirm",
+        "collect":        "collect",
+        "confirm":        "confirm",
         "handle_confirm": "handle_confirm",
-        "retrieve": "retrieve",
-        "plan": "plan",
-        "critic_repair": "critic_repair",
-        END: END,
+        "retrieve":       "retrieve",
+        "plan":           "plan",
+        "critic_repair":  "critic_repair",
+        END:              END,
     })
 
     builder.add_conditional_edges(
         "collect",
         _after_collect,
-        {"confirm": "confirm", END: END},
+        {"confirm": "confirm", "handle_confirm": "handle_confirm", END: END},
     )
 
     builder.add_edge("confirm", END)

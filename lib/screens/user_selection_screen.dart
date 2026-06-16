@@ -272,34 +272,6 @@ class _SelectionCardState extends State<_SelectionCard> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Selection checkbox
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: widget.selected
-                    ? Container(
-                        key: const ValueKey('checked'),
-                        width: 32,
-                        height: 32,
-                        decoration: const BoxDecoration(
-                            color: kMint, shape: BoxShape.circle),
-                        child: const Icon(Icons.check_rounded,
-                            size: 18, color: Colors.white),
-                      )
-                    : Container(
-                        key: const ValueKey('unchecked'),
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: kCardBorder, width: 2),
-                          color: kCanvas,
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,6 +408,34 @@ class _SelectionCardState extends State<_SelectionCard> {
                       },
                     ),
                 ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Selection checkbox (right side)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: widget.selected
+                    ? Container(
+                        key: const ValueKey('checked'),
+                        width: 32,
+                        height: 32,
+                        decoration: const BoxDecoration(
+                            color: kMint, shape: BoxShape.circle),
+                        child: const Icon(Icons.check_rounded,
+                            size: 18, color: Colors.white),
+                      )
+                    : Container(
+                        key: const ValueKey('unchecked'),
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: kCardBorder, width: 2),
+                          color: kCanvas,
+                        ),
+                      ),
               ),
             ),
           ],
