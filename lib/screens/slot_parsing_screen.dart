@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../widgets/animations.dart';
 import '../providers/travel_provider.dart';
 
 class SlotParsingScreen extends StatefulWidget {
@@ -217,9 +218,13 @@ class _SlotParsingScreenState extends State<SlotParsingScreen> {
         childAspectRatio: 1.8,
       ),
       itemCount: _slotMeta.length,
-      itemBuilder: (_, i) => _SlotCard(
-        meta: _slotMeta[i],
-        value: _controllers[i].text.isEmpty ? '—' : _controllers[i].text,
+      itemBuilder: (_, i) => FadeSlideIn(
+        delay: Motion.stagger * i,
+        child: _SlotCard(
+          meta: _slotMeta[i],
+          value: _controllers[i].text.isEmpty ? '—' : _controllers[i].text,
+          onTap: () => setState(() => _isEditing = true),
+        ),
       ),
     );
   }
@@ -230,7 +235,9 @@ class _SlotParsingScreenState extends State<SlotParsingScreen> {
         final meta = _slotMeta[i];
         final iconColor = meta.isMint ? kMint : const Color(0xFFD97706);
         final borderColor = meta.isMint ? kMint : kYellow;
-        return Container(
+        return FadeSlideIn(
+          delay: Motion.stagger * i,
+          child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: kCard,
@@ -258,7 +265,7 @@ class _SlotParsingScreenState extends State<SlotParsingScreen> {
               contentPadding: const EdgeInsets.fromLTRB(0, 14, 16, 14),
             ),
           ),
-        );
+        ));
       }),
     );
   }
@@ -280,7 +287,8 @@ class _SlotMeta {
 class _SlotCard extends StatelessWidget {
   final _SlotMeta meta;
   final String value;
-  const _SlotCard({required this.meta, required this.value});
+  final VoidCallback? onTap;
+  const _SlotCard({required this.meta, required this.value, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +296,10 @@ class _SlotCard extends StatelessWidget {
     final border = meta.isMint ? kMint : kYellow;
     final iconColor = meta.isMint ? kMint : const Color(0xFFD97706);
 
-    return Container(
+    return PressableScale(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: bg,
@@ -324,6 +335,6 @@ class _SlotCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

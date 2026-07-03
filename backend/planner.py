@@ -42,6 +42,7 @@ from geo import (
 )
 # lm_context removed — DSPy replaced with direct Gemini calls
 from rag import (
+    _parse_num_days,
     build_query,
     parse_day_segments,
     retrieve_for_segments,
@@ -534,26 +535,6 @@ def _format_google_supplement(places: list[dict[str, Any]]) -> str:
         )
 
     return "\n".join(lines)
-
-
-def _parse_num_days(duration: str) -> int:
-    """Parse the integer number of days from a duration string like '4 days' or '1 week'."""
-    if not duration:
-        return 1
-    text = duration.lower().strip()
-    # Handle weeks
-    week_match = re.search(r"(\d+)\s*week", text)
-    if week_match:
-        return int(week_match.group(1)) * 7
-    # Handle days
-    day_match = re.search(r"(\d+)\s*day", text)
-    if day_match:
-        return int(day_match.group(1))
-    # Bare number fallback
-    num_match = re.search(r"\d+", text)
-    if num_match:
-        return int(num_match.group())
-    return 1
 
 
 def _format_requested_area_rules(requested_areas: list[str], duration: str) -> str:
@@ -1130,6 +1111,28 @@ def _validate_and_repair_itinerary(
         # Keep days sorted by day number.
         days.sort(key=lambda d: int(d.get("day") or 0))
 
+    # 0b. Cap to the requested number of days. The planner LLM sometimes
+    # over-produces day entries (e.g. 22 days for a 2-day trip). Keep the first
+    # `expected_days` days and fold any overflow POIs back into them — round
+    # robin so day sizes stay balanced — instead of dropping locations.
+    if expected_days > 0 and len(days) > expected_days:
+        days.sort(key=lambda d: int(d.get("day") or 0))
+        kept = days[:expected_days]
+        overflow_pois = [
+            poi for d in days[expected_days:] for poi in (d.get("pois") or [])
+        ]
+        for i, poi in enumerate(overflow_pois):
+            kept[i % expected_days].setdefault("pois", []).append(poi)
+        # Renumber kept days 1..expected_days so day labels stay contiguous.
+        for idx, d in enumerate(kept, start=1):
+            d["day"] = idx
+        print(
+            f"[Validator] {len(days)}일 생성됨 -> {expected_days}일로 축소 "
+            f"(overflow POI {len(overflow_pois)}개 재배치, duration={duration})"
+        )
+        days = kept
+        itinerary["days"] = days
+
     # 1. Remove hallucinated POIs.
     for day in days:
         original = day.get("pois") or []
@@ -1446,8 +1449,9 @@ def make_retrieve_node(api_key: str):
                 purpose=state.get("category") or "",
             )
         except Exception as e:
+            # ponytail: no **state spread — returning a replacement messages list
+            # (not just the new message) would overwrite the checkpoint history.
             return {
-                **state,
                 "current_step": "confirm",
                 "messages": [AIMessage(content=f"⚠️ Failed to retrieve courses: {e}")],
             }

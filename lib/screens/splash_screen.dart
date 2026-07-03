@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
+import '../widgets/animations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,13 +15,20 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _fadeIn;
+  late Animation<double> _mascotScale;
 
   @override
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900));
+        vsync: this, duration: const Duration(milliseconds: 1100));
     _fadeIn = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    // Spring the mascot in for a lively first impression.
+    _mascotScale = Tween(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(
+          parent: _ctrl,
+          curve: const Interval(0.0, 0.7, curve: Motion.spring)),
+    );
     _ctrl.forward();
 
     Future.delayed(const Duration(seconds: 3), () {
@@ -48,30 +56,39 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/images/seoulfit_mascot.png',
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.contain,
+                    ScaleTransition(
+                      scale: _mascotScale,
+                      child: Image.asset(
+                        'assets/images/seoulfit_mascot.png',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     const SizedBox(height: 24),
-                    Text(
-                      'SEOULFit',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w800,
-                        color: kMint,
-                        letterSpacing: -1,
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 350),
+                      child: Text(
+                        'SEOULFit',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w800,
+                          color: kMint,
+                          letterSpacing: -1,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Your peaceful journey begins',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        color: kSubtext,
-                        letterSpacing: 0.2,
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 480),
+                      child: Text(
+                        'Your peaceful journey begins',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          color: kSubtext,
+                          letterSpacing: 0.2,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 48),

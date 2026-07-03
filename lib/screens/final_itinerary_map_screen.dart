@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../widgets/animations.dart';
 import '../widgets/itinerary_map.dart';
 import '../models/travel_state.dart';
 import '../providers/travel_provider.dart';
@@ -26,7 +27,13 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
   int? _selectedDay;
   bool _hasSaved = false;
 
+  // Export button micro-interaction state: idle -> saving -> done.
+  bool _exporting = false;
+  bool _exported = false;
+
   Future<void> _exportJson(BuildContext context, Itinerary itinerary) async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
     const encoder = JsonEncoder.withIndent('  ');
     final jsonString = encoder.convert(
       itinerary.raw.isNotEmpty ? itinerary.raw : {'summary': itinerary.summary},
@@ -39,8 +46,19 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
         ext: 'json',
         mimeType: MimeType.json,
       );
+      if (!mounted) return;
+      setState(() {
+        _exporting = false;
+        _exported = true;
+      });
       if (context.mounted) _snack(context, 'Itinerary saved as JSON', kSuccess);
+      // Revert the button to its idle label after the success beat.
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _exported = false);
+      });
     } catch (e) {
+      if (!mounted) return;
+      setState(() => _exporting = false);
       if (context.mounted) _snack(context, 'Save failed: $e', Colors.red);
     }
   }
@@ -75,29 +93,38 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
       child: Row(
         children: [
           for (final d in days)
-            GestureDetector(
-              onTap: () => setState(() => _selectedDay = d.day),
-              child: Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                decoration: BoxDecoration(
-                  color: d.day == _selectedDay ? kMint : Colors.transparent,
+            Builder(builder: (context) {
+              final selected = d.day == _selectedDay;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: PressableScale(
+                  onTap: () => setState(() => _selectedDay = d.day),
                   borderRadius: BorderRadius.circular(50),
-                  border: Border.all(
-                    color: d.day == _selectedDay ? kMint : kCardBorder,
+                  child: AnimatedContainer(
+                    duration: Motion.fast,
+                    curve: Motion.enter,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: selected ? kMint : Colors.transparent,
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border.all(
+                        color: selected ? kMint : kCardBorder,
+                      ),
+                      boxShadow: selected ? Elevations.mintGlow : null,
+                    ),
+                    child: Text(
+                      'Day ${d.day}',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: selected ? Colors.white : kSubtext,
+                      ),
+                    ),
                   ),
                 ),
-                child: Text(
-                  'Day ${d.day}',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: d.day == _selectedDay ? Colors.white : kSubtext,
-                  ),
-                ),
-              ),
-            ),
+              );
+            }),
         ],
       ),
     );
@@ -223,13 +250,7 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
                                     const Icon(Icons.verified_rounded,
                                         size: 14, color: kSuccess),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'Score: ${score.toStringAsFixed(score.truncateToDouble() == score ? 0 : 1)}',
-                                      style: GoogleFonts.plusJakartaSans(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: kSuccess),
-                                    ),
+                                    _ScoreLabel(score: score),
                                   ]),
                                 ),
                             ],
@@ -253,14 +274,27 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
                           if (days.length > 1) const SizedBox(height: 14),
                           _DayHeader(day: activeDay),
                           for (var i = 0; i < activeDay.pois.length; i++) ...[
-                            _PoiRow(
-                                key: ValueKey('${activeDay.day}-$i'),
-                                sequence: i + 1,
-                                poi: activeDay.pois[i]),
+                            // Keyed by day so switching days replays the
+                            // staggered reveal for the new stops.
+                            FadeSlideIn(
+                              key: ValueKey('reveal-${activeDay.day}-$i'),
+                              delay: Motion.stagger * i,
+                              child: _PoiRow(
+                                  key: ValueKey('${activeDay.day}-$i'),
+                                  sequence: i + 1,
+                                  poi: activeDay.pois[i]),
+                            ),
                             if (i < activeDay.pois.length - 1 &&
                                 i < activeDay.transitLegs.length)
-                              _TransitLegRow(
-                                  leg: activeDay.transitLegs[i]),
+                              FadeSlideIn(
+                                key: ValueKey(
+                                    'reveal-leg-${activeDay.day}-$i'),
+                                delay: Motion.stagger * i +
+                                    const Duration(milliseconds: 35),
+                                offsetY: 8,
+                                child: _TransitLegRow(
+                                    leg: activeDay.transitLegs[i]),
+                              ),
                           ],
                           const SizedBox(height: 10),
                           if (itinerary.sources.isNotEmpty) ...[
@@ -271,20 +305,44 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  _exportJson(context, itinerary),
-                              icon: const Icon(Icons.download_rounded,
-                                  size: 18, color: kMint),
-                              label: Text('Export Itinerary JSON',
+                              onPressed: _exporting
+                                  ? null
+                                  : () => _exportJson(context, itinerary),
+                              icon: _exporting
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: kMint),
+                                    )
+                                  : Icon(
+                                      _exported
+                                          ? Icons.check_circle_rounded
+                                          : Icons.download_rounded,
+                                      size: 18,
+                                      color: _exported ? kSuccess : kMint),
+                              label: AnimatedSwitcher(
+                                duration: Motion.fast,
+                                child: Text(
+                                  _exporting
+                                      ? 'Saving…'
+                                      : _exported
+                                          ? 'Saved!'
+                                          : 'Export Itinerary JSON',
+                                  key: ValueKey(
+                                      '$_exporting-$_exported'),
                                   style: GoogleFonts.plusJakartaSans(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
-                                      color: kMint)),
+                                      color: _exported ? kSuccess : kMint),
+                                ),
+                              ),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 15),
-                                side: const BorderSide(
-                                    color: kMint, width: 1.5),
+                                side: BorderSide(
+                                    color: _exported ? kSuccess : kMint,
+                                    width: 1.5),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(50)),
                               ),
@@ -325,6 +383,30 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Validation score that counts up from zero on first reveal.
+class _ScoreLabel extends StatelessWidget {
+  final double score;
+  const _ScoreLabel({required this.score});
+
+  String _fmt(double v) =>
+      v.toStringAsFixed(score.truncateToDouble() == score ? 0 : 1);
+
+  @override
+  Widget build(BuildContext context) {
+    final style = GoogleFonts.plusJakartaSans(
+        fontSize: 12, fontWeight: FontWeight.w700, color: kSuccess);
+    if (Motion.reduced(context)) {
+      return Text('Score: ${_fmt(score)}', style: style);
+    }
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: score),
+      duration: Motion.slow,
+      curve: Motion.enter,
+      builder: (context, v, _) => Text('Score: ${_fmt(v)}', style: style),
     );
   }
 }
@@ -546,9 +628,13 @@ class _TransitLegRow extends StatelessWidget {
                       label: '${leg.distanceKm!.toStringAsFixed(1)} km',
                     ),
                   if (leg.walkMinutes != null)
-                    _LegChip(emoji: '🚶', label: '${leg.walkMinutes} min'),
+                    _LegChip(
+                        icon: Icons.directions_walk_rounded,
+                        label: '${leg.walkMinutes} min'),
                   if (leg.carMinutes != null)
-                    _LegChip(emoji: '🚗', label: '${leg.carMinutes} min'),
+                    _LegChip(
+                        icon: Icons.directions_car_rounded,
+                        label: '${leg.carMinutes} min'),
                 ],
               ),
             ),
@@ -561,10 +647,9 @@ class _TransitLegRow extends StatelessWidget {
 
 class _LegChip extends StatelessWidget {
   final IconData? icon;
-  final String? emoji;
   final String label;
 
-  const _LegChip({this.icon, this.emoji, required this.label});
+  const _LegChip({this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -577,7 +662,6 @@ class _LegChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (emoji != null) Text(emoji!, style: const TextStyle(fontSize: 12)),
           if (icon != null) Icon(icon, size: 13, color: kSubtext),
           const SizedBox(width: 4),
           Text(

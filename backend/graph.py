@@ -21,7 +21,8 @@ _api_key: str = ""
 # Direct Gemini helpers (replaces DSPy — avoids response_schema incompatibility)
 # ---------------------------------------------------------------------------
 
-def _gemini_json(prompt: str) -> dict:
+def _gemini_raw(prompt: str) -> str:
+    """Single Gemini JSON-mode call → raw text. Seam for testing + retry."""
     from google import genai as _genai
     client = _genai.Client(api_key=_api_key)
     response = client.models.generate_content(
@@ -29,10 +30,26 @@ def _gemini_json(prompt: str) -> dict:
         contents=prompt,
         config={"response_mime_type": "application/json"},
     )
+    return response.text or ""
+
+
+def _gemini_json(prompt: str) -> dict:
+    text = _gemini_raw(prompt)
     try:
-        return json.loads(response.text or "{}")
+        return json.loads(text)
     except json.JSONDecodeError:
-        return {}
+        # factor 9: feed the malformed output back so the model self-corrects (one retry).
+        retry = (
+            f"{prompt}\n\nYour previous reply was NOT valid JSON:\n{text}\n"
+            "Return ONLY valid JSON, no markdown, no commentary."
+        )
+        try:
+            return json.loads(_gemini_raw(retry))
+        # ponytail: the retry is a 2nd live call — catch anything (429/5xx/network),
+        # not just bad JSON, so a flaky retry keeps today's silent-{} floor instead
+        # of surfacing as a user-facing apology. First call's errors still propagate.
+        except Exception:
+            return {}
 
 
 def _extract_trip_info(text: str) -> SimpleNamespace:
@@ -360,5 +377,18 @@ def build_graph(api_key: str):
 
     builder.add_edge("critic_repair", END)
 
-    memory = MemorySaver()
-    return builder.compile(checkpointer=memory)
+    global _memory
+    _memory = MemorySaver()
+    return builder.compile(checkpointer=_memory)
+
+
+_memory: MemorySaver | None = None
+
+
+def clear_thread(thread_id: str) -> None:
+    """Delete one thread's checkpoints from the in-memory store."""
+    if _memory is None:
+        return
+    to_del = [k for k in list(_memory.storage) if isinstance(k, tuple) and k[0] == thread_id]
+    for k in to_del:
+        del _memory.storage[k]

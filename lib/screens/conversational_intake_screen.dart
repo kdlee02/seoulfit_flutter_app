@@ -5,8 +5,17 @@ import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mascot_widget.dart';
+import '../widgets/animations.dart';
 import '../providers/travel_provider.dart';
-import '../utils/app_state.dart';
+
+/// Starter prompts shown before the traveller has typed anything, so the empty
+/// chat is an invitation to act rather than a blank box.
+const List<String> _starterPrompts = [
+  '3 days in Seoul, love cafés & K-pop',
+  'Family trip, relaxed pace, halal food',
+  'Solo weekend, history & palaces',
+  'Foodie night out in Hongdae',
+];
 
 class ConversationalIntakeScreen extends StatefulWidget {
   const ConversationalIntakeScreen({super.key});
@@ -24,7 +33,6 @@ class _ConversationalIntakeScreenState
   @override
   void initState() {
     super.initState();
-    AppState.hasChatData = true;
     // Kick off the backend greeting once the first frame is mounted.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TravelProvider>().startGreeting();
@@ -51,7 +59,11 @@ class _ConversationalIntakeScreenState
   }
 
   Future<void> _send() async {
-    final text = _controller.text.trim();
+    await _sendText(_controller.text);
+  }
+
+  Future<void> _sendText(String raw) async {
+    final text = raw.trim();
     if (text.isEmpty) return;
     _controller.clear();
     await context.read<TravelProvider>().sendMessage(text);
@@ -62,6 +74,9 @@ class _ConversationalIntakeScreenState
   Widget build(BuildContext context) {
     final provider = context.watch<TravelProvider>();
     final messages = provider.messages;
+    // Keyboard up → drop the bottom tab bar so the fixed chrome fits the
+    // shrunken body (otherwise the Column overflows by a few px while typing).
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     _scrollToBottom();
 
     return Scaffold(
@@ -131,10 +146,22 @@ class _ConversationalIntakeScreenState
                         if (i == messages.length) {
                           return const _TypingIndicator();
                         }
-                        return _ChatBubble(message: messages[i]);
+                        final msg = messages[i];
+                        // Each bubble animates in once; existing bubbles keep
+                        // their (already-finished) state on rebuild, so only
+                        // the newest message slides in.
+                        return FadeSlideIn(
+                          key: ValueKey('msg_$i'),
+                          offsetY: 10,
+                          offsetX: msg.isUser ? 24 : -24,
+                          child: _ChatBubble(message: msg),
+                        );
                       },
                     ),
             ),
+            // Suggested prompts: only while the conversation is just starting.
+            if (messages.length <= 1 && !provider.loading)
+              _SuggestedPrompts(onTap: _sendText),
             if (provider.error != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -202,16 +229,20 @@ class _ConversationalIntakeScreenState
                     ),
                   ),
                   const SizedBox(width: 8),
-                  GestureDetector(
+                  PressableScale(
                     onTap: provider.loading ? null : _send,
+                    scale: 0.88,
                     child: Container(
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                          color: provider.loading
-                              ? kMint.withValues(alpha: 0.4)
-                              : kMint,
-                          shape: BoxShape.circle),
+                        color: provider.loading
+                            ? kMint.withValues(alpha: 0.4)
+                            : kMint,
+                        shape: BoxShape.circle,
+                        boxShadow:
+                            provider.loading ? null : Elevations.mintGlow,
+                      ),
                       child: const Icon(Icons.send_rounded,
                           color: Colors.white, size: 18),
                     ),
@@ -219,7 +250,7 @@ class _ConversationalIntakeScreenState
                 ],
               ),
             ),
-            const AppBottomNav(currentIndex: 0),
+            if (!keyboardOpen) const AppBottomNav(currentIndex: 0),
           ],
         ),
       ),
@@ -236,18 +267,91 @@ class _GreetingLoader extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🐣', style: TextStyle(fontSize: 48)),
-          const SizedBox(height: 14),
+          const MascotWidget(size: 96, variant: MascotVariant.loading),
+          const SizedBox(height: 18),
           Text(
             'Saying hello…',
             style: GoogleFonts.plusJakartaSans(
                 fontSize: 13, color: kSubtext, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 16),
-          const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2.5, color: kMint),
+        ],
+      ),
+    );
+  }
+}
+
+/// Round buddy avatar backed by the real mascot art (no emoji-as-icon).
+class _BuddyAvatar extends StatelessWidget {
+  const _BuddyAvatar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 28,
+      padding: const EdgeInsets.all(3),
+      decoration: const BoxDecoration(color: kYellowLight, shape: BoxShape.circle),
+      child: Image.asset('assets/images/seoulfit_mascot.png',
+          fit: BoxFit.contain),
+    );
+  }
+}
+
+class _SuggestedPrompts extends StatelessWidget {
+  final void Function(String) onTap;
+  const _SuggestedPrompts({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(Insets.lg, 0, Insets.lg, Insets.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: Insets.sm, left: 2),
+            child: Text(
+              'Try one of these',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: kSubtext,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ),
+          Wrap(
+            spacing: Insets.sm,
+            runSpacing: Insets.sm,
+            children: List.generate(_starterPrompts.length, (i) {
+              final prompt = _starterPrompts[i];
+              return FadeSlideIn(
+                delay: Motion.stagger * i,
+                offsetY: 8,
+                child: PressableScale(
+                  onTap: () => onTap(prompt),
+                  borderRadius: BorderRadius.circular(50),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: kCard,
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border.all(color: kMintLight, width: 1.5),
+                    ),
+                    child: Text(
+                      prompt,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: kInk,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
         ],
       ),
@@ -262,13 +366,7 @@ class _TypingIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: const BoxDecoration(
-              color: kYellow, shape: BoxShape.circle),
-          child: const Center(child: Text('🐣', style: TextStyle(fontSize: 14))),
-        ),
+        const _BuddyAvatar(),
         const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
@@ -312,15 +410,7 @@ class _ChatBubble extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         if (!isUser) ...[
-          Container(
-            width: 28,
-            height: 28,
-            decoration: const BoxDecoration(
-                color: kYellow, shape: BoxShape.circle),
-            child: const Center(
-              child: Text('🐣', style: TextStyle(fontSize: 14)),
-            ),
-          ),
+          const _BuddyAvatar(),
           const SizedBox(width: 8),
         ],
         Flexible(

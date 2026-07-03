@@ -1,43 +1,15 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart'
-    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:http/http.dart' as http;
 
+import '../config/api_base.dart';
 import '../models/travel_state.dart';
 
 class ApiService {
-  static final Map<String, String> _summaryCache = {};
-  static final Map<String, String> _imageCache = {};
-  static final Map<String, String> _detailCache = {};
-  static final Map<String, String> _arrivalTipCache = {};
-  /// Base URL for the backend.
-  ///
-  /// - When `API_BASE_URL` is passed via `--dart-define`, that value wins
-  ///   (use this in production: `--dart-define=API_BASE_URL=https://<host>`).
-  ///   An empty value is treated as "same origin".
-  /// - Without an override, local dev picks a platform-aware default so
-  ///   `flutter run` works without flags: the Android emulator reaches the
-  ///   host via `10.0.2.2`, while iOS simulator / desktop / web use
-  ///   `localhost`.
-  static String get _baseRaw {
-    if (const bool.hasEnvironment('API_BASE_URL')) {
-      return const String.fromEnvironment('API_BASE_URL');
-    }
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8000';
-    }
-    return 'http://localhost:8000';
-  }
+  static final Map<String, String> _poiCache = {};
 
-  /// Empty string → same-origin; otherwise the literal value (no trailing slash).
-  static String get _base {
-    if (_baseRaw.isEmpty) return '';
-    return _baseRaw.endsWith('/')
-        ? _baseRaw.substring(0, _baseRaw.length - 1)
-        : _baseRaw;
-  }
+  static String get _base => apiBase;
 
   /// Per-instance thread id. With auth=none we don't want every visitor
   /// landing on the same shared LangGraph thread, so each ApiService instance
@@ -85,82 +57,43 @@ class ApiService {
     await http.post(Uri.parse('$_base/reset?thread_id=$threadId'));
   }
 
-  /// Fetches a 1–2 sentence Gemini summary for a Seoul POI.
-  Future<String> fetchPoiSummary(String name, {String type = ''}) async {
-    if (_summaryCache.containsKey(name)) return _summaryCache[name]!;
-    final body = jsonEncode({'name': name, 'type': type});
+  /// POSTs `{name, type}` to a `/poi-*` endpoint and returns `json[field]`,
+  /// caching by endpoint+name. Empty string on any non-200. Shared by the four
+  /// single-field POI lookups below.
+  Future<String> _fetchPoiField(
+      String endpoint, String field, String name, String type) async {
+    final cacheKey = '$endpoint|$name';
+    final cached = _poiCache[cacheKey];
+    if (cached != null) return cached;
     final response = await http.post(
-      Uri.parse('$_base/poi-summary'),
+      Uri.parse('$_base/$endpoint'),
       headers: {'Content-Type': 'application/json'},
-      body: body,
+      body: jsonEncode({'name': name, 'type': type}),
     );
-    if (response.statusCode == 200) {
-      final json =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      final result = (json['summary'] as String?) ?? '';
-      _summaryCache[name] = result;
-      return result;
-    }
-    return '';
+    if (response.statusCode != 200) return '';
+    final json =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final result = (json[field] as String?) ?? '';
+    _poiCache[cacheKey] = result;
+    return result;
   }
 
-  /// Fetches the best-matching thumbnail for a Seoul POI via SerpApi + Gemini.
-  Future<String> fetchPoiImage(String name, {String type = ''}) async {
-    if (_imageCache.containsKey(name)) return _imageCache[name]!;
-    final body = jsonEncode({'name': name, 'type': type});
-    final response = await http.post(
-      Uri.parse('$_base/poi-image'),
-      headers: {'Content-Type': 'application/json'},
-      body: body,
-    );
-    if (response.statusCode == 200) {
-      final json =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      final result = (json['image_url'] as String?) ?? '';
-      _imageCache[name] = result;
-      return result;
-    }
-    return '';
-  }
+  /// 1–2 sentence Gemini summary for a Seoul POI.
+  Future<String> fetchPoiSummary(String name, {String type = ''}) =>
+      _fetchPoiField('poi-summary', 'summary', name, type);
 
-  /// Fetches structured Tavily visitor info for a Seoul POI (stop selection screen).
-  Future<String> fetchPoiDetail(String name, {String type = ''}) async {
-    if (_detailCache.containsKey(name)) return _detailCache[name]!;
-    final body = jsonEncode({'name': name, 'type': type});
-    final response = await http.post(
-      Uri.parse('$_base/poi-detail'),
-      headers: {'Content-Type': 'application/json'},
-      body: body,
-    );
-    if (response.statusCode == 200) {
-      final json =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      final result = (json['detail'] as String?) ?? '';
-      _detailCache[name] = result;
-      return result;
-    }
-    return '';
-  }
+  /// Best-matching thumbnail for a Seoul POI via SerpApi + Gemini.
+  Future<String> fetchPoiImage(String name, {String type = ''}) =>
+      _fetchPoiField('poi-image', 'image_url', name, type);
 
-  /// Fetches a short "you've arrived" confirmation tip for a Seoul POI — a
-  /// visible landmark to recognise plus what's at the entrance. Empty on failure.
-  Future<String> fetchPoiArrivalTip(String name, {String type = ''}) async {
-    if (_arrivalTipCache.containsKey(name)) return _arrivalTipCache[name]!;
-    final body = jsonEncode({'name': name, 'type': type});
-    final response = await http.post(
-      Uri.parse('$_base/poi-arrival-tip'),
-      headers: {'Content-Type': 'application/json'},
-      body: body,
-    );
-    if (response.statusCode == 200) {
-      final json =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      final result = (json['arrival_tip'] as String?) ?? '';
-      _arrivalTipCache[name] = result;
-      return result;
-    }
-    return '';
-  }
+  /// Structured Tavily visitor info for a Seoul POI (stop selection screen).
+  Future<String> fetchPoiDetail(String name, {String type = ''}) =>
+      _fetchPoiField('poi-detail', 'detail', name, type);
+
+  /// Short "you've arrived" confirmation tip — a visible landmark to recognise
+  /// plus what's at the entrance.
+  Future<String> fetchPoiArrivalTip(String name, {String type = ''}) =>
+      _fetchPoiField('poi-arrival-tip', 'arrival_tip', name, type);
 
   /// Recomputes transit (distance / walk / car / Kakao / ODsay) for an
   /// arbitrary ordered list of [stops]. Returns one leg per consecutive pair.

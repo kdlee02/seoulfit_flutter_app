@@ -1,5 +1,5 @@
-﻿import 'dart:typed_data';
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../widgets/animations.dart';
 import '../services/lens_service.dart';
 import '../models/landmark_analysis.dart';
 
@@ -19,9 +20,9 @@ class SeoulLensScreen extends StatefulWidget {
 }
 
 class _SeoulLensScreenState extends State<SeoulLensScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _scanCtrl;
-  bool _sheetExpanded = true;
+  late AnimationController _lockCtrl;
   final _picker = ImagePicker();
   final _lens = LensService();
   final _tts = FlutterTts();
@@ -39,12 +40,28 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+    _lockCtrl = AnimationController(
+      vsync: this,
+      duration: Motion.base,
+    );
     _tts.setLanguage('en-US');
     _tts.setSpeechRate(0.5);
     _tts.setCompletionHandler(() {
       if (mounted) setState(() => _isSpeaking = false);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _showMediaPicker());
+  }
+
+  /// Drives the AR frame: sweep while [scanning], else stop and play a one-shot
+  /// "lock" pulse. Keeps the scanning animation off once a place is detected.
+  void _setScanning(bool scanning) {
+    if (scanning) {
+      _lockCtrl.reset();
+      if (!_scanCtrl.isAnimating) _scanCtrl.repeat(reverse: true);
+    } else {
+      _scanCtrl.stop();
+      _lockCtrl.forward(from: 0);
+    }
   }
 
   Future<void> _showMediaPicker() async {
@@ -105,9 +122,10 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('카메라 권한이 필요합니다.',
+              content: Text('Camera access is needed.',
                   style: GoogleFonts.plusJakartaSans(fontSize: 13)),
-              action: const SnackBarAction(label: '설정', onPressed: openAppSettings),
+              action:
+                  const SnackBarAction(label: 'Settings', onPressed: openAppSettings),
             ),
           );
         }
@@ -119,21 +137,22 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
       final file =
           await _picker.pickImage(source: source, imageQuality: 85);
       if (file != null && mounted) {
+        HapticFeedback.selectionClick();
         final bytes = await file.readAsBytes();
         setState(() {
           _pickedImage = file;
           _pickedBytes = bytes;
           _placeResult = null;
           _analyzeError = null;
-          _sheetExpanded = true;
         });
+        _setScanning(true);
         await _analyzeWithBackend(file, bytes);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('이미지를 불러올 수 없습니다.',
+            content: Text("Couldn't load that image.",
                 style: GoogleFonts.plusJakartaSans(fontSize: 13)),
           ),
         );
@@ -155,9 +174,13 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
       if (mounted) {
         if (result.confidence == 0 &&
             result.nameEnglish.toLowerCase() == 'unknown') {
+          _setScanning(false);
           setState(() => _analyzeError =
               "Couldn't recognize this place.\nTry another photo.");
         } else {
+          // Lock the scan frame onto the detected landmark.
+          _setScanning(false);
+          HapticFeedback.mediumImpact();
           setState(() => _placeResult = result);
         }
       }
@@ -171,22 +194,46 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
     }
   }
 
-  Widget _buildGeminiResult() {
+  /// Wraps centered sheet content so it stays vertically centred yet remains
+  /// scrollable — that's what lets the DraggableScrollableSheet be dragged even
+  /// when the content is short.
+  Widget _sheetScrollable(ScrollController sc, Widget child) {
+    return LayoutBuilder(
+      builder: (ctx, c) => SingleChildScrollView(
+        controller: sc,
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: c.maxHeight),
+          child: Center(child: child),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGeminiResult(ScrollController sc) {
     if (_isAnalyzing) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return _sheetScrollable(
+        sc,
+        Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: kMint),
-            SizedBox(height: 14),
-            Text('Analyzing landmark...'),
+            const SizedBox(
+              width: 26,
+              height: 26,
+              child: CircularProgressIndicator(color: kMint, strokeWidth: 3),
+            ),
+            const SizedBox(height: 14),
+            Text('Identifying this landmark…',
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13, color: kSubtext)),
           ],
         ),
       );
     }
     if (_analyzeError != null) {
-      return Center(
-        child: Padding(
+      return _sheetScrollable(
+        sc,
+        Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -231,44 +278,64 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
       final website = field('website');
       final tags = field('tags');
       return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        controller: sc,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(r.nameEnglish,
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 18, fontWeight: FontWeight.w800, color: kInk)),
-                  if (r.nameKorean.isNotEmpty)
-                    Text(r.nameKorean,
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12, color: kSubtext)),
-                ]),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                    color: r.dataVerified ? kMintLight : kYellowLight,
-                    borderRadius: BorderRadius.circular(50)),
-                child: Row(children: [
-                  Icon(
-                      r.dataVerified
-                          ? Icons.verified_rounded
-                          : Icons.auto_awesome_rounded,
-                      size: 12,
-                      color: r.dataVerified ? kMint : const Color(0xFFD97706)),
-                  const SizedBox(width: 4),
-                  Text(r.dataVerified ? 'Verified' : 'AI Guess',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: r.dataVerified ? kMint : const Color(0xFFD97706))),
-                ]),
-              ),
-            ]),
-            Builder(builder: (_) {
+            FadeSlideIn(
+              // Key by landmark so a new scan replays the reveal sequence.
+              key: ValueKey('lens-head-${r.nameEnglish}'),
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(r.nameEnglish,
+                                style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: kInk)),
+                            if (r.nameKorean.isNotEmpty)
+                              Text(r.nameKorean,
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 12, color: kSubtext)),
+                          ]),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                          color: r.dataVerified ? kMintLight : kYellowLight,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: Row(children: [
+                        Icon(
+                            r.dataVerified
+                                ? Icons.verified_rounded
+                                : Icons.auto_awesome_rounded,
+                            size: 12,
+                            color: r.dataVerified
+                                ? kMint
+                                : const Color(0xFFD97706)),
+                        const SizedBox(width: 4),
+                        Text(r.dataVerified ? 'Verified' : 'AI Guess',
+                            style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: r.dataVerified
+                                    ? kMint
+                                    : const Color(0xFFD97706))),
+                      ]),
+                    ),
+                  ]),
+            ),
+            FadeSlideIn(
+              key: ValueKey('lens-details-${r.nameEnglish}'),
+              delay: Motion.stagger,
+              child: Builder(builder: (_) {
               final rows = <Widget>[];
               void add(IconData icon, String label, String value,
                   {VoidCallback? onTap}) {
@@ -302,7 +369,7 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
                 ),
                 child: Column(children: rows),
               );
-            }),
+            })),
             if (tags.isNotEmpty) ...[
               const SizedBox(height: 10),
               Wrap(
@@ -328,7 +395,10 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
               ),
             ],
             const SizedBox(height: 14),
-            Container(
+            FadeSlideIn(
+              key: ValueKey('lens-audio-${r.nameEnglish}'),
+              delay: Motion.stagger * 2,
+              child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: kCanvas,
@@ -374,9 +444,12 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
                   ),
                 ),
               ]),
-            ),
+            )),
             const SizedBox(height: 14),
-            SizedBox(
+            FadeSlideIn(
+              key: ValueKey('lens-cta-${r.nameEnglish}'),
+              delay: Motion.stagger * 3,
+              child: SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _showMediaPicker,
@@ -390,12 +463,13 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                 ),
               ),
-            ),
+            )),
           ],
         ),
       );
     }
-    return const Center(child: CircularProgressIndicator(color: kMint));
+    return _sheetScrollable(
+        sc, const CircularProgressIndicator(color: kMint));
   }
 
   Future<void> _launch(String url) async {
@@ -419,12 +493,13 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
     }
   }
 
-  Widget _buildEmptyPrompt() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(28, 0, 28, 24),
+  Widget _buildEmptyPrompt(ScrollController sc) {
+    return _sheetScrollable(
+      sc,
+      Padding(
+        padding: const EdgeInsets.fromLTRB(28, 0, 28, 96),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 64,
@@ -474,15 +549,13 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
   @override
   void dispose() {
     _scanCtrl.dispose();
+    _lockCtrl.dispose();
     _tts.stop();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenH = MediaQuery.of(context).size.height;
-    final sheetH = _sheetExpanded ? screenH * 0.52 : screenH * 0.25;
-
     return Scaffold(
       body: Stack(
         children: [
@@ -550,14 +623,17 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
               ],
             ),
           ),
-          // AR scan frame
+          // AR scan frame — sweeps while scanning, locks onto a detected place.
           Center(
             child: AnimatedBuilder(
-              animation: _scanCtrl,
+              animation: Listenable.merge([_scanCtrl, _lockCtrl]),
               builder: (_, __) => CustomPaint(
                 size: const Size(220, 220),
                 painter: _ScanFramePainter(
-                    scanProgress: _scanCtrl.value),
+                  scanProgress: _scanCtrl.value,
+                  locked: _placeResult != null,
+                  lockPulse: _lockCtrl.value,
+                ),
               ),
             ),
           ),
@@ -568,40 +644,49 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
               left: 0,
               right: 0,
               child: Center(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(20),
+                child: FadeSlideIn(
+                  key: ValueKey('ar-label-${_placeResult!.nameEnglish}'),
+                  offsetY: -8,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _placeResult!.nameEnglish,
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white),
+                        ),
+                        const SizedBox(width: 10),
+                        _ConfidenceRing(
+                          key: ValueKey('conf-${_placeResult!.nameEnglish}'),
+                          value: _placeResult!.confidence,
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Text(
-                      '${_placeResult!.nameEnglish} · ${_placeResult!.confidence}% confidence',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white)),
                 ),
               ),
             ),
-          // Glassmorphism bottom sheet
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: GestureDetector(
-              onVerticalDragUpdate: (d) {
-                if (d.delta.dy < -5) setState(() => _sheetExpanded = true);
-                if (d.delta.dy > 5) setState(() => _sheetExpanded = false);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-                height: sheetH,
+          // Glassmorphism bottom sheet — native drag/snap with inner scroll.
+          DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            minChildSize: 0.24,
+            maxChildSize: 0.9,
+            snap: true,
+            snapSizes: const [0.24, 0.5, 0.9],
+            builder: (ctx, scrollController) {
+              return Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.88),
-                  borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(28)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
                   boxShadow: [
                     BoxShadow(
                         color: kMint.withValues(alpha: 0.08),
@@ -623,14 +708,20 @@ class _SeoulLensScreenState extends State<SeoulLensScreen>
                     ),
                     Expanded(
                       child: _pickedImage != null
-                          ? _buildGeminiResult()
-                          : _buildEmptyPrompt(),
+                          ? _buildGeminiResult(scrollController)
+                          : _buildEmptyPrompt(scrollController),
                     ),
-                                        const AppBottomNav(currentIndex: 2),
                   ],
                 ),
-              ),
-            ),
+              );
+            },
+          ),
+          // Fixed bottom nav — sits above the sheet so it stays tappable.
+          const Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: AppBottomNav(currentIndex: 2),
           ),
         ],
       ),
@@ -759,24 +850,37 @@ class _DDPPainter extends CustomPainter {
 
 class _ScanFramePainter extends CustomPainter {
   final double scanProgress;
-  _ScanFramePainter({required this.scanProgress});
+
+  /// True once a landmark is detected: corners go solid/thicker, the sweep line
+  /// disappears, and [lockPulse] (0→1) plays a one-shot settle.
+  final bool locked;
+  final double lockPulse;
+
+  _ScanFramePainter({
+    required this.scanProgress,
+    this.locked = false,
+    this.lockPulse = 0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
+    final color = locked ? kSuccess : kMint;
+    // Lock pulse: corners briefly thicken then settle.
+    final pulse = locked ? (1 - lockPulse) : 0.0;
     final paint = Paint()
-      ..color = kMint
-      ..strokeWidth = 2.5
+      ..color = color
+      ..strokeWidth = (locked ? 3.5 : 2.5) + pulse * 2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    const corner = 28.0;
+    final corner = locked ? 34.0 : 28.0;
     final w = size.width;
     final h = size.height;
 
     // Corner brackets
     // Top-left
-    canvas.drawLine(const Offset(0, corner), const Offset(0, 0), paint);
-    canvas.drawLine(const Offset(0, 0), const Offset(corner, 0), paint);
+    canvas.drawLine(Offset(0, corner), const Offset(0, 0), paint);
+    canvas.drawLine(const Offset(0, 0), Offset(corner, 0), paint);
     // Top-right
     canvas.drawLine(Offset(w - corner, 0), Offset(w, 0), paint);
     canvas.drawLine(Offset(w, 0), Offset(w, corner), paint);
@@ -787,7 +891,29 @@ class _ScanFramePainter extends CustomPainter {
     canvas.drawLine(Offset(w - corner, h), Offset(w, h), paint);
     canvas.drawLine(Offset(w, h), Offset(w, h - corner), paint);
 
-    // Scan line
+    if (locked) {
+      // Expanding ring flash on lock, fading out.
+      if (lockPulse < 1) {
+        final ring = Paint()
+          ..color = kSuccess.withValues(alpha: 0.5 * (1 - lockPulse))
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: Offset(w / 2, h / 2),
+              width: w * (0.7 + lockPulse * 0.4),
+              height: h * (0.7 + lockPulse * 0.4),
+            ),
+            const Radius.circular(16),
+          ),
+          ring,
+        );
+      }
+      return;
+    }
+
+    // Scan line (only while scanning)
     final scanY = h * scanProgress;
     final scanPaint = Paint()
       ..shader = LinearGradient(
@@ -802,7 +928,9 @@ class _ScanFramePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ScanFramePainter old) =>
-      old.scanProgress != scanProgress;
+      old.scanProgress != scanProgress ||
+      old.locked != locked ||
+      old.lockPulse != lockPulse;
 }
 
 /// A single full-width row in the landmark detail card. The value wraps to as
@@ -880,6 +1008,48 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
+/// Compact ring showing detection confidence (0–100). Animates the arc up on
+/// first build; the number counts up via the shared [CountUp] (reduced-motion
+/// safe). Used on the AR "detected" label over the camera image.
+class _ConfidenceRing extends StatelessWidget {
+  final int value;
+  static const double size = 34;
+  const _ConfidenceRing({super.key, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: (value.clamp(0, 100)) / 100),
+            duration: Motion.slow,
+            curve: Motion.enter,
+            builder: (_, v, __) => SizedBox(
+              width: size,
+              height: size,
+              child: CircularProgressIndicator(
+                value: v,
+                strokeWidth: 3,
+                backgroundColor: Colors.white.withValues(alpha: 0.25),
+                valueColor: const AlwaysStoppedAnimation(kMint),
+              ),
+            ),
+          ),
+          CountUp(
+            value: value,
+            style: GoogleFonts.plusJakartaSans(
+                fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SourceButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -893,8 +1063,9 @@ class _SourceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(

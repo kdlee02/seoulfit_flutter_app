@@ -53,7 +53,7 @@ if not GEMINI_API_KEY:
 if not os.getenv("GOOGLE_API_KEY"):
     os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY
 
-from graph import build_graph
+from graph import build_graph, clear_thread
 from lens import router as lens_router
 
 _graph = build_graph(GEMINI_API_KEY)
@@ -163,12 +163,11 @@ def _latest_ai_message(state: dict) -> Optional[str]:
 
 
 def _run(thread_id: str, user_input: Optional[str]) -> dict:
-    state = _get_state(thread_id)
-    messages = list(state.get("messages", []))
-    if user_input:
-        messages = messages + [HumanMessage(content=user_input)]
-    updated = {**state, "messages": messages}
-    return _graph.invoke(updated, _config(thread_id))
+    # ponytail: only pass the new message — spreading the full state (including
+    # the existing messages list) into invoke() causes add_messages to double
+    # history on every turn because the reducer merges checkpoint + input.
+    input_update = {"messages": [HumanMessage(content=user_input)]} if user_input else {"messages": []}
+    return _graph.invoke(input_update, _config(thread_id))
 
 
 # ---------------------------------------------------------------------------
@@ -220,9 +219,8 @@ def get_state(thread_id: str = "travel-session-1"):
 
 @app.post("/reset")
 def reset(thread_id: str = "travel-session-1"):
-    """Clear the conversation (reinitialises the graph)."""
-    global _graph
-    _graph = build_graph(GEMINI_API_KEY)
+    """Clear one thread's conversation without touching any other sessions."""
+    clear_thread(thread_id)
     return {"status": "reset"}
 
 
@@ -415,68 +413,142 @@ class EventsRequest(BaseModel):
     travel_dates: Optional[str] = None
 
 
+# ── nol.yanolja.com live scraping for /events ───────────────────────────────────
+# yanolja is a Next.js RSC site, but the card markup is present in the initial
+# HTML response, so httpx + regex is enough (no headless browser / no bs4).
+import re as _re
+import time as _time
+import html as _html
+
+_YANOLJA_GENRE = {
+    "musical": "musical",
+    "concert": "concert",
+    "sports": "sports",
+    "exhibition": "exhibition",
+    "classic": "classic",
+    "family": "family",
+    "theater": "play",
+}
+_YANOLJA_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+
+# ponytail: module-level dict cache (~10 min TTL). yanolja HTML is ~700KB so we
+# don't refetch per tab; if this ever runs multi-process, swap to Redis.
+_EVENTS_CACHE: dict[str, tuple[float, list]] = {}
+_EVENTS_TTL = 600  # seconds
+
+# Primary card shape: <a href=".../products|places/..." aria-label="제목, 장소, 기간: ..."> ... <img image6 ...>
+_YANOLJA_CARD_RE = _re.compile(
+    r'<a\b[^>]*?href="(?P<href>https://nol\.yanolja\.com/ticket/[^"]*?(?:products|places)[^"]*?)"'
+    r'[^>]*?aria-label="(?P<label>[^"]+)"',
+    _re.S,
+)
+# Fallback (e.g. sports promo cards have no aria-label): pull title from <img alt>.
+_YANOLJA_FALLBACK_RE = _re.compile(
+    r'<a\b[^>]*?href="(?P<href>https://nol\.yanolja\.com/ticket/[^"]*?products[^"]*?)"(?P<body>.*?)</a>',
+    _re.S,
+)
+_YANOLJA_IMG6_RE = _re.compile(r'https://image6\.yanolja\.com/[^"\s\\]+')
+_YANOLJA_ANYIMG_RE = _re.compile(
+    r'<img\b[^>]*?\bsrc="(?P<src>https?://[^"]+)"[^>]*?\balt="(?P<alt>[^"]+)"', _re.S
+)
+# Be lenient about the 기간 prefix ("공연 기간/전시 기간/경기 일정" vary); date is the backup.
+_YANOLJA_DATE_RE = _re.compile(r'\d\d\.\d\d\.\d\d(?:\s*[~\-]\s*\d\d\.\d\d\.\d\d)?')
+
+
+def _yanolja_from_label(href: str, label: str, block: str):
+    label = _html.unescape(label)
+    parts = [p.strip() for p in label.split(", ") if p.strip()]
+    if not parts:
+        return None
+    name = parts[0]
+    date, date_idx = "", None
+    for i, p in enumerate(parts):
+        if "기간" in p:
+            date = p.split("기간", 1)[-1].lstrip(" :").strip()
+            date_idx = i
+            break
+    if not date:
+        for i, p in enumerate(parts):
+            dm = _YANOLJA_DATE_RE.search(p)
+            if dm:
+                date, date_idx = dm.group(0).strip(), i
+                break
+    venue = ", ".join(p for i, p in enumerate(parts[1:], 1) if i != date_idx)
+    im = _YANOLJA_IMG6_RE.search(block)
+    return {
+        "name": name,
+        "date": date,
+        "venue": venue,
+        "description": "",
+        "image_url": _html.unescape(im.group(0)) if im else "",
+        "landing_url": href,
+    }
+
+
+def _yanolja_from_body(href: str, body: str):
+    im = _YANOLJA_ANYIMG_RE.search(body)
+    if not im:
+        return None
+    name = _html.unescape(im.group("alt")).strip()
+    dm = _YANOLJA_DATE_RE.search(_html.unescape(_re.sub(r"<[^>]+>", " ", body)))
+    return {
+        "name": name,
+        "date": dm.group(0).strip() if dm else "",
+        "venue": "",
+        "description": "",
+        "image_url": _html.unescape(im.group("src")),
+        "landing_url": href,
+    }
+
+
+def _parse_yanolja(html_text: str, cap: int = 20) -> list:
+    out, seen = [], set()
+    # Split on each <a so we can scope image lookup to a single anchor block.
+    for block in _re.split(r"(?=<a\b)", html_text):
+        m = _YANOLJA_CARD_RE.match(block)
+        ev = _yanolja_from_label(m.group("href"), m.group("label"), block) if m else None
+        if not ev:
+            fm = _YANOLJA_FALLBACK_RE.match(block)
+            ev = _yanolja_from_body(fm.group("href"), fm.group("body")) if fm else None
+        if not ev or not ev["name"] or ev["name"] in seen:
+            continue
+        seen.add(ev["name"])
+        out.append(ev)
+        if len(out) >= cap:
+            break
+    return out
+
+
 @app.post("/events")
 def get_events(req: EventsRequest):
-    """Generate up to 5 Seoul events for a category using Gemini, then fetch
-    a poster image for each via SerpApi google_images."""
-    import json as _json
-    serpapi_key = os.getenv("SERPAPI_KEY", "")
+    """Live-scrape nol.yanolja.com ticket genre pages for real Seoul events.
+
+    Returns a list of {name, date, venue, description, image_url, landing_url}.
+    On ANY failure returns [] (never 500) — Flutter's empty state handles it."""
     try:
-        from google import genai as _genai
-        import serpapi as _serpapi
+        slug = _YANOLJA_GENRE.get((req.category or "").strip().lower(), "musical")
 
-        client = _genai.Client(api_key=GEMINI_API_KEY)
-        date_hint = f"\nTravel period context: {req.travel_dates}" if req.travel_dates else ""
-        prompt = (
-            f'Generate up to 5 real or realistic upcoming Seoul events for the category "{req.category}".{date_hint}\n'
-            "Return a JSON array where each element has exactly these fields:\n"
-            '- "name": event name in English\n'
-            '- "date": date string e.g. "Jun 20" or "Jun 20 - Jul 31"\n'
-            '- "venue": venue name in Seoul\n'
-            '- "description": one sentence describing the event\n'
-            "Return only the JSON array, no markdown, no extra text."
+        cached = _EVENTS_CACHE.get(slug)
+        if cached and (_time.time() - cached[0]) < _EVENTS_TTL:
+            return cached[1]
+
+        import httpx as _httpx
+
+        resp = _httpx.get(
+            f"https://nol.yanolja.com/ticket/genre/{slug}",
+            headers={"User-Agent": _YANOLJA_UA},
+            timeout=10,
+            follow_redirects=True,
         )
-        resp = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={"response_mime_type": "application/json"},
-        )
-        try:
-            events = _json.loads(resp.text or "[]")
-            if not isinstance(events, list):
-                events = []
-        except Exception:
-            events = []
-
-        results = []
-        for event in events[:5]:
-            image_url = ""
-            if serpapi_key:
-                try:
-                    serp = _serpapi.Client(api_key=serpapi_key)
-                    search = serp.search({
-                        "engine": "google_images",
-                        "q": f"{event.get('name', '')} Seoul event poster",
-                        "hl": "en",
-                        "num": 3,
-                    })
-                    imgs = search.get("images_results") or []
-                    if imgs:
-                        image_url = (imgs[0].get("original") or
-                                     imgs[0].get("thumbnail") or "")
-                except Exception:
-                    pass
-
-            results.append({
-                "name": event.get("name", ""),
-                "date": event.get("date", ""),
-                "venue": event.get("venue", ""),
-                "description": event.get("description", ""),
-                "image_url": image_url,
-            })
-        return results
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        resp.raise_for_status()
+        events = _parse_yanolja(resp.text)
+        _EVENTS_CACHE[slug] = (_time.time(), events)
+        return events
+    except Exception:
+        return []
 
 
 @app.post("/transit-legs")
@@ -500,3 +572,31 @@ def transit_legs(req: TransitLegsRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
     return {"transit_legs": legs}
+
+
+if __name__ == "__main__":
+    # Parser self-check: `python api.py` — prefers a saved fixture
+    # (backend/_fixtures/yanolja_musical.html); falls back to a live fetch.
+    import pathlib
+
+    fixture = pathlib.Path(_here) / "_fixtures" / "yanolja_musical.html"
+    if fixture.exists():
+        html_text = fixture.read_text(encoding="utf-8")
+        print(f"[selfcheck] using fixture {fixture}")
+    else:
+        import httpx
+        html_text = httpx.get(
+            "https://nol.yanolja.com/ticket/genre/musical",
+            headers={"User-Agent": _YANOLJA_UA},
+            timeout=10,
+            follow_redirects=True,
+        ).text
+        print("[selfcheck] using live fetch (no fixture found)")
+
+    events = _parse_yanolja(html_text)
+    assert events, "parser extracted 0 events"
+    first = events[0]
+    assert first["name"], "first event has empty name"
+    assert first["image_url"], "first event has empty image_url"
+    assert set(first) >= {"name", "date", "venue", "description", "image_url", "landing_url"}
+    print(f"[selfcheck] OK — {len(events)} events; first = {first['name']!r} / {first['image_url'][:60]!r}")

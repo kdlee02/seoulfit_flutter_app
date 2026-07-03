@@ -14,6 +14,53 @@ const kWarning = Color(0xFFFDE047);
 const kWarningBorder = Color(0xFFF59E0B);
 const kSuccess = Color(0xFF10B981);
 
+/// Spacing scale (4pt grid). Use these instead of ad-hoc magic numbers so
+/// rhythm stays consistent across screens.
+class Insets {
+  Insets._();
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 12;
+  static const double lg = 16;
+  static const double xl = 24;
+  static const double xxl = 32;
+}
+
+/// Soft elevation tokens. The original theme rendered every card perfectly
+/// flat; a micro-interaction UI benefits from a hint of depth that lifts cards
+/// off the warm canvas without looking heavy.
+class Elevations {
+  Elevations._();
+
+  /// Resting shadow for cards and tiles.
+  static List<BoxShadow> get card => [
+        BoxShadow(
+          color: kInk.withValues(alpha: 0.05),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ];
+
+  /// Stronger shadow for sheets, popovers, and the active/selected state.
+  static List<BoxShadow> get lifted => [
+        BoxShadow(
+          color: kInk.withValues(alpha: 0.10),
+          blurRadius: 28,
+          offset: const Offset(0, 12),
+        ),
+      ];
+
+  /// Mint-tinted glow for the primary CTA, so the brand colour reads as the
+  /// single bold accent on the page.
+  static List<BoxShadow> get mintGlow => [
+        BoxShadow(
+          color: kMint.withValues(alpha: 0.35),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ];
+}
+
 class AppTheme {
   static ThemeData get theme => ThemeData(
         useMaterial3: true,
@@ -27,11 +74,15 @@ class AppTheme {
             color: kInk,
             fontWeight: FontWeight.w800,
             fontSize: 28,
+            letterSpacing: -0.5,
+            height: 1.15,
           ),
           displayMedium: GoogleFonts.plusJakartaSans(
             color: kInk,
             fontWeight: FontWeight.w700,
             fontSize: 22,
+            letterSpacing: -0.3,
+            height: 1.2,
           ),
           titleLarge: GoogleFonts.plusJakartaSans(
             color: kInk,
