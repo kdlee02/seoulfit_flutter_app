@@ -28,7 +28,9 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from geo import (
     AREA_ALIASES,
     area_label,
+    area_matches_requested,
     extract_requested_areas,
+    infer_area_from_fields,
 )
 
 
@@ -521,11 +523,49 @@ def parse_day_segments(
     return segments
 
 
+def segment_k(day_count: int) -> int:
+    """How many anchor courses to fetch for a segment covering `day_count` days.
+
+    Fixed k=3 both starves long single-area segments (5 days off 3 courses ->
+    heavy Google padding) and over-fetches 1-day segments. Scale with days,
+    +1 for slack, clamped so thin areas don't scrape the barrel and long trips
+    don't balloon.
+    """
+    return max(2, min(6, (day_count or 0) + 1))
+
+
+def rerank_courses_by_area(
+    courses: list[dict[str, Any]],
+    area: str | None,
+) -> list[dict[str, Any]]:
+    """Stable-sort courses whose POIs sit in `area` ahead of those that don't.
+
+    The vector query mixes theme and neighborhood, so a strong theme word (e.g.
+    "K-pop") can float in off-neighborhood courses. This re-rank drops them below
+    the in-area ones while preserving vector rank within each group. No-op when
+    `area` is None (nothing to match against).
+    """
+    if not area:
+        return list(courses)
+
+    def _in_area(course: dict[str, Any]) -> bool:
+        for poi in course.get("sequence", []) or []:
+            a = infer_area_from_fields(
+                name=poi.get("poi_name", ""),
+                address=poi.get("address_en") or poi.get("address_ko") or "",
+                lat=poi.get("lat"), lng=poi.get("lng"),
+            )
+            if area_matches_requested(a, area):
+                return True
+        return False
+
+    return sorted(courses, key=lambda c: 0 if _in_area(c) else 1)
+
+
 def retrieve_for_segments(
     api_key: str,
     segments: list[dict[str, Any]],
     purpose: str | None = None,
-    courses_per_segment: int = 3,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Per-segment Index A retrieval.
 
@@ -547,18 +587,26 @@ def retrieve_for_segments(
         area = seg.get("area")
         purpose_hint = seg.get("purpose_hint") or ""
         area_lbl = area_label(area) if area else ""
+        k = segment_k(len(seg.get("day_numbers") or []))  # scale breadth to the segment's days
 
         query_a = f"{area_lbl} {purpose_hint} Seoul travel itinerary".strip()
-        docs_a = store_a.similarity_search(query_a, k=courses_per_segment)
+        docs_a = store_a.similarity_search(query_a, k=k * 3)  # over-fetch buffer to re-rank
 
-        anchors: list[dict[str, Any]] = []
+        # dedupe candidates by course_id, preserving vector rank
+        candidates: list[dict[str, Any]] = []
+        seen_cid: set[str] = set()
         for d in docs_a:
             course = d.metadata.get("course") or {}
             cid = course.get("course_id")
-            if not cid:
-                continue
-            anchors.append(course)
-            if cid not in seen_course_ids:
+            if cid and cid not in seen_cid:
+                seen_cid.add(cid)
+                candidates.append(course)
+
+        # drop off-neighborhood courses below in-area ones, then keep top k
+        anchors = rerank_courses_by_area(candidates, area)[:k]
+        for course in anchors:
+            cid = course.get("course_id")
+            if cid and cid not in seen_course_ids:
                 seen_course_ids.add(cid)
                 all_courses.append(course)
         seg["anchor_courses"] = anchors

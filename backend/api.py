@@ -18,13 +18,13 @@ _here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _here)
 
 # ── Compatibility patch ────────────────────────────────────────────────────────
-# langchain_core ≤0.3.x tries to set `langchain.debug` as a module attribute,
-# but langchain 0.3+ removed it. Patch it back in before any other import.
-import langchain as _lc
-if not hasattr(_lc, "debug"):
-    _lc.debug = False
-if not hasattr(_lc, "verbose"):
-    _lc.verbose = False
+# langchain 0.3+ removed the `langchain.debug` / `langchain.verbose` module
+# attributes; the supported way to set them is langchain.globals. Poking the
+# module attributes directly (hasattr/setattr) now emits a deprecation warning,
+# so use the official setters instead.
+from langchain.globals import set_debug, set_verbose
+set_debug(False)
+set_verbose(False)
 # ──────────────────────────────────────────────────────────────────────────────
 
 from dotenv import load_dotenv
@@ -55,6 +55,14 @@ if not os.getenv("GOOGLE_API_KEY"):
 
 from graph import build_graph, clear_thread
 from lens import router as lens_router
+from guardrail_gate import is_blocked
+
+# Canned reply when the input gatekeeper blocks an off-topic / injection /
+# jailbreak message. Kept friendly and on-brand with collect_node's greeting.
+_BLOCKED_REPLY = (
+    "I can only help with planning your Seoul trip \U0001f425 "
+    "Tell me your travel dates, interests, or which area you'd like to explore!"
+)
 
 _graph = build_graph(GEMINI_API_KEY)
 
@@ -178,6 +186,24 @@ def _run(thread_id: str, user_input: Optional[str]) -> dict:
 def chat(req: ChatRequest):
     """Send a message (or None for the initial greeting) and get back
     the updated state plus the latest AI reply."""
+    # Input gatekeeper (NeMo self-check): drop off-topic / prompt-injection /
+    # jailbreak messages before they reach the planner. Empty message (the
+    # greeting turn) is never blocked. Fails open on any guardrail error.
+    if req.message and is_blocked(req.message):
+        state = _get_state(req.thread_id)
+        return StateResponse(
+            travel_dates=state.get("travel_dates"),
+            category=state.get("category"),
+            restrictions=state.get("restrictions"),
+            companion=state.get("companion"),
+            pace=state.get("pace"),
+            region=state.get("region"),
+            current_step=state.get("current_step", "start"),
+            confirmed=state.get("confirmed", False),
+            reply=_BLOCKED_REPLY,
+            itinerary=state.get("itinerary"),
+        )
+
     try:
         new_state = _run(req.thread_id, req.message)
     except Exception as e:

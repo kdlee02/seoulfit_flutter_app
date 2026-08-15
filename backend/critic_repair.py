@@ -931,6 +931,62 @@ class RepairAgent:
 # Public graph node
 # ---------------------------------------------------------------------------
 
+def _poi_coords(poi: dict[str, Any]) -> tuple[float, float] | None:
+    lat, lng = poi.get("lat"), poi.get("lng")
+    if isinstance(lat, (int, float)) and isinstance(lng, (int, float)):
+        return float(lat), float(lng)
+    return None
+
+
+def _leg_km(a: dict[str, Any] | None, b: dict[str, Any] | None) -> float:
+    if a is None or b is None:
+        return 0.0
+    ca, cb = _poi_coords(a), _poi_coords(b)
+    if ca is None or cb is None:
+        return 0.0
+    return haversine_km(ca[0], ca[1], cb[0], cb[1])
+
+
+def reorder_supplements(
+    pois: list[dict[str, Any]],
+    movable_names: set[str],
+) -> list[dict[str, Any]]:
+    """Place each supplement POI into the gap that adds the least walking, keeping
+    the editorial (anchor) POIs in their curated order.
+
+    Supplements are Google-Places / meal inserts, searched from the neighborhood
+    *center*, so they often land far from the day's actual cluster while the LLM's
+    order is never geographically re-checked. This snaps each to its cheapest-
+    insertion slot.
+
+    `movable_names` are the normalized names of google-sourced POIs, taken from
+    build_candidate_pool(state). We match by name because both as_output_poi
+    functions strip source_kind from the final POIs, so provenance isn't on the
+    POI itself — the pool is the only surviving record of which POIs are google.
+
+    ponytail: greedy cheapest-insertion, fine at <=8 POIs/day; swap for full
+    2-opt only if transition scores stay bad. Backbone order is left untouched.
+    """
+    def _movable(p: dict[str, Any]) -> bool:
+        return normalize_text(p.get("name")) in movable_names and _poi_coords(p) is not None
+
+    extras = [p for p in pois if _movable(p)]
+    if not extras:
+        return pois
+    extra_ids = {id(p) for p in extras}
+    route = [p for p in pois if id(p) not in extra_ids]  # backbone, original order
+    for p in extras:
+        best_i, best_cost = len(route), float("inf")
+        for i in range(len(route) + 1):
+            a = route[i - 1] if i > 0 else None
+            b = route[i] if i < len(route) else None
+            cost = _leg_km(a, p) + _leg_km(p, b) - _leg_km(a, b)
+            if cost < best_cost:
+                best_cost, best_i = cost, i
+        route.insert(best_i, p)
+    return route
+
+
 def make_critic_repair_node(base_dir: Any | None = None):
     critic = CriticAgent()
     repairer = RepairAgent()
@@ -955,7 +1011,13 @@ def make_critic_repair_node(base_dir: Any | None = None):
                 report=before_report,
             )
 
+            # Google-sourced POIs lose their source_kind by the time they land in
+            # a day (both as_output_poi helpers strip it), so recover it from the
+            # candidate pool — the only surviving record — and tidy each day's route.
+            pool = build_candidate_pool(state)
+            movable_names = {n for n, it in pool.items() if it.get("source_kind") == "google"}
             for day in repaired_itinerary.get("days") or []:
+                day["pois"] = reorder_supplements(day.get("pois") or [], movable_names)
                 day["transit_legs"] = compute_transit_legs(day.get("pois") or [])
 
             after_state = {**state, "itinerary": repaired_itinerary}

@@ -32,3 +32,8 @@ google-genai>=0.3.0
 
 # POI image search
 serpapi
+
+# Input guardrail — NeMo self-check input rail in front of /chat (guardrail_gate.py).
+# Runs through langchain-google-genai; needs NEMOGUARDRAILS_LLM_FRAMEWORK=langchain
+# (guardrail_gate.py sets this before importing nemoguardrails).
+nemoguardrails

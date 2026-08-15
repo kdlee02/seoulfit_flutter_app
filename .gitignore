@@ -65,3 +65,8 @@ _workspace/
 # Flutter-generated, machine-specific paths
 ios/Flutter/flutter_export_environment.sh
 .DS_Store
+.gstack/
+
+# Agent tooling (higgsfield skills) — not project code
+.agents/
+skills-lock.json

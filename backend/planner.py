@@ -447,6 +447,34 @@ def build_google_supplement_for_area(
         supplement.extend(shops)
         print(f"[Google Places][{_area_label(area)}] 쇼핑 {len(shops)}개 추가")
 
+    # Catch-all: the branches above only cover food/cafe/kpop/shopping. Any other
+    # purpose (K-beauty, art, nature, nightlife, ...) gets no targeted POIs, so
+    # search Google for the purpose itself. Type-based fetches stay the primary
+    # path for the common themes; this only fills the long tail.
+    if purpose and purpose.strip():
+        generic = fetch_text_places(
+            area=area,
+            query=f"{purpose} in {_area_label(area)} Seoul",
+            api_key=api_key,
+            radius=2500,
+            min_rating=4.0,
+            max_results=5,
+        )
+        # Text Search's radius is only a bias, and fetch_text_places stamps
+        # area=requested on every hit. Re-infer each POI's true area from its
+        # coords and keep only ones actually in (or adjacent to) this area, so an
+        # off-neighborhood result can't be mislabeled and inflate area_coverage.
+        kept = []
+        for p in generic:
+            true_area = _infer_area_from_text_or_coords(
+                p.get("poi_name"), p.get("address_en"), p.get("lat"), p.get("lng"))
+            if true_area and _area_matches_requested(true_area, area):
+                p["area"] = true_area
+                kept.append(p)
+        if kept:
+            supplement.extend(kept)
+            print(f"[Google Places][{_area_label(area)}] 목적 기반 {len(kept)}개 추가")
+
     return _dedupe_places(supplement)
 
 
