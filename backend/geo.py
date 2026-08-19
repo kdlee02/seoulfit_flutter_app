@@ -33,6 +33,7 @@ SEOUL_AREA_CENTERS: dict[str, tuple[float, float]] = {
     "insadong":   (37.5741, 126.9861),
     "myeongdong": (37.5636, 126.9857),
     "itaewon":    (37.5347, 126.9946),
+    "yongsan":    (37.5326, 126.9770),
     "sinchon":    (37.5596, 126.9373),
     "dongdaemun": (37.5666, 127.0097),
     "yeouido":    (37.5217, 126.9244),
@@ -55,6 +56,7 @@ AREA_ALIASES: dict[str, list[str]] = {
     "insadong":   ["insadong", "인사동"],
     "myeongdong": ["myeongdong", "명동"],
     "itaewon":    ["itaewon", "이태원"],
+    "yongsan":    ["yongsan", "용산"],
     "sinchon":    ["sinchon", "신촌"],
     "dongdaemun": ["dongdaemun", "동대문"],
     "yeouido":    ["yeouido", "여의도"],
@@ -71,6 +73,9 @@ _ADJACENT_AREAS: dict[str, set[str]] = {
     "seongsu": {"seongsu", "wangsimni"},
     "gangnam": {"gangnam", "sinsa", "garosu-gil"},
     "jongno": {"jongno", "insadong", "myeongdong"},
+    # Itaewon sits inside Yongsan-gu, so the two satisfy each other's requests.
+    "yongsan": {"yongsan", "itaewon"},
+    "itaewon": {"itaewon", "yongsan"},
 }
 
 # Max distance (km) for the haversine fallback to claim a POI belongs to an area.
@@ -90,6 +95,7 @@ _AREA_LABELS: dict[str, str] = {
     "insadong":   "Insadong",
     "myeongdong": "Myeongdong",
     "itaewon":    "Itaewon",
+    "yongsan":    "Yongsan",
     "sinchon":    "Sinchon",
     "dongdaemun": "Dongdaemun",
     "yeouido":    "Yeouido",

@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../config/api_base.dart';
+import '../widgets/animations.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
@@ -25,6 +28,7 @@ class _BackendEvent {
   final String venue;
   final String description;
   final String imageUrl;
+  final String landingUrl;
 
   const _BackendEvent({
     required this.name,
@@ -32,6 +36,7 @@ class _BackendEvent {
     required this.venue,
     required this.description,
     required this.imageUrl,
+    required this.landingUrl,
   });
 
   factory _BackendEvent.fromJson(Map<String, dynamic> json) => _BackendEvent(
@@ -40,6 +45,7 @@ class _BackendEvent {
         venue: (json['venue'] as String?) ?? '',
         description: (json['description'] as String?) ?? '',
         imageUrl: (json['image_url'] as String?) ?? '',
+        landingUrl: (json['landing_url'] as String?) ?? '',
       );
 }
 
@@ -55,11 +61,10 @@ class TransitExploreScreen extends StatefulWidget {
 }
 
 class _TransitExploreScreenState extends State<TransitExploreScreen> {
-  static const _baseUrl = 'http://10.0.2.2:8000';
-
   static const _categories = [
     _Category(label: 'Musical',    emoji: '🎭'),
     _Category(label: 'Concert',    emoji: '🎤'),
+    _Category(label: 'Sports',     emoji: '🏟'),
     _Category(label: 'Exhibition', emoji: '🖼'),
     _Category(label: 'Classic',    emoji: '🎹'),
     _Category(label: 'Family',     emoji: '👪'),
@@ -84,7 +89,7 @@ class _TransitExploreScreenState extends State<TransitExploreScreen> {
     try {
       final res = await http
           .post(
-            Uri.parse('$_baseUrl/events'),
+            Uri.parse('$apiBase/events'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(
                 {'category': category, 'travel_dates': travelDates}),
@@ -166,20 +171,15 @@ class _TransitExploreScreenState extends State<TransitExploreScreen> {
                       ],
                     ),
                   ),
-                  // Category grid — 3 columns × 2 rows
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                        childAspectRatio: 2.4,
-                      ),
+                  // Category strip — horizontal scrollable chips (7 items)
+                  SizedBox(
+                    height: 38,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: _categories.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(width: 8),
                       itemBuilder: (_, i) => _CategoryChip(
                         category: _categories[i],
                         selected: i == _selectedCategory,
@@ -241,17 +241,29 @@ class _TransitExploreScreenState extends State<TransitExploreScreen> {
       );
     }
 
-    return GridView.builder(
+    return GridView.count(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.52,
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 0.52,
+      children: stagger(
+        _events
+            .map((e) => _EventPosterCard(
+                  event: e,
+                  onTap: () => _openEvent(e),
+                ))
+            .toList(),
       ),
-      itemCount: _events.length,
-      itemBuilder: (_, i) => _EventPosterCard(event: _events[i]),
     );
+  }
+
+  Future<void> _openEvent(_BackendEvent event) async {
+    final url = event.landingUrl;
+    if (url.isEmpty) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   Widget _buildShimmer() {
@@ -299,12 +311,14 @@ class _CategoryChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: selected ? kMint : kCard,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(50),
           border: Border.all(color: selected ? kMint : kCardBorder),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(category.emoji, style: const TextStyle(fontSize: 15)),
@@ -326,11 +340,15 @@ class _CategoryChip extends StatelessWidget {
 
 class _EventPosterCard extends StatelessWidget {
   final _BackendEvent event;
-  const _EventPosterCard({required this.event});
+  final VoidCallback? onTap;
+  const _EventPosterCard({required this.event, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return PressableScale(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
       decoration: BoxDecoration(
         color: kCard,
         borderRadius: BorderRadius.circular(16),
@@ -357,6 +375,11 @@ class _EventPosterCard extends StatelessWidget {
                       event.imageUrl,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      // Cap decode resolution to the displayed size. Without
+                      // this, full-res yanolja posters (1000+px) decode at full
+                      // size and OOM-crash the app on real devices (the grid
+                      // holds ~20 at once). Simulator survives on host RAM.
+                      cacheWidth: 540,
                       errorBuilder: (_, __, ___) =>
                           const _PosterPlaceholder(),
                     )
@@ -417,6 +440,7 @@ class _EventPosterCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

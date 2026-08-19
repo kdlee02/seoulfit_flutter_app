@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'animations.dart';
 
 enum MascotVariant { full, chip, loading }
 
@@ -21,17 +22,35 @@ class _MascotWidgetState extends State<MascotWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _float;
+  bool _floating = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
+      // Slightly slower, gentler breath than the original 2s bob.
+      duration: const Duration(milliseconds: 2600),
+    );
     _float = Tween(begin: 0.0, end: 6.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Respect the platform reduced-motion setting: hold the mascot still
+    // instead of looping forever.
+    final shouldFloat = !Motion.reduced(context);
+    if (shouldFloat && !_floating) {
+      _floating = true;
+      _controller.repeat(reverse: true);
+    } else if (!shouldFloat && _floating) {
+      _floating = false;
+      _controller.stop();
+      _controller.value = 0;
+    }
   }
 
   @override
@@ -44,7 +63,7 @@ class _MascotWidgetState extends State<MascotWidget>
   Widget build(BuildContext context) {
     if (widget.variant == MascotVariant.chip) return _buildChip();
 
-    return AnimatedBuilder(
+    final mascot = AnimatedBuilder(
       animation: _float,
       builder: (ctx, _) => Transform.translate(
         offset: Offset(0, -_float.value),
@@ -70,6 +89,13 @@ class _MascotWidgetState extends State<MascotWidget>
         ),
       ),
     );
+
+    // Spring pop-in the first time the mascot appears. Loading variant skips
+    // the pop so the dots read as immediate feedback.
+    if (widget.variant == MascotVariant.loading || Motion.reduced(context)) {
+      return mascot;
+    }
+    return _PopIn(child: mascot);
   }
 
   Widget _buildChip() {
@@ -103,6 +129,33 @@ class _MascotWidgetState extends State<MascotWidget>
       ),
     );
   }
+}
+
+/// One-shot spring scale-in used when the mascot first mounts.
+class _PopIn extends StatefulWidget {
+  final Widget child;
+  const _PopIn({required this.child});
+
+  @override
+  State<_PopIn> createState() => _PopInState();
+}
+
+class _PopInState extends State<_PopIn> with SingleTickerProviderStateMixin {
+  late final AnimationController _c =
+      AnimationController(vsync: this, duration: Motion.slow)..forward();
+  late final Animation<double> _scale = Tween(begin: 0.7, end: 1.0).animate(
+    CurvedAnimation(parent: _c, curve: Motion.spring),
+  );
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      ScaleTransition(scale: _scale, child: widget.child);
 }
 
 class _LoadingDots extends StatefulWidget {

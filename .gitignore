@@ -56,3 +56,17 @@ backend/venv/
 backend/__pycache__/
 backend/**/__pycache__/
 backend/*.pyc
+
+# Generated tooling artifacts (do not commit)
+graphify-out/
+_workspace/
+.impeccable/
+**/.impeccable/
+# Flutter-generated, machine-specific paths
+ios/Flutter/flutter_export_environment.sh
+.DS_Store
+.gstack/
+
+# Agent tooling (higgsfield skills) — not project code
+.agents/
+skills-lock.json

@@ -243,7 +243,13 @@ async def _translate_public_data(public_data: dict, post_sn: int | None) -> dict
     if post_sn is not None and post_sn in _TRANSLATION_CACHE:
         return _TRANSLATION_CACHE[post_sn]
 
-    payload = {k: public_data.get(k, "") for k in _TRANSLATABLE_KEYS}
+    # Collapse whitespace (esp. the \r\n in multi-line `hours`) to single
+    # spaces first — raw newlines make Gemini echo them into its JSON string
+    # values, producing "Unterminated string" and falling back to Korean.
+    payload = {
+        k: re.sub(r"\s+", " ", str(public_data.get(k, "") or "")).strip()
+        for k in _TRANSLATABLE_KEYS
+    }
     if not any(v.strip() for v in payload.values() if isinstance(v, str)):
         return {**public_data}
 
@@ -267,7 +273,10 @@ async def _translate_public_data(public_data: dict, post_sn: int | None) -> dict
             contents=[translation_prompt],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
-                max_output_tokens=1024,
+                # gemini-2.5-flash spends part of this budget on thinking tokens;
+                # 1024 truncated the JSON mid-string on full records (long hours +
+                # 14 tags) → JSONDecodeError → Korean fallback. 4096 clears it.
+                max_output_tokens=4096,
             ),
         )
         raw = (response.text or "").strip()
@@ -391,13 +400,15 @@ async def analyze_landmark(file: UploadFile = File(...)):
     public_data = _extract_fields(matched_row) if matched_row else {}
     post_sn = matched_row.get("post_sn") if matched_row else None
 
-    description = await _generate_english_guide(
-        landmark_info, public_data, has_public_data
-    )
     public_data_en = (
         await _translate_public_data(public_data, post_sn)
         if has_public_data
         else {}
+    )
+    # Narrate from the English-translated facts, not the raw Korean, so no
+    # Korean address/hours/station names leak into the guide text.
+    description = await _generate_english_guide(
+        landmark_info, public_data_en or public_data, has_public_data
     )
 
     return {

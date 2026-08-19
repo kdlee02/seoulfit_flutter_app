@@ -1,36 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart'
-    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
+import '../config/api_base.dart';
 import '../models/landmark_analysis.dart';
 
 class LensService {
-  /// Base URL for the backend. Mirrors ApiService — both talk to the same
-  /// FastAPI app.
-  ///
-  /// - `--dart-define=API_BASE_URL=...` wins when provided (empty → same-origin).
-  /// - Otherwise a platform-aware local dev default: Android emulator uses
-  ///   `10.0.2.2`, iOS simulator / desktop / web use `localhost`.
-  static String get _baseRaw {
-    if (const bool.hasEnvironment('API_BASE_URL')) {
-      return const String.fromEnvironment('API_BASE_URL');
-    }
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8000';
-    }
-    return 'http://localhost:8000';
-  }
-
-  static String get _base {
-    if (_baseRaw.isEmpty) return '';
-    return _baseRaw.endsWith('/')
-        ? _baseRaw.substring(0, _baseRaw.length - 1)
-        : _baseRaw;
-  }
+  static String get _base => apiBase;
 
   Future<LandmarkAnalysis> analyze(Uint8List bytes, String filename) async {
     final uri = Uri.parse('$_base/analyze-landmark');

@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mascot_widget.dart';
+import '../widgets/animations.dart';
 import '../providers/travel_provider.dart';
 
 class ItineraryGenerationScreen extends StatefulWidget {
@@ -116,17 +117,7 @@ class _ItineraryGenerationScreenState extends State<ItineraryGenerationScreen>
                             'The planner needs more details before it can build your trip.',
                       )
                     else ...[
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        child: Text(
-                          _steps[_stepIndex],
-                          key: ValueKey(_stepIndex),
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13, color: kMint),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
                       AnimatedBuilder(
                         animation: _progress,
                         builder: (_, __) => Column(
@@ -160,6 +151,8 @@ class _ItineraryGenerationScreenState extends State<ItineraryGenerationScreen>
                           ],
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      _StepChecklist(steps: _steps, currentStep: _stepIndex),
                       const SizedBox(height: 28),
                       Align(
                         alignment: Alignment.centerLeft,
@@ -187,6 +180,75 @@ class _ItineraryGenerationScreenState extends State<ItineraryGenerationScreen>
   }
 }
 
+/// Vertical pipeline checklist: each step is done / active / pending based on
+/// how far the generation has progressed. Order is meaningful here (it mirrors
+/// the real RAG → rank → draft pipeline), so a numbered sequence fits.
+class _StepChecklist extends StatelessWidget {
+  final List<String> steps;
+  final int currentStep;
+  const _StepChecklist({required this.steps, required this.currentStep});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(steps.length, (i) {
+        final done = i < currentStep;
+        final active = i == currentStep;
+        final Color tint = done || active ? kMint : kSubtext;
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 22,
+                height: 22,
+                child: AnimatedSwitcher(
+                  duration: Motion.fast,
+                  child: done
+                      ? Container(
+                          key: const ValueKey('done'),
+                          decoration: const BoxDecoration(
+                              color: kMint, shape: BoxShape.circle),
+                          child: const Icon(Icons.check_rounded,
+                              size: 14, color: Colors.white),
+                        )
+                      : active
+                          ? const SizedBox(
+                              key: ValueKey('active'),
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: kMint),
+                            )
+                          : Container(
+                              key: const ValueKey('pending'),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: kCardBorder, width: 2),
+                              ),
+                            ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AnimatedDefaultTextStyle(
+                  duration: Motion.fast,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                    color: tint,
+                  ),
+                  child: Text(steps[i]),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+}
+
 class _SlotSummary extends StatelessWidget {
   const _SlotSummary();
 
@@ -203,8 +265,11 @@ class _SlotSummary extends StatelessWidget {
 
     return Column(
       children: [
-        for (final e in entries)
-          Opacity(
+        for (var i = 0; i < entries.length; i++)
+          FadeSlideIn(
+            delay: Motion.stagger * i,
+            offsetY: 10,
+            child: Opacity(
             opacity: 0.55,
             child: Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -228,10 +293,10 @@ class _SlotSummary extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(e.$1,
+                        Text(entries[i].$1,
                             style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11, color: kSubtext)),
-                        Text(e.$2!,
+                        Text(entries[i].$2!,
                             style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -240,7 +305,7 @@ class _SlotSummary extends StatelessWidget {
                 ),
               ]),
             ),
-          ),
+          )),
       ],
     );
   }

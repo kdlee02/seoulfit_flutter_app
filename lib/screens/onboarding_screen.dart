@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/mascot_widget.dart';
+import '../widgets/animations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -31,13 +32,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: [
                     const SizedBox(height: 16),
                     // Welcome card with mascot
-                    Container(
+                    FadeSlideIn(
+                      offsetY: 24,
+                      child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: kYellowLight,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: kYellow, width: 1.5),
+                        boxShadow: Elevations.card,
                       ),
                       child: Column(
                         children: [
@@ -62,25 +66,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ],
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 28),
                     // Sign in buttons
-                    _PillButton(
-                      label: 'Continue with Apple',
-                      icon: Icons.apple,
-                      backgroundColor: kInk,
-                      foregroundColor: Colors.white,
-                      onTap: () {},
+                    FadeSlideIn(
+                      delay: Motion.stagger,
+                      child: _PillButton(
+                        label: 'Continue with Apple',
+                        icon: Icons.apple,
+                        backgroundColor: kInk,
+                        foregroundColor: Colors.white,
+                        onTap: () {},
+                      ),
                     ),
                     const SizedBox(height: 10),
-                    _PillButton(
-                      label: 'Continue with Google',
-                      icon: null,
-                      googleIcon: true,
-                      backgroundColor: kCard,
-                      foregroundColor: kInk,
-                      border: true,
-                      onTap: () {},
+                    FadeSlideIn(
+                      delay: Motion.stagger * 2,
+                      child: _PillButton(
+                        label: 'Continue with Google',
+                        icon: null,
+                        googleIcon: true,
+                        backgroundColor: kCard,
+                        foregroundColor: kInk,
+                        border: true,
+                        onTap: () {},
+                      ),
                     ),
                     const SizedBox(height: 28),
                     // Permissions section
@@ -132,8 +142,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     const SizedBox(height: 28),
                     // CTA
-                    SizedBox(
+                    Container(
                       width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(50),
+                        boxShadow: Elevations.mintGlow,
+                      ),
                       child: ElevatedButton(
                         onPressed: () =>
                             Navigator.pushNamed(context, '/chat'),
@@ -193,8 +207,9 @@ class _PillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(50),
       child: Container(
         width: double.infinity,
         height: 54,

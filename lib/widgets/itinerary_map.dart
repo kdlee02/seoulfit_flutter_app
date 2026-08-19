@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../theme/app_theme.dart';
 import '../models/travel_state.dart';
+import 'animations.dart';
 
 /// OSM-backed map: one polyline per day (color-coded), numbered circular
 /// markers in visit order, tap to see the POI's name / type / stay time /
@@ -257,7 +258,7 @@ class _MapPoi {
   });
 }
 
-class _NumberedMarker extends StatelessWidget {
+class _NumberedMarker extends StatefulWidget {
   final int number;
   final Color color;
   final VoidCallback onTap;
@@ -269,29 +270,82 @@ class _NumberedMarker extends StatelessWidget {
   });
 
   @override
+  State<_NumberedMarker> createState() => _NumberedMarkerState();
+}
+
+class _NumberedMarkerState extends State<_NumberedMarker>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c =
+      AnimationController(vsync: this, duration: Motion.slow);
+  late final Animation<double> _in = CurvedAnimation(
+    parent: _c,
+    curve: Motion.spring,
+  );
+  bool _pressed = false;
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // MediaQuery (via Motion.reduced) can only be read once the element is
+    // mounted in the tree — never in initState. Guard so this runs once.
+    if (_started) return;
+    _started = true;
+    if (Motion.reduced(context)) {
+      _c.value = 1;
+    } else {
+      // Markers drop in one after another, in visit order.
+      Future.delayed(Motion.stagger * (widget.number - 1), () {
+        if (mounted) _c.forward();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  void _setPressed(bool v) {
+    if (_pressed != v) setState(() => _pressed = v);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2.5),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 4,
-              offset: Offset(0, 2),
+    return ScaleTransition(
+      scale: _in,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onTapDown: (_) => _setPressed(true),
+        onTapUp: (_) => _setPressed(false),
+        onTapCancel: () => _setPressed(false),
+        child: AnimatedScale(
+          scale: _pressed ? 1.25 : 1.0,
+          duration: Motion.fast,
+          curve: Motion.spring,
+          child: Container(
+            decoration: BoxDecoration(
+              color: widget.color,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2.5),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            '$number',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 13,
+            child: Center(
+              child: Text(
+                '${widget.number}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ),
         ),
