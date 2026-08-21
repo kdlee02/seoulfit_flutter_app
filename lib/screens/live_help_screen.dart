@@ -836,21 +836,28 @@ class _NearbyViewState extends State<_NearbyView> {
   List<NearbyPlace>? _places;
   bool _failed = false;
 
+  // Bumped on every _load() call and captured per-request. A response for a
+  // stale generation (e.g. the "cafe" request resolving after a later
+  // "restaurant" tap) is discarded instead of overwriting fresher results.
+  int _gen = 0;
+
   @override
   void initState() {
     super.initState();
-    _load();
+    _load(_type);
   }
 
-  void _load() {
+  void _load(String type) {
+    final gen = ++_gen;
     setState(() {
+      _type = type;
       _places = null;
       _failed = false;
     });
-    LiveHelpService.fetchNearby(widget.at, _type).then((v) {
-      if (mounted) setState(() => _places = v);
+    LiveHelpService.fetchNearby(widget.at, type).then((v) {
+      if (mounted && gen == _gen) setState(() => _places = v);
     }).catchError((_) {
-      if (mounted) setState(() => _failed = true);
+      if (mounted && gen == _gen) setState(() => _failed = true);
     });
   }
 
@@ -869,8 +876,7 @@ class _NearbyViewState extends State<_NearbyView> {
                   child: InkWell(
                     onTap: () {
                       if (_type == t) return;
-                      _type = t;
-                      _load();
+                      _load(t);
                     },
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
