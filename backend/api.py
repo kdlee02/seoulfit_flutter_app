@@ -55,6 +55,7 @@ if not os.getenv("GOOGLE_API_KEY"):
 
 from graph import build_graph, clear_thread
 from lens import router as lens_router
+from live_help import router as live_help_router
 from guardrail_gate import is_blocked
 
 # Canned reply when the input gatekeeper blocks an off-topic / injection /
@@ -102,6 +103,9 @@ app.add_middleware(
 
 # Lens (camera → landmark) endpoints
 app.include_router(lens_router)
+
+# 여행 중 도우미 (주변 추천 · 응급실) endpoints
+app.include_router(live_help_router)
 
 
 # ---------------------------------------------------------------------------
