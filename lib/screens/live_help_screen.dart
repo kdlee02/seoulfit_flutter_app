@@ -213,8 +213,23 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-Future<void> _launch(Uri uri) async {
-  if (await canLaunchUrl(uri)) await launchUrl(uri);
+/// 앱 밖으로 나가는 모든 tap 의 공통 경로. 응급 화면은 어떤 경우에도 막다른
+/// 길을 만들지 않는다 — 다이얼러가 없거나 launch 가 실패해도 사용자가 손으로
+/// 옮겨 적을 수 있게 원본 값(전화번호/주소/URL)을 스낵바로 보여준다.
+Future<void> _launch(BuildContext context, Uri uri, String display) async {
+  var ok = false;
+  try {
+    if (await canLaunchUrl(uri)) {
+      ok = await launchUrl(uri);
+    }
+  } catch (_) {
+    ok = false;
+  }
+  if (!ok && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(display)),
+    );
+  }
 }
 
 /// 여권분실. 데이터가 앱에 번들되어 있어 네트워크 실패 경로가 없다.
@@ -227,7 +242,10 @@ class _PassportView extends StatefulWidget {
 
 class _PassportViewState extends State<_PassportView> {
   final _controller = TextEditingController();
-  List<Embassy> _all = const [];
+  // null while the bundled asset is still loading; distinguishes "loading"
+  // from "loaded, zero matches" so the empty-state message doesn't flash
+  // before the first frame the data actually arrives on.
+  List<Embassy>? _all;
   String _query = '';
 
   @override
@@ -246,7 +264,8 @@ class _PassportViewState extends State<_PassportView> {
 
   @override
   Widget build(BuildContext context) {
-    final hits = _all.where((e) => e.matches(_query)).toList();
+    final all = _all;
+    final hits = all?.where((e) => e.matches(_query)).toList();
     return Column(
       children: [
         const _EmergencyNumbersBanner(),
@@ -276,20 +295,24 @@ class _PassportViewState extends State<_PassportView> {
           ),
         ),
         Expanded(
-          child: hits.isEmpty
-              ? Center(
-                  child: Text('No embassy found for "$_query"',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13, color: kSubtext)),
+          child: hits == null
+              ? const Center(
+                  child: CircularProgressIndicator(color: kMint),
                 )
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                      Insets.lg, 0, Insets.lg, Insets.xl),
-                  itemCount: hits.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: Insets.md),
-                  itemBuilder: (_, i) => _EmbassyCard(hits[i]),
-                ),
+              : hits.isEmpty
+                  ? Center(
+                      child: Text('No embassy found for "$_query"',
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13, color: kSubtext)),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(
+                          Insets.lg, 0, Insets.lg, Insets.xl),
+                      itemCount: hits.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: Insets.md),
+                      itemBuilder: (_, i) => _EmbassyCard(hits[i]),
+                    ),
         ),
       ],
     );
@@ -320,7 +343,7 @@ class _EmergencyNumbersBanner extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                   fontSize: 12.5, fontWeight: FontWeight.w700, color: kInk)),
           const SizedBox(height: Insets.sm),
-          Row(
+          const Row(
             children: [
               Expanded(
                 child: _PhonePill(
@@ -328,7 +351,7 @@ class _EmergencyNumbersBanner extends StatelessWidget {
                   number: '1330',
                 ),
               ),
-              const SizedBox(width: Insets.sm),
+              SizedBox(width: Insets.sm),
               Expanded(
                 child: _PhonePill(label: '112 · Police', number: '112'),
               ),
@@ -348,7 +371,7 @@ class _PhonePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _launch(Uri(scheme: 'tel', path: number)),
+      onTap: () => _launch(context, Uri(scheme: 'tel', path: number), number),
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(
@@ -414,25 +437,31 @@ class _EmbassyCard extends StatelessWidget {
                   icon: Icons.call_rounded,
                   label: e.phone,
                   onTap: () => _launch(
-                      Uri(scheme: 'tel', path: e.phoneDial.replaceAll('-', ''))),
+                      context,
+                      Uri(scheme: 'tel', path: e.phoneDial.replaceAll('-', '')),
+                      e.phone),
                 ),
               _MiniButton(
                 icon: Icons.map_outlined,
                 label: 'Map',
-                onTap: () => _launch(Uri.parse(
-                    'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(e.addressKo)}')),
+                onTap: () => _launch(
+                    context,
+                    Uri.parse(
+                        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(e.addressKo)}'),
+                    e.addressKo),
               ),
               if (e.website.isNotEmpty)
                 _MiniButton(
                   icon: Icons.language_rounded,
                   label: 'Website',
-                  onTap: () => _launch(Uri.parse(e.website)),
+                  onTap: () => _launch(context, Uri.parse(e.website), e.website),
                 ),
               if (e.email.isNotEmpty)
                 _MiniButton(
                   icon: Icons.mail_outline_rounded,
                   label: 'Email',
-                  onTap: () => _launch(Uri(scheme: 'mailto', path: e.email)),
+                  onTap: () => _launch(
+                      context, Uri(scheme: 'mailto', path: e.email), e.email),
                 ),
             ],
           ),
