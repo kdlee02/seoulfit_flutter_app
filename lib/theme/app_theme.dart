@@ -14,6 +14,11 @@ const kWarning = Color(0xFFFDE047);
 const kWarningBorder = Color(0xFFF59E0B);
 const kSuccess = Color(0xFF10B981);
 
+/// 응급 UI 전용 위험색. 만원인 응급실, 119 배너처럼 "지금 문제가 있다"를
+/// 나타내는 곳에만 쓴다. 일반 경고는 kWarning 을 계속 쓴다.
+const kDanger = Color(0xFFE53E3E);
+const kDangerWash = Color(0xFFFDECEC);
+
 /// Spacing scale (4pt grid). Use these instead of ad-hoc magic numbers so
 /// rhythm stays consistent across screens.
 class Insets {
