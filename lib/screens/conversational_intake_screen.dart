@@ -101,6 +101,8 @@ class _ConversationalIntakeScreenState
                       children: [
                         Text(
                           'SeoulFit Buddy 🐣',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -109,6 +111,8 @@ class _ConversationalIntakeScreenState
                         ),
                         Text(
                           'Ready to explore Seoul?',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
                               fontSize: 12, color: kSubtext),
                         ),
