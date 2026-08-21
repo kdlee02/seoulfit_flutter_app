@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import math
 import os
+import time
+import xml.etree.ElementTree as ET
 
 import httpx
 from fastapi import APIRouter, HTTPException
@@ -112,3 +114,115 @@ def nearby(req: NearbyRequest):
 
     places = sorted(found.values(), key=lambda x: x["distance_m"])[: req.want]
     return {"radius_used": radius_used, "places": places}
+
+
+# ---------------------------------------------------------------------------
+# 응급실 — E-Gen (국립중앙의료원 전국 응급의료기관 정보 조회 서비스)
+#
+# 9개 오퍼레이션 중 2개만 쓴다:
+#   getEgytLcinfoInqire                 좌표·거리를 주는 유일한 엔드포인트
+#   getEmrrmRltmUsefulSckbdInfoInqire   dutyTel3(응급실 직통)·hvec(가용병상)의 유일한 출처
+# hpid 로 조인하면 응급실을 운영하지 않는 일반 병원은 자동으로 떨어진다.
+# ---------------------------------------------------------------------------
+
+_EGEN_BASE = "https://apis.data.go.kr/B552657/ErmctInfoInqireService"
+_BEDS_TTL = 60  # 서울 전체가 한 응답이라 60초 캐시하면 일일 1000콜 제한에 여유가 생긴다
+
+_beds_cache: tuple[float, dict[str, dict]] | None = None
+
+
+def _egen(op: str, **params) -> list:
+    key = os.getenv("EGEN_API_KEY", "")
+    if not key:
+        raise HTTPException(status_code=500, detail="EGEN_API_KEY is not set")
+    try:
+        r = httpx.get(
+            f"{_EGEN_BASE}/{op}",
+            params={"serviceKey": key, "pageNo": 1, "numOfRows": 1000, **params},
+            timeout=25,
+        )
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"E-Gen {op} request failed: {e}")
+    try:
+        root = ET.fromstring(r.text)
+    except ET.ParseError:
+        raise HTTPException(status_code=502, detail=f"E-Gen {op} returned non-XML")
+    code = root.findtext(".//resultCode")
+    if code not in (None, "00"):
+        raise HTTPException(
+            status_code=502,
+            detail=f"E-Gen {op} returned {code}: {root.findtext('.//resultMsg')}",
+        )
+    return root.findall(".//item")
+
+
+def parse_beds(items: list) -> dict[str, dict]:
+    """실시간 가용병상 item 들을 hpid 로 키잉한다."""
+    beds: dict[str, dict] = {}
+    for it in items:
+        hpid = (it.findtext("hpid") or "").strip()
+        if not hpid:
+            continue
+        raw = (it.findtext("hvec") or "0").strip()
+        try:
+            hvec = int(raw)
+        except ValueError:
+            hvec = 0
+        beds[hpid] = {
+            "er_phone": (it.findtext("dutyTel3") or "").strip(),
+            "hvec": hvec,
+            "updated_at": (it.findtext("hvidate") or "").strip(),
+        }
+    return beds
+
+
+def _seoul_beds() -> dict[str, dict]:
+    global _beds_cache
+    now = time.time()
+    if _beds_cache and now - _beds_cache[0] < _BEDS_TTL:
+        return _beds_cache[1]
+    beds = parse_beds(_egen("getEmrrmRltmUsefulSckbdInfoInqire", STAGE1="서울특별시"))
+    _beds_cache = (now, beds)
+    return beds
+
+
+def join_er(near_items: list, beds: dict[str, dict], want: int) -> list[dict]:
+    """위치조회 결과에 실시간 병상을 붙이고 거리순으로 자른다.
+
+    실시간 목록에 없는 기관은 응급실 미운영 일반 병원이므로 여기서 떨어진다 —
+    별도 필터링 로직이 필요 없다.
+    """
+    rows: list[dict] = []
+    for it in near_items:
+        hpid = (it.findtext("hpid") or "").strip()
+        b = beds.get(hpid)
+        if not b:
+            continue
+        rows.append({
+            "name": (it.findtext("dutyName") or "").strip(),
+            "address": (it.findtext("dutyAddr") or "").strip(),
+            "lat": float(it.findtext("latitude") or 0),
+            "lng": float(it.findtext("longitude") or 0),
+            "distance_km": float(it.findtext("distance") or 0),
+            "er_phone": b["er_phone"],
+            "beds": b["hvec"],
+            # hvec 는 정원 초과를 음수로 쓴다. 0 이하는 전부 '만원'.
+            "beds_state": "available" if b["hvec"] > 0 else "full",
+            "updated_at": b["updated_at"],
+        })
+    rows.sort(key=lambda x: x["distance_km"])
+    return rows[:want]
+
+
+class ErRequest(BaseModel):
+    lat: float
+    lng: float
+    want: int = 5
+
+
+@router.post("/emergency-rooms")
+def emergency_rooms(req: ErRequest):
+    """현재 위치에서 가까운, 실제로 운영 중인 응급실을 병상 상황과 함께 돌려준다."""
+    near = _egen("getEgytLcinfoInqire", WGS84_LON=req.lng, WGS84_LAT=req.lat)
+    rows = join_er(near, _seoul_beds(), req.want)
+    return {"updated_at": rows[0]["updated_at"] if rows else "", "hospitals": rows}
