@@ -155,7 +155,28 @@ def _egen(op: str, **params) -> list:
             status_code=502,
             detail=f"E-Gen {op} returned {code}: {root.findtext('.//resultMsg')}",
         )
-    return root.findall(".//item")
+    items = root.findall(".//item")
+    if code is None and not items:
+        # data.go.kr 의 에러 봉투(quota 초과, Encoding 키를 잘못 넣었을 때 등)는
+        # resultCode 자체가 없다 — None 을 성공으로 오인하면 빈 리스트가 그대로
+        # HTTP 200 으로 나가 응급 화면이 조용히 빈 화면이 된다. resultCode 도
+        # item 도 없는 응답만 에러로 취급한다 — resultCode == "00" 인데 item 이
+        # 0개인 건 진짜 빈 결과이므로 (_seoul_beds, 위치조회 둘 다 여기 해당) 건드리지 않는다.
+        header = root.find(".//cmmMsgHeader")
+        reason = None
+        if header is not None:
+            reason = (
+                header.findtext("returnAuthMsg")
+                or header.findtext("errMsg")
+                or "".join(header.itertext()).strip()
+                or None
+            )
+        raise HTTPException(
+            status_code=502,
+            detail=f"E-Gen {op} returned an error envelope"
+            + (f": {reason}" if reason else " with no resultCode or items"),
+        )
+    return items
 
 
 def parse_beds(items: list) -> dict[str, dict]:

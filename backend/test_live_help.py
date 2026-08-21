@@ -9,7 +9,10 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 
+from fastapi import HTTPException
+
 sys.path.insert(0, os.path.dirname(__file__))
+import live_help  # noqa: E402
 from live_help import filter_places, haversine_m, join_er, parse_beds  # noqa: E402
 
 
@@ -110,6 +113,69 @@ def test_join_er_respects_want():
     assert len(join_er(near, beds, want=1)) == 1
 
 
+# data.go.kr 의 에러 봉투(quota 초과, Encoding 키 오사용 등)에는 resultCode
+# 자체가 없다. 이걸 성공으로 오인하면 _egen 이 빈 리스트를 돌려주고, 그게 그대로
+# HTTP 200 'hospitals: []' 로 나가 응급 화면이 조용히 빈 화면이 된다.
+_ERROR_ENVELOPE_XML = """<OpenAPI_ServiceResponse>
+    <cmmMsgHeader>
+        <errMsg>SERVICE ERROR</errMsg>
+        <returnAuthMsg>SERVICE_KEY_IS_NOT_REGISTERED_ERROR</returnAuthMsg>
+        <returnReasonCode>30</returnReasonCode>
+    </cmmMsgHeader>
+</OpenAPI_ServiceResponse>"""
+
+# resultCode == "00" 인데 item 이 0개인 건 진짜 빈 결과다 (예: STAGE1 조회에서
+# 해당 지역에 아무 것도 없을 때) — 에러로 취급하면 안 된다.
+_EMPTY_OK_XML = """<response><header><resultCode>00</resultCode>
+<resultMsg>NORMAL SERVICE.</resultMsg></header><body><items></items></body></response>"""
+
+
+def _patch_egen_http(xml_text: str):
+    """네트워크를 타지 않고 _egen 의 파싱·에러 처리만 검증하기 위해 httpx.get 을
+    갈아끼운다. (원래 get, 원래 EGEN_API_KEY) 를 돌려주니 finally 에서 되돌린다."""
+
+    class _FakeResponse:
+        text = xml_text
+
+    original_get = live_help.httpx.get
+    original_key = os.environ.get("EGEN_API_KEY")
+    os.environ["EGEN_API_KEY"] = "test-key"
+    live_help.httpx.get = lambda *a, **k: _FakeResponse()
+    return original_get, original_key
+
+
+def _unpatch_egen_http(original_get, original_key):
+    live_help.httpx.get = original_get
+    if original_key is None:
+        os.environ.pop("EGEN_API_KEY", None)
+    else:
+        os.environ["EGEN_API_KEY"] = original_key
+
+
+def test_egen_raises_on_error_envelope_without_resultcode():
+    original_get, original_key = _patch_egen_http(_ERROR_ENVELOPE_XML)
+    try:
+        try:
+            live_help._egen("getEgytLcinfoInqire", WGS84_LON=127.0, WGS84_LAT=37.5)
+            assert False, "expected HTTPException"
+        except HTTPException as e:
+            assert e.status_code == 502, e.status_code
+            assert "SERVICE_KEY_IS_NOT_REGISTERED_ERROR" in e.detail, e.detail
+    finally:
+        _unpatch_egen_http(original_get, original_key)
+
+
+def test_egen_allows_legitimate_empty_result():
+    original_get, original_key = _patch_egen_http(_EMPTY_OK_XML)
+    try:
+        assert (
+            live_help._egen("getEmrrmRltmUsefulSckbdInfoInqire", STAGE1="서울특별시")
+            == []
+        )
+    finally:
+        _unpatch_egen_http(original_get, original_key)
+
+
 if __name__ == "__main__":
     test_haversine()
     test_filter_places_drops_low_review_counts()
@@ -119,4 +185,6 @@ if __name__ == "__main__":
     test_join_er_drops_hospitals_without_live_beds()
     test_join_er_marks_negative_capacity_as_full()
     test_join_er_respects_want()
+    test_egen_raises_on_error_envelope_without_resultcode()
+    test_egen_allows_legitimate_empty_result()
     print("live_help self-check ok")

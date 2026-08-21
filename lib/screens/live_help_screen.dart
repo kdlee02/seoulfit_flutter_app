@@ -647,7 +647,19 @@ class _EmergencyViewState extends State<_EmergencyView> {
   void initState() {
     super.initState();
     LiveHelpService.fetchEmergencyRooms(widget.at).then((v) {
-      if (mounted) setState(() => _rooms = v);
+      // A successful-but-empty response (data.go.kr error envelope that
+      // slipped past the server guard, a traveller outside Seoul, E-Gen
+      // maintenance) is treated the same as a failure so the fallback list
+      // renders instead of a blank area under the 119 banner.
+      if (mounted) {
+        setState(() {
+          if (v.isEmpty) {
+            _failed = true;
+          } else {
+            _rooms = v;
+          }
+        });
+      }
     }).catchError((_) {
       if (mounted) setState(() => _failed = true);
     });
@@ -734,6 +746,17 @@ class _Call119Banner extends StatelessWidget {
   }
 }
 
+/// E-Gen 의 `hvidate` (`yyyyMMddHHmmss`, 예: `20260821182414`) 를 사람이 읽을
+/// 수 있는 시각으로 바꾼다. 60초 캐시 + 요청 지연이 있으니 병상 수를 실시간처럼
+/// 보여주지 않기 위한 최소 신선도 힌트다. 형식이 안 맞으면(폴백 목록은 항상
+/// 빈 문자열) null 을 돌려주고 호출부가 렌더링을 건너뛴다.
+String? _formatBedsUpdatedAt(String raw) {
+  if (raw.length < 12) return null;
+  final hh = raw.substring(8, 10);
+  final mm = raw.substring(10, 12);
+  return 'Updated $hh:$mm';
+}
+
 class _RoomCard extends StatelessWidget {
   final EmergencyRoom r;
   const _RoomCard(this.r);
@@ -777,6 +800,12 @@ class _RoomCard extends StatelessWidget {
                   : r.address,
               style: GoogleFonts.plusJakartaSans(
                   fontSize: 12, color: kSubtext, height: 1.4)),
+          if (_formatBedsUpdatedAt(r.updatedAt) case final hint?) ...[
+            const SizedBox(height: Insets.xs),
+            Text(hint,
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11, color: kSubtext)),
+          ],
           const SizedBox(height: Insets.md),
           Wrap(
             spacing: Insets.sm,

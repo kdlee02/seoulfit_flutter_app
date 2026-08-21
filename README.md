@@ -75,7 +75,12 @@ Create `backend/.env` (gitignored) with your keys:
 ```env
 GEMINI_API_KEY=your_key_here
 GOOGLE_API_KEY=your_key_here
+EGEN_API_KEY=your_key_here
 ```
+
+`EGEN_API_KEY` must be the data.go.kr **Decoding** key (not Encoding) — it powers the
+on-trip help emergency room lookup. Without it, `/emergency-rooms` silently degrades to
+the app's hardcoded fallback list on every call.
 
 ## Running
 
@@ -109,6 +114,7 @@ flutter run --dart-define=API_BASE_URL=https://<your-backend-host>
 | Google Places key | `lib/config/api_keys.dart` | gitignored |
 | Google Maps (Android) key | `android/local.properties` (`MAPS_API_KEY`) | gitignored |
 | Backend AI keys | `backend/.env` | gitignored |
+| E-Gen key (`EGEN_API_KEY`) | `backend/.env` | data.go.kr Decoding key; gitignored |
 | Backend URL | `--dart-define=API_BASE_URL=…` | defaults to `localhost:8000` |
 
 ## Security note

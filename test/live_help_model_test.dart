@@ -79,6 +79,20 @@ void main() {
     expect(open.isFull, isFalse);
   });
 
+  test('EmergencyRoom.isFull is self-sufficient: a non-positive bed count '
+      'is full even when beds_state is neither "full" nor "unknown"', () {
+    // Guards against app/backend version skew where a missing beds_state
+    // key parses to '' instead of a recognized value.
+    final skewed = EmergencyRoom.fromJson(const {
+      'name': '서울아산', 'address': '서울 송파구', 'lat': 37.527, 'lng': 127.108,
+      'distance_km': 9.2, 'er_phone': '02-3010-3333',
+      'beds': -6, 'beds_state': '', 'updated_at': '20260821182414',
+    });
+    expect(skewed.bedsState, '');
+    expect(skewed.beds, -6);
+    expect(skewed.isFull, isTrue);
+  });
+
   test('NearbyPlace tolerates missing rating and open_now', () {
     final p = NearbyPlace.fromJson(const {
       'name': 'Brand New Cafe', 'address': 'Seongdong-gu',

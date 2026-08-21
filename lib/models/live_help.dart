@@ -107,7 +107,11 @@ class EmergencyRoom {
         updatedAt: _str(j['updated_at']),
       );
 
-  bool get isFull => bedsState == 'full';
+  /// Self-sufficient on purpose: `hvec` encodes over-capacity as a negative
+  /// number, so a `beds_state` that is neither `'full'` nor `'unknown'` (e.g.
+  /// `''` from a missing key under app/backend version skew) must still be
+  /// treated as full rather than falling through to a `'-6 beds'` render.
+  bool get isFull => bedsState == 'full' || beds <= 0;
 }
 
 /// 주변 추천 장소 한 곳.

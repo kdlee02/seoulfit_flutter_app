@@ -8,9 +8,6 @@ import 'package:latlong2/latlong.dart';
 import '../config/api_base.dart';
 import '../models/live_help.dart';
 
-/// 서울시청. GPS 를 못 얻고 지역 선택도 하지 않았을 때의 마지막 기준점.
-const kSeoulCenter = LatLng(37.5665, 126.9780);
-
 /// 위치 거부/실패 시 고를 수 있는 지역들. 백엔드 geo.py 의 SEOUL_AREA_CENTERS
 /// 중 여행자가 실제로 머무는 곳만 추렸다.
 const kSeoulAreas = <String, LatLng>{
