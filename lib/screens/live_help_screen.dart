@@ -8,6 +8,7 @@ import '../services/live_help_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/app_status_bar.dart';
+import '../widgets/chat_mode_toggle.dart';
 import '../widgets/mascot_widget.dart';
 
 enum _View { hub, passport, emergency, nearby }
@@ -98,6 +99,7 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
+          const ChatModeToggle(liveMode: true),
         ],
       ),
     );

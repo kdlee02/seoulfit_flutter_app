@@ -6,6 +6,7 @@ import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mascot_widget.dart';
 import '../widgets/animations.dart';
+import '../widgets/chat_mode_toggle.dart';
 import '../providers/travel_provider.dart';
 
 /// Starter prompts shown before the traveller has typed anything, so the empty
@@ -114,21 +115,7 @@ class _ConversationalIntakeScreenState
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: kMintLight,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'AI Chat',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: kMint),
-                    ),
-                  ),
+                  const ChatModeToggle(liveMode: false),
                 ],
               ),
             ),

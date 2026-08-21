@@ -8,6 +8,7 @@ import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/conversational_intake_screen.dart';
+import 'screens/live_help_screen.dart';
 import 'screens/slot_parsing_screen.dart';
 import 'screens/itinerary_generation_screen.dart';
 import 'screens/final_itinerary_map_screen.dart';
@@ -47,6 +48,7 @@ class SeoulFitApp extends StatelessWidget {
           '/': (ctx) => const SplashScreen(),
           '/onboarding': (ctx) => const OnboardingScreen(),
           '/chat': (ctx) => const ConversationalIntakeScreen(),
+          '/live-help': (ctx) => const LiveHelpScreen(),
           '/slot-parsing': (ctx) => const SlotParsingScreen(),
           '/generating': (ctx) => const ItineraryGenerationScreen(),
           '/itinerary-map': (ctx) => const FinalItineraryMapScreen(),
