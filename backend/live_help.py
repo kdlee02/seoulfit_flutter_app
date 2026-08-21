@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 import os
+import threading
 import time
 import xml.etree.ElementTree as ET
 
@@ -129,6 +130,7 @@ _EGEN_BASE = "https://apis.data.go.kr/B552657/ErmctInfoInqireService"
 _BEDS_TTL = 60  # 서울 전체가 한 응답이라 60초 캐시하면 일일 1000콜 제한에 여유가 생긴다
 
 _beds_cache: tuple[float, dict[str, dict]] | None = None
+_beds_lock = threading.Lock()
 
 
 def _egen(op: str, **params) -> list:
@@ -181,9 +183,15 @@ def _seoul_beds() -> dict[str, dict]:
     now = time.time()
     if _beds_cache and now - _beds_cache[0] < _BEDS_TTL:
         return _beds_cache[1]
-    beds = parse_beds(_egen("getEmrrmRltmUsefulSckbdInfoInqire", STAGE1="서울특별시"))
-    _beds_cache = (now, beds)
-    return beds
+    with _beds_lock:
+        # 락 대기 중 다른 스레드가 이미 갱신했을 수 있으니 다시 확인한다 —
+        # 그러지 않으면 TTL 만료 시점에 동시 요청이 각각 E-Gen 을 또 부른다.
+        now = time.time()
+        if _beds_cache and now - _beds_cache[0] < _BEDS_TTL:
+            return _beds_cache[1]
+        beds = parse_beds(_egen("getEmrrmRltmUsefulSckbdInfoInqire", STAGE1="서울특별시"))
+        _beds_cache = (now, beds)
+        return beds
 
 
 def join_er(near_items: list, beds: dict[str, dict], want: int) -> list[dict]:
