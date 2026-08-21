@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/live_help.dart';
@@ -51,9 +52,9 @@ class _LiveHelpScreenState extends State<LiveHelpScreen> {
       case _View.passport:
         return const _PassportView();
       case _View.emergency:
+        return _LocationGate(builder: (at) => _EmergencyView(at));
       case _View.nearby:
-        // Task 6 에서 채운다.
-        return const SizedBox.shrink();
+        return _LocationGate(builder: (at) => _NearbyView(at));
     }
   }
 }
@@ -502,6 +503,488 @@ class _MiniButton extends StatelessWidget {
                     color: kInk)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// GPS 를 시도하고, 실패하면 지역 수동 선택을 띄운다.
+/// 응급 화면이 막다른 길이 되지 않도록 항상 좌표를 확보하는 것이 목적이다.
+class _LocationGate extends StatefulWidget {
+  final Widget Function(LatLng at) builder;
+  const _LocationGate({required this.builder});
+
+  @override
+  State<_LocationGate> createState() => _LocationGateState();
+}
+
+class _LocationGateState extends State<_LocationGate> {
+  LatLng? _at;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    LiveHelpService.currentLatLng().then((v) {
+      if (!mounted) return;
+      setState(() {
+        _at = v;
+        _loading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator(color: kMint));
+    }
+    final at = _at;
+    if (at != null) return widget.builder(at);
+    return _AreaPicker(onPick: (v) => setState(() => _at = v));
+  }
+}
+
+class _AreaPicker extends StatelessWidget {
+  final ValueChanged<LatLng> onPick;
+  const _AreaPicker({required this.onPick});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(Insets.lg),
+      children: [
+        Text("Couldn't get your location",
+            style: GoogleFonts.plusJakartaSans(
+                fontSize: 16, fontWeight: FontWeight.w700, color: kInk)),
+        const SizedBox(height: Insets.xs),
+        Text('Pick the area you are in and I will search from there.',
+            style:
+                GoogleFonts.plusJakartaSans(fontSize: 13, color: kSubtext)),
+        const SizedBox(height: Insets.lg),
+        Wrap(
+          spacing: Insets.sm,
+          runSpacing: Insets.sm,
+          children: [
+            for (final entry in kSeoulAreas.entries)
+              InkWell(
+                onTap: () => onPick(entry.value),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: Insets.lg, vertical: Insets.md),
+                  decoration: BoxDecoration(
+                    color: kCard,
+                    border: Border.all(color: kCardBorder),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(entry.key,
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: kInk)),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// E-Gen 이 통째로 죽었을 때 보여줄 최소 목록. 서울 권역 대형병원 5곳을
+/// 지리적으로 흩어 골랐다 (성북·종로·서대문·서초·송파). 전화번호는 전부
+/// 응급실 직통번호(dutyTel3)이고 좌표·주소는 getEgytBassInfoInqire 실응답에서
+/// 가져왔다. 응급 화면은 어떤 경우에도 막다른 길이 되면 안 된다.
+const _kErFallback = <EmergencyRoom>[
+  EmergencyRoom(
+      name: '연세대학교의과대학세브란스병원',
+      address: '서울특별시 서대문구 연세로 50-1 (신촌동)',
+      lat: 37.562117, lng: 126.940828, distanceKm: 0,
+      erPhone: '02-2227-7777', beds: 0, bedsState: 'unknown', updatedAt: ''),
+  EmergencyRoom(
+      name: '서울대학교병원',
+      address: '서울특별시 종로구 대학로 101 (연건동)',
+      lat: 37.579666, lng: 126.998963, distanceKm: 0,
+      erPhone: '02-2072-2475', beds: 0, bedsState: 'unknown', updatedAt: ''),
+  EmergencyRoom(
+      name: '고려대학교의과대학부속병원 (안암병원)',
+      address: '서울특별시 성북구 고려대로 73 (안암동5가)',
+      lat: 37.587156, lng: 127.026471, distanceKm: 0,
+      erPhone: '02-920-5374', beds: 0, bedsState: 'unknown', updatedAt: ''),
+  EmergencyRoom(
+      name: '가톨릭대학교 서울성모병원',
+      address: '서울특별시 서초구 반포대로 222 (반포동)',
+      lat: 37.501801, lng: 127.004727, distanceKm: 0,
+      erPhone: '02-2258-2370', beds: 0, bedsState: 'unknown', updatedAt: ''),
+  EmergencyRoom(
+      name: '서울아산병원',
+      address: '서울특별시 송파구 올림픽로43길 88 (풍납동)',
+      lat: 37.526564, lng: 127.108238, distanceKm: 0,
+      erPhone: '02-3010-3333', beds: 0, bedsState: 'unknown', updatedAt: ''),
+];
+
+/// 응급실. API 가 죽어도 119 안내와 대형병원 5곳은 항상 보인다.
+class _EmergencyView extends StatefulWidget {
+  final LatLng at;
+  const _EmergencyView(this.at);
+
+  @override
+  State<_EmergencyView> createState() => _EmergencyViewState();
+}
+
+class _EmergencyViewState extends State<_EmergencyView> {
+  List<EmergencyRoom>? _rooms;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    LiveHelpService.fetchEmergencyRooms(widget.at).then((v) {
+      if (mounted) setState(() => _rooms = v);
+    }).catchError((_) {
+      if (mounted) setState(() => _failed = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rooms = _rooms;
+    return Column(
+      children: [
+        const _Call119Banner(),
+        Expanded(
+          child: _failed
+              ? ListView(
+                  padding: const EdgeInsets.all(Insets.lg),
+                  children: [
+                    Text(
+                      "Live hospital data is unavailable. These major ERs are open 24 hours — call ahead before you go.",
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13, color: kSubtext, height: 1.5),
+                    ),
+                    const SizedBox(height: Insets.lg),
+                    for (final r in _kErFallback) ...[
+                      _RoomCard(r),
+                      const SizedBox(height: Insets.md),
+                    ],
+                  ],
+                )
+              : rooms == null
+                  ? const Center(
+                      child: CircularProgressIndicator(color: kMint))
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(Insets.lg),
+                      itemCount: rooms.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: Insets.md),
+                      itemBuilder: (_, i) => _RoomCard(rooms[i]),
+                    ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Call119Banner extends StatelessWidget {
+  const _Call119Banner();
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _launch(context, Uri(scheme: 'tel', path: '119'), '119'),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.fromLTRB(Insets.lg, Insets.md, Insets.lg, 0),
+        padding: const EdgeInsets.all(Insets.lg),
+        decoration: BoxDecoration(
+          color: kDangerWash,
+          border: Border.all(color: kDanger),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.emergency_rounded, color: kDanger),
+            const SizedBox(width: Insets.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Call 119',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: kDanger)),
+                  Text('Ambulance and interpreter, 24 hours',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12, color: kInk)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RoomCard extends StatelessWidget {
+  final EmergencyRoom r;
+  const _RoomCard(this.r);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Insets.lg),
+      decoration: BoxDecoration(
+        color: kCard,
+        border: Border.all(color: kCardBorder),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(r.name,
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: kInk)),
+              ),
+              const SizedBox(width: Insets.sm),
+              // hvec 는 정원 초과를 음수로 쓴다. 만원일 때 숫자를 보여주지 않는다.
+              // 폴백 목록은 bedsState 가 unknown 이라 뱃지를 아예 숨긴다.
+              if (r.bedsState != 'unknown')
+                _Pill(
+                  text: r.isFull ? 'Full' : '${r.beds} beds',
+                  fg: r.isFull ? kDanger : kSuccess,
+                  bg: r.isFull ? kDangerWash : kMintLight,
+                ),
+            ],
+          ),
+          const SizedBox(height: Insets.xs),
+          Text(
+              r.distanceKm > 0
+                  ? '${r.distanceKm.toStringAsFixed(1)} km · ${r.address}'
+                  : r.address,
+              style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12, color: kSubtext, height: 1.4)),
+          const SizedBox(height: Insets.md),
+          Wrap(
+            spacing: Insets.sm,
+            runSpacing: Insets.sm,
+            children: [
+              if (r.erPhone.isNotEmpty)
+                _MiniButton(
+                  icon: Icons.call_rounded,
+                  label: r.erPhone,
+                  onTap: () => _launch(
+                      context,
+                      Uri(scheme: 'tel', path: r.erPhone.replaceAll('-', '')),
+                      r.erPhone),
+                ),
+              _MiniButton(
+                icon: Icons.directions_rounded,
+                label: 'Directions',
+                onTap: () => _launch(
+                    context,
+                    Uri.parse(
+                        'https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}'),
+                    r.address),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  final String text;
+  final Color fg;
+  final Color bg;
+  const _Pill({required this.text, required this.fg, required this.bg});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(horizontal: Insets.md, vertical: Insets.xs),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+      child: Text(text,
+          style: GoogleFonts.plusJakartaSans(
+              fontSize: 11, fontWeight: FontWeight.w800, color: fg)),
+    );
+  }
+}
+
+/// 주변 추천. 카페/음식점 토글 + 거리순 5개.
+class _NearbyView extends StatefulWidget {
+  final LatLng at;
+  const _NearbyView(this.at);
+
+  @override
+  State<_NearbyView> createState() => _NearbyViewState();
+}
+
+class _NearbyViewState extends State<_NearbyView> {
+  String _type = 'cafe';
+  List<NearbyPlace>? _places;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  void _load() {
+    setState(() {
+      _places = null;
+      _failed = false;
+    });
+    LiveHelpService.fetchNearby(widget.at, _type).then((v) {
+      if (mounted) setState(() => _places = v);
+    }).catchError((_) {
+      if (mounted) setState(() => _failed = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final places = _places;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(Insets.lg),
+          child: Row(
+            children: [
+              for (final t in const ['cafe', 'restaurant'])
+                Padding(
+                  padding: const EdgeInsets.only(right: Insets.sm),
+                  child: InkWell(
+                    onTap: () {
+                      if (_type == t) return;
+                      _type = t;
+                      _load();
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: Insets.lg, vertical: Insets.sm),
+                      decoration: BoxDecoration(
+                        color: _type == t ? kMintLight : kCard,
+                        border: Border.all(
+                            color: _type == t ? kMint : kCardBorder),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(t == 'cafe' ? 'Cafes' : 'Restaurants',
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: _type == t ? kMint : kSubtext)),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _failed
+              ? Center(
+                  child: Text("Couldn't load nearby places right now.",
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13, color: kSubtext)),
+                )
+              : places == null
+                  ? const Center(
+                      child: CircularProgressIndicator(color: kMint))
+                  : places.isEmpty
+                      ? Center(
+                          child: Text('Nothing within walking distance here.',
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 13, color: kSubtext)),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(
+                              Insets.lg, 0, Insets.lg, Insets.xl),
+                          itemCount: places.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: Insets.md),
+                          itemBuilder: (_, i) => _PlaceCard(places[i]),
+                        ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PlaceCard extends StatelessWidget {
+  final NearbyPlace p;
+  const _PlaceCard(this.p);
+
+  @override
+  Widget build(BuildContext context) {
+    final openNow = p.openNow;
+    final rating = p.rating;
+    return Container(
+      padding: const EdgeInsets.all(Insets.lg),
+      decoration: BoxDecoration(
+        color: kCard,
+        border: Border.all(color: kCardBorder),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(p.name,
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: kInk)),
+              ),
+              // 리뷰가 없는 업소는 구글이 평점을 주지 않는다 — 그럴 땐 뱃지를 숨긴다.
+              if (rating != null)
+                _Pill(
+                    text: '$rating★ (${p.reviews})',
+                    fg: kInk,
+                    bg: kYellowLight),
+            ],
+          ),
+          const SizedBox(height: Insets.xs),
+          Text('${p.distanceM} m · ${p.address}',
+              style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12, color: kSubtext, height: 1.4)),
+          const SizedBox(height: Insets.md),
+          Wrap(
+            spacing: Insets.sm,
+            runSpacing: Insets.sm,
+            children: [
+              if (openNow != null)
+                _Pill(
+                  text: openNow ? 'Open now' : 'Closed',
+                  fg: openNow ? kSuccess : kSubtext,
+                  bg: openNow ? kMintLight : kCanvas,
+                ),
+              _MiniButton(
+                icon: Icons.directions_walk_rounded,
+                label: 'Directions',
+                onTap: () => _launch(
+                    context,
+                    Uri.parse(
+                        'https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}'),
+                    p.address),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
