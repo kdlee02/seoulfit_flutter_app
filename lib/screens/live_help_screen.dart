@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/live_help.dart';
+import '../services/kakao_links.dart';
 import '../services/live_help_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_bottom_nav.dart';
@@ -223,6 +225,13 @@ class _ActionCard extends StatelessWidget {
 /// 앱 밖으로 나가는 모든 tap 의 공통 경로. 응급 화면은 어떤 경우에도 막다른
 /// 길을 만들지 않는다 — 다이얼러가 없거나 launch 가 실패해도 사용자가 손으로
 /// 옮겨 적을 수 있게 원본 값(전화번호/주소/URL)을 스낵바로 보여준다.
+/// 출발지를 아는 경우에만 by/{mode} 경로를 만들고, 모르면 도착지 검색으로 떨어뜨린다.
+/// 출발지 없이 by/ 스킴을 쓰면 카카오가 좌표 자리를 빈 값으로 읽어 경로가 깨진다.
+Uri _routeTo(LatLng? from, LatLng to, String name, KakaoRouteMode mode) =>
+    from == null
+        ? kakaoSearch(name.trim().isEmpty ? '${to.latitude},${to.longitude}' : name)
+        : kakaoRoute(from: from, to: to, toName: name, mode: mode);
+
 Future<void> _launch(BuildContext context, Uri uri, String display) async {
   var ok = false;
   try {
@@ -451,11 +460,8 @@ class _EmbassyCard extends StatelessWidget {
               _MiniButton(
                 icon: Icons.map_outlined,
                 label: 'Map',
-                onTap: () => _launch(
-                    context,
-                    Uri.parse(
-                        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(e.addressKo)}'),
-                    e.addressKo),
+                onTap: () =>
+                    _launch(context, kakaoSearch(e.addressKo), e.addressKo),
               ),
               if (e.website.isNotEmpty)
                 _MiniButton(
@@ -696,7 +702,7 @@ class _EmergencyViewState extends State<_EmergencyView> {
                       itemCount: rooms.length,
                       separatorBuilder: (_, __) =>
                           const SizedBox(height: Insets.md),
-                      itemBuilder: (_, i) => _RoomCard(rooms[i]),
+                      itemBuilder: (_, i) => _RoomCard(rooms[i], from: widget.at),
                     ),
         ),
       ],
@@ -759,7 +765,12 @@ String? _formatBedsUpdatedAt(String raw) {
 
 class _RoomCard extends StatelessWidget {
   final EmergencyRoom r;
-  const _RoomCard(this.r);
+
+  /// 길찾기 출발지. 폴백 목록은 사용자 위치를 모른 채 그려질 수 있어 null 을 허용하고,
+  /// 그때는 도착지만 넘겨 카카오가 기기 현재 위치를 출발지로 쓰게 한다.
+  final LatLng? from;
+
+  const _RoomCard(this.r, {this.from});
 
   @override
   Widget build(BuildContext context) {
@@ -825,8 +836,8 @@ class _RoomCard extends StatelessWidget {
                 label: 'Directions',
                 onTap: () => _launch(
                     context,
-                    Uri.parse(
-                        'https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}'),
+                    _routeTo(from, LatLng(r.lat, r.lng), r.name,
+                        KakaoRouteMode.car),
                     r.address),
               ),
             ],
@@ -876,10 +887,31 @@ class _NearbyViewState extends State<_NearbyView> {
   // "restaurant" tap) is discarded instead of overwriting fresher results.
   int _gen = 0;
 
+  final _scrollCtrl = ScrollController();
+
+  /// 마커 탭 → 해당 카드로 스크롤하기 위한 카드별 키. 매 로드마다 갈아끼운다.
+  List<GlobalKey> _cardKeys = const [];
+
   @override
   void initState() {
     super.initState();
     _load(_type);
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  void _revealCard(int i) {
+    if (i >= _cardKeys.length) return;
+    final ctx = _cardKeys[i].currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(ctx,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        alignment: 0.1);
   }
 
   void _load(String type) {
@@ -890,7 +922,12 @@ class _NearbyViewState extends State<_NearbyView> {
       _failed = false;
     });
     LiveHelpService.fetchNearby(widget.at, type).then((v) {
-      if (mounted && gen == _gen) setState(() => _places = v);
+      if (mounted && gen == _gen) {
+        setState(() {
+          _places = v;
+          _cardKeys = List.generate(v.length, (_) => GlobalKey());
+        });
+      }
     }).catchError((_) {
       if (mounted && gen == _gen) setState(() => _failed = true);
     });
@@ -934,6 +971,12 @@ class _NearbyViewState extends State<_NearbyView> {
             ],
           ),
         ),
+        if (places != null && places.isNotEmpty)
+          _NearbyMap(
+            me: widget.at,
+            places: places,
+            onMarkerTap: _revealCard,
+          ),
         Expanded(
           child: _failed
               ? Center(
@@ -951,12 +994,18 @@ class _NearbyViewState extends State<_NearbyView> {
                                   fontSize: 13, color: kSubtext)),
                         )
                       : ListView.separated(
+                          controller: _scrollCtrl,
                           padding: const EdgeInsets.fromLTRB(
-                              Insets.lg, 0, Insets.lg, Insets.xl),
+                              Insets.lg, Insets.md, Insets.lg, Insets.xl),
                           itemCount: places.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: Insets.md),
-                          itemBuilder: (_, i) => _PlaceCard(places[i]),
+                          itemBuilder: (_, i) => _PlaceCard(
+                            places[i],
+                            key: i < _cardKeys.length ? _cardKeys[i] : null,
+                            index: i + 1,
+                            from: widget.at,
+                          ),
                         ),
         ),
       ],
@@ -966,7 +1015,12 @@ class _NearbyViewState extends State<_NearbyView> {
 
 class _PlaceCard extends StatelessWidget {
   final NearbyPlace p;
-  const _PlaceCard(this.p);
+  final LatLng? from;
+
+  /// 지도 마커와 대응시키는 1-기반 순번.
+  final int index;
+
+  const _PlaceCard(this.p, {super.key, required this.index, this.from});
 
   @override
   Widget build(BuildContext context) {
@@ -984,6 +1038,20 @@ class _PlaceCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              // 지도 마커와 같은 번호. 둘을 눈으로 잇는 유일한 단서라 항상 보인다.
+              Container(
+                width: 22,
+                height: 22,
+                margin: const EdgeInsets.only(right: Insets.sm),
+                decoration: const BoxDecoration(
+                    color: kInk, shape: BoxShape.circle),
+                alignment: Alignment.center,
+                child: Text('$index',
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: kCard)),
+              ),
               Expanded(
                 child: Text(p.name,
                     style: GoogleFonts.plusJakartaSans(
@@ -1019,10 +1087,112 @@ class _PlaceCard extends StatelessWidget {
                 label: 'Directions',
                 onTap: () => _launch(
                     context,
-                    Uri.parse(
-                        'https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}'),
+                    _routeTo(from, LatLng(p.lat, p.lng), p.name,
+                        KakaoRouteMode.walk),
                     p.address),
               ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+/// 주변 추천 상단의 작은 지도.
+///
+/// kakao_map_plugin 이 아니라 flutter_map(OSM)을 쓴다 — 카카오 플러그인은
+/// ios/android 전용이라 브라우저 개발 루프가 깨지고, 이 화면은 타일만 있으면
+/// 되지 카카오 SDK 기능이 필요하지 않다. 길찾기는 카카오로 넘긴다.
+class _NearbyMap extends StatelessWidget {
+  final LatLng me;
+  final List<NearbyPlace> places;
+  final ValueChanged<int> onMarkerTap;
+
+  const _NearbyMap({
+    required this.me,
+    required this.places,
+    required this.onMarkerTap,
+  });
+
+  /// 내 위치와 결과가 모두 들어오도록 잡은 경계. 결과가 반경 1000m 안이라
+  /// 여유값은 작게 둔다.
+  LatLngBounds get _bounds {
+    var minLat = me.latitude, maxLat = me.latitude;
+    var minLng = me.longitude, maxLng = me.longitude;
+    for (final p in places) {
+      minLat = p.lat < minLat ? p.lat : minLat;
+      maxLat = p.lat > maxLat ? p.lat : maxLat;
+      minLng = p.lng < minLng ? p.lng : minLng;
+      maxLng = p.lng > maxLng ? p.lng : maxLng;
+    }
+    const pad = 0.0012;
+    return LatLngBounds(
+      LatLng(minLat - pad, minLng - pad),
+      LatLng(maxLat + pad, maxLng + pad),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 200,
+      child: FlutterMap(
+        options: MapOptions(
+          initialCameraFit:
+              CameraFit.bounds(bounds: _bounds, padding: const EdgeInsets.all(28)),
+          interactionOptions: const InteractionOptions(
+            flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+          ),
+        ),
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.example.seoulfitFlutter',
+          ),
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: me,
+                width: 22,
+                height: 22,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: kMint,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: kCard, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: kInk.withValues(alpha: 0.25),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              for (var i = 0; i < places.length; i++)
+                Marker(
+                  point: LatLng(places[i].lat, places[i].lng),
+                  width: 30,
+                  height: 30,
+                  child: GestureDetector(
+                    onTap: () => onMarkerTap(i),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: kInk,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: kCard, width: 2),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text('${i + 1}',
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: kCard)),
+                    ),
+                  ),
+                ),
             ],
           ),
         ],
