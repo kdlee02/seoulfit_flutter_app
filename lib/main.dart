@@ -15,6 +15,7 @@ import 'screens/final_itinerary_map_screen.dart';
 import 'screens/user_selection_screen.dart';
 import 'screens/route_variation_screen.dart';
 import 'screens/trip_checkin_screen.dart';
+import 'screens/trip_recap_screen.dart';
 import 'screens/transit_explore_screen.dart';
 import 'screens/seoul_lens_screen.dart';
 import 'screens/profile_screen.dart';
@@ -56,6 +57,7 @@ class SeoulFitApp extends StatelessWidget {
           '/user-selection': (ctx) => const UserSelectionScreen(),
           '/route-variation': (ctx) => const RouteVariationScreen(),
           '/trip-checkin': (ctx) => const TripCheckinScreen(),
+          '/trip-recap': (ctx) => const TripRecapScreen(),
           '/transit-explore': (ctx) => const TransitExploreScreen(),
           '/seoul-lens': (ctx) => const SeoulLensScreen(),
           '/profile': (ctx) => const ProfileScreen(),
