@@ -113,6 +113,50 @@ class _TripRecapScreenState extends State<TripRecapScreen> {
                   style: GoogleFonts.plusJakartaSans(
                       fontSize: 12, color: kSubtext)),
             ],
+            // Gated on hasEnoughData: one checked day out of five would render
+            // a confident-looking comparison from almost no data. Worded as a
+            // score, never as a probability or an accuracy — the critic's
+            // feasibility term is a deterministic 0..1 rating of the plan, not
+            // a prediction of whether this traveller would finish it.
+            if (trip.feasibilityScore != null &&
+                rate != null &&
+                trip.hasEnoughData) ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: kCard,
+                  border: Border.all(color: kCardBorder),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('실행가능성 점수와 비교',
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: kInk)),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _Stat('AI 실행가능성 점수',
+                            '${(trip.feasibilityScore! * 100).round()}점'),
+                        _Stat('실제 완료율', '${(rate * 100).round()}%'),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                        '실행가능성 점수는 식사 시간대·이동 시간·영업시간을 계산한 '
+                        '일정 자체의 점수예요. 완주 확률이 아니라서 두 숫자가 '
+                        '달라도 예측이 틀린 건 아닙니다.',
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11, color: kSubtext, height: 1.5)),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
             for (final day in trip.plannedDays) ...[
               _DayRow(
