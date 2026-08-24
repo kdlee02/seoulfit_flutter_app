@@ -41,4 +41,15 @@ void main() {
     expect((await CheckinStore.load('a'))!.planned[1], ['A']);
     expect((await CheckinStore.load('b'))!.planned[1], ['B']);
   });
+
+  test('a failing backend sync still leaves the local save intact', () async {
+    // No server is running in the test environment, so the POST inside save()
+    // throws — the local write must survive it.
+    await CheckinStore.save(
+      const TripCheckin(tripId: 'offline', planned: {1: ['A']}),
+    );
+    final back = await CheckinStore.load('offline');
+    expect(back, isNotNull);
+    expect(back!.planned[1], ['A']);
+  });
 }

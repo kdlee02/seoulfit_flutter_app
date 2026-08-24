@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_base.dart';
 import '../models/travel_state.dart';
+import '../models/trip_checkin.dart';
 
 class ApiService {
   static final Map<String, String> _poiCache = {};
@@ -120,6 +121,36 @@ class ApiService {
       ];
     } else {
       throw Exception('Backend error ${response.statusCode}: ${response.body}');
+    }
+  }
+
+  /// Sends one trip's check-in snapshot to the backend. Write-only and
+  /// best-effort: the client renders its recap from local storage, so a false
+  /// here costs nothing but a missing row in the research table.
+  Future<bool> postCheckin({
+    required String deviceId,
+    required TripCheckin trip,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$_base/trip/checkin'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'trip_id': trip.tripId,
+              'device_id': deviceId,
+              'itinerary': {
+                'planned': trip.planned.map((k, v) => MapEntry(k.toString(), v)),
+                'feasibility_score': trip.feasibilityScore,
+              },
+              'days': trip.checkins
+                  .map((k, v) => MapEntry(k.toString(), v.toJson())),
+            }),
+          )
+          .timeout(const Duration(seconds: 8));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
     }
   }
 }

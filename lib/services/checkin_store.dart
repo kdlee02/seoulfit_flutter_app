@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/trip_checkin.dart';
+import 'api_service.dart';
 
 /// Local-first store for trip check-ins, following the same
 /// `shared_preferences` + JSON pattern as [TripStorageService].
@@ -30,12 +32,24 @@ class CheckinStore {
     return id;
   }
 
+  /// Writes locally, then mirrors to the backend. The local write is awaited;
+  /// the upload is not — a slow or dead network must never make the check-in
+  /// button feel broken.
   static Future<void> save(TripCheckin trip) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
       '$_tripPrefix${trip.tripId}',
       jsonEncode(trip.toJson()),
     );
+    unawaited(_sync(trip));
+  }
+
+  static Future<void> _sync(TripCheckin trip) async {
+    try {
+      await ApiService().postCheckin(deviceId: await deviceId(), trip: trip);
+    } catch (_) {
+      // Best-effort: the local copy is the source of truth for the recap.
+    }
   }
 
   static Future<TripCheckin?> load(String tripId) async {
