@@ -40,10 +40,23 @@ class _TripCheckinScreenState extends State<TripCheckinScreen> {
   Future<void> _bootstrap() async {
     final provider = context.read<TravelProvider>();
     final tripId = provider.tripId;
-    // Load an existing record, or snapshot the confirmed selection into a new
-    // one. selectedStops is memory-only, so this snapshot is what later days
-    // measure against.
+    // Load an existing record for the live session first.
     var trip = await CheckinStore.load(tripId);
+    if (trip == null &&
+        provider.selectedStops.isEmpty &&
+        provider.allPois.isEmpty) {
+      // provider.tripId (ApiService.threadId) is generated fresh on every
+      // app launch and never persisted, so after an overnight restart it no
+      // longer matches the id under which yesterday's record was saved.
+      // Falling back to the last-active trip recovers it — but ONLY when
+      // there is no itinerary in memory at all. If selectedStops/allPois are
+      // non-empty, the user has genuinely started a new trip, and resurrecting
+      // the previous trip's record here would silently overwrite it.
+      trip = await CheckinStore.loadActive();
+    }
+    // Otherwise snapshot the confirmed selection into a new record.
+    // selectedStops is memory-only, so this snapshot is what later days
+    // measure against.
     trip ??= TripCheckin.fromStops(
       tripId,
       provider.selectedStops.isNotEmpty
@@ -72,6 +85,31 @@ class _TripCheckinScreenState extends State<TripCheckinScreen> {
     });
   }
 
+  /// The [DayCheckin] for the day currently on screen, built from the live
+  /// `_visited`/`_misses` state. Anything not ticked is a miss; default to
+  /// "other" if no reason was given. Shared by [_saveDay] (persists it) and
+  /// [_switchDay] (keeps it in memory so a chip tap never discards ticks).
+  DayCheckin _currentDayCheckin() {
+    final stops = _trip?.planned[_day] ?? const <String>[];
+    final misses = <String, MissReason>{
+      for (final name in stops)
+        if (!_visited.contains(name)) name: _misses[name] ?? MissReason.other,
+    };
+    return DayCheckin(visited: {..._visited}, misses: misses);
+  }
+
+  /// Switches the day chip without losing unsaved ticks: the on-screen day is
+  /// first committed into `_trip` in memory (not persisted), then the target
+  /// day is loaded from `_trip`. Without this, `_loadDay` would overwrite
+  /// `_visited`/`_misses` straight from the (stale) `_trip`, silently
+  /// discarding whatever the traveller had just ticked.
+  void _switchDay(int day) {
+    if (day != _day) {
+      _trip = _trip!.withDay(_day, _currentDayCheckin());
+    }
+    _loadDay(day);
+  }
+
   void _toggle(String name) {
     setState(() {
       if (_visited.remove(name)) return;
@@ -83,16 +121,7 @@ class _TripCheckinScreenState extends State<TripCheckinScreen> {
   Future<void> _saveDay() async {
     final trip = _trip;
     if (trip == null) return;
-    final stops = trip.planned[_day] ?? const <String>[];
-    // Anything not ticked is a miss; default to "other" if no reason was given.
-    final misses = <String, MissReason>{
-      for (final name in stops)
-        if (!_visited.contains(name)) name: _misses[name] ?? MissReason.other,
-    };
-    final updated = trip.withDay(
-      _day,
-      DayCheckin(visited: {..._visited}, misses: misses),
-    );
+    final updated = trip.withDay(_day, _currentDayCheckin());
     await CheckinStore.save(updated);
     if (!mounted) return;
     setState(() => _trip = updated);
@@ -142,7 +171,7 @@ class _TripCheckinScreenState extends State<TripCheckinScreen> {
                           label: Text('Day $d'),
                           selected: d == _day,
                           selectedColor: kMintLight,
-                          onSelected: (_) => _loadDay(d),
+                          onSelected: (_) => _switchDay(d),
                         ),
                       ),
                   ],

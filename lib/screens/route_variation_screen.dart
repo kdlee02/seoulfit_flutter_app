@@ -348,21 +348,40 @@ class _RouteVariationScreenState extends State<RouteVariationScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          // Opt-in by use: no record exists until this is
+                          // Opt-in by use: no record exists until check-in is
                           // tapped, so the whole feature stays invisible to
-                          // anyone who never wants it.
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () => Navigator.pushNamed(
-                                  context, '/trip-checkin'),
-                              icon: const Icon(Icons.how_to_reg_rounded,
-                                  size: 18),
-                              label: Text('다녀온 곳 체크하기',
-                                  style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700)),
-                            ),
+                          // anyone who never wants it. The recap button is a
+                          // separate affordance for returning to a summary
+                          // that was already started — see spec's "the entry
+                          // point simply offers 요약 보기".
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => Navigator.pushNamed(
+                                      context, '/trip-checkin'),
+                                  icon: const Icon(Icons.how_to_reg_rounded,
+                                      size: 18),
+                                  label: Text('다녀온 곳 체크하기',
+                                      style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700)),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => Navigator.pushNamed(
+                                      context, '/trip-recap'),
+                                  icon: const Icon(Icons.summarize_rounded,
+                                      size: 18),
+                                  label: Text('요약 보기',
+                                      style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700)),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 24),
                         ],

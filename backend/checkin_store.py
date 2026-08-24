@@ -9,9 +9,16 @@ ponytail: one table, no ORM, no migration tool. Add one when a second table
 needs to relate to this one.
 """
 import json
+import logging
 import os
 import sqlite3
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
+
+# Set once _connect() has logged which backend it picked, so a busy process
+# doesn't repeat the line on every save/load call.
+_backend_logged = False
 
 _DEFAULT_SQLITE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "checkins.db"
@@ -46,11 +53,19 @@ FROM trip_checkins WHERE trip_id = {p}
 def _connect(db_path: str | None):
     """Return (connection, placeholder). Postgres when DATABASE_URL is set and
     no explicit db_path was given; SQLite otherwise."""
+    global _backend_logged
     url = os.getenv("DATABASE_URL")
     if url and db_path is None:
+        if not _backend_logged:
+            logger.info("checkin_store: using Postgres via DATABASE_URL")
+            _backend_logged = True
         import psycopg  # imported lazily so dev without the driver still runs
         return psycopg.connect(url), "%s"
-    return sqlite3.connect(db_path or _DEFAULT_SQLITE), "?"
+    path = db_path or _DEFAULT_SQLITE
+    if not _backend_logged:
+        logger.info("checkin_store: using SQLite at %s", path)
+        _backend_logged = True
+    return sqlite3.connect(path), "?"
 
 
 def save_checkin(
@@ -83,6 +98,9 @@ def save_checkin(
             conn.close()
         return True
     except Exception:
+        logger.exception(
+            "checkin_store: save_checkin failed for trip_id=%s", trip_id
+        )
         return False
 
 
@@ -99,6 +117,9 @@ def load_checkin(trip_id: str, db_path: str | None = None) -> dict | None:
         finally:
             conn.close()
     except Exception:
+        logger.exception(
+            "checkin_store: load_checkin failed for trip_id=%s", trip_id
+        )
         return None
     if row is None:
         return None

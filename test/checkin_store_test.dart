@@ -52,4 +52,31 @@ void main() {
     expect(back, isNotNull);
     expect(back!.planned[1], ['A']);
   });
+
+  test('save records the active trip id', () async {
+    await CheckinStore.save(
+      const TripCheckin(tripId: 'trip-active', planned: {1: ['A']}),
+    );
+    expect(await CheckinStore.activeTripId(), 'trip-active');
+  });
+
+  test('loadActive returns the saved record', () async {
+    const trip = TripCheckin(
+      tripId: 'trip-restart',
+      planned: {1: ['A', 'B']},
+      feasibilityScore: 0.8,
+    );
+    await CheckinStore.save(
+      trip.withDay(1, const DayCheckin(visited: {'A'}, misses: {'B': MissReason.stamina})),
+    );
+    final active = await CheckinStore.loadActive();
+    expect(active, isNotNull);
+    expect(active!.tripId, 'trip-restart');
+    expect(active.checkins[1]!.visited, {'A'});
+  });
+
+  test('loadActive returns null when nothing has been saved', () async {
+    expect(await CheckinStore.activeTripId(), isNull);
+    expect(await CheckinStore.loadActive(), isNull);
+  });
 }

@@ -30,7 +30,14 @@ class _TripRecapScreenState extends State<TripRecapScreen> {
   }
 
   Future<void> _load() async {
-    final trip = await CheckinStore.load(context.read<TravelProvider>().tripId);
+    final tripId = context.read<TravelProvider>().tripId;
+    // provider.tripId can be a fresh id after an app restart (see
+    // CheckinStore.loadActive doc). The recap has no in-memory selection to
+    // compare against, so falling back unconditionally is correct here —
+    // unlike the check-in screen, there is no "started a genuinely new trip"
+    // case to guard against.
+    var trip = await CheckinStore.load(tripId);
+    trip ??= await CheckinStore.loadActive();
     if (!mounted) return;
     setState(() {
       _trip = trip;
