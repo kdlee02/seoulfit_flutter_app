@@ -8,6 +8,7 @@ Production (Render binds $PORT):
     python -m uvicorn api:app --host 0.0.0.0 --port $PORT
 """
 
+import json
 import os
 import sys
 
@@ -57,6 +58,7 @@ from graph import build_graph, clear_thread
 from lens import router as lens_router
 from live_help import router as live_help_router
 from guardrail_gate import is_blocked
+from checkin_store import save_checkin
 
 # Canned reply when the input gatekeeper blocks an off-topic / injection /
 # jailbreak message. Kept friendly and on-brand with collect_node's greeting.
@@ -146,6 +148,13 @@ class TransitStop(BaseModel):
 
 class TransitLegsRequest(BaseModel):
     stops: list[TransitStop]    # ordered list of selected stops
+
+
+class CheckinRequest(BaseModel):
+    trip_id: str
+    device_id: str
+    itinerary: dict     # snapshot: planned stops per day + feasibility_score
+    days: dict          # day number (as str) → {visited: [...], misses: {...}}
 
 
 # ---------------------------------------------------------------------------
@@ -602,6 +611,24 @@ def transit_legs(req: TransitLegsRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
     return {"transit_legs": legs}
+
+
+@app.post("/trip/checkin")
+def trip_checkin(req: CheckinRequest):
+    """Store one trip's check-in snapshot. Write-only: the client renders its
+    recap from its own local copy, so there is no read path here. Returns
+    stored=false rather than an error when persistence is unavailable."""
+    # Trust-boundary validation: ids are used as a primary key, and the two
+    # JSON blobs come straight off the wire.
+    if not req.trip_id or len(req.trip_id) > 128:
+        raise HTTPException(status_code=422, detail="invalid trip_id")
+    if not req.device_id or len(req.device_id) > 128:
+        raise HTTPException(status_code=422, detail="invalid device_id")
+    payload_bytes = len(json.dumps(req.itinerary)) + len(json.dumps(req.days))
+    if payload_bytes > 256_000:
+        raise HTTPException(status_code=413, detail="payload too large")
+
+    return {"stored": save_checkin(req.trip_id, req.device_id, req.itinerary, req.days)}
 
 
 if __name__ == "__main__":
