@@ -347,6 +347,23 @@ class _RouteVariationScreenState extends State<RouteVariationScreen> {
                               ],
                             ),
                           ),
+                          const SizedBox(height: 12),
+                          // Opt-in by use: no record exists until this is
+                          // tapped, so the whole feature stays invisible to
+                          // anyone who never wants it.
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () => Navigator.pushNamed(
+                                  context, '/trip-checkin'),
+                              icon: const Icon(Icons.how_to_reg_rounded,
+                                  size: 18),
+                              label: Text('다녀온 곳 체크하기',
+                                  style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                            ),
+                          ),
                           const SizedBox(height: 24),
                         ],
                       ),
