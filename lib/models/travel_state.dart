@@ -92,6 +92,34 @@ class Itinerary {
             .toList(),
         raw: json,
       );
+
+  /// The deterministic feasibility term from the critic report — meal windows,
+  /// travel time between stops, and opening hours. 0..1, or null if the plan
+  /// was never scored.
+  ///
+  /// Deliberately not [overallScore]: that one blends in requested-area
+  /// coverage and foreigner-readiness, neither of which says anything about
+  /// whether a traveller can complete the plan.
+  double? get feasibilityScore => _afterScore('feasibility_score');
+
+  /// The blended critic score, 0..1.
+  double? get overallScore {
+    final direct = raw['overall_score'] ?? raw['score'];
+    if (direct is num) return direct.toDouble();
+    return _afterScore('overall_score');
+  }
+
+  /// `make_critic_repair_node` nests the scores under
+  /// `critic_report.after`; the flat `critic_report[key]` lookup is kept only
+  /// as a fallback for older payloads.
+  double? _afterScore(String key) {
+    final report = raw['critic_report'];
+    if (report is! Map) return null;
+    final after = report['after'];
+    if (after is Map && after[key] is num) return (after[key] as num).toDouble();
+    if (report[key] is num) return (report[key] as num).toDouble();
+    return null;
+  }
 }
 
 class ItineraryDay {
