@@ -259,6 +259,10 @@ def belongs_to_other_requested_area(
 def is_meal_poi(poi: dict[str, Any]) -> bool:
     ptype = normalize_text(poi.get("type") or poi.get("poi_type"))
     name = normalize_text(poi.get("name") or poi.get("poi_name"))
+    if poi.get("is_area_type"):
+        # 특정 업체가 아니라 거리/구역을 가리키는 POI는 "식사 슬롯 있음"으로
+        # 카운트하지 않는다 (예: "이태원 세계음식거리" 자체는 예약 가능한 식당이 아님).
+        return False
     return (
         ptype in {"restaurant", "cafe", "market", "food", "meal_takeaway"}
         or "restaurant" in ptype
@@ -293,6 +297,8 @@ def candidate_from_course_poi(raw: dict[str, Any]) -> dict[str, Any]:
         "notes": "",
         "area": raw.get("area"),
         "source_kind": "course",
+        "is_area_type": bool(raw.get("is_area_type")),
+        "opening_hours": raw.get("opening_hours"),
     }
     item["area"] = item["area"] or infer_area_from_poi(item)
     return item
