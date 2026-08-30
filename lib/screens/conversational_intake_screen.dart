@@ -151,7 +151,11 @@ class _ConversationalIntakeScreenState
                     ),
             ),
             // Suggested prompts: only while the conversation is just starting.
-            if (messages.length <= 1 && !provider.loading)
+            // Also dropped while the keyboard is up: the fixed chrome above and
+            // below the message list already fills a shrunken body, and holding
+            // the chips there overflows it. They are a starting hint anyway —
+            // nobody needs suggestions while they are mid-sentence.
+            if (messages.length <= 1 && !provider.loading && !keyboardOpen)
               _SuggestedPrompts(onTap: _sendText),
             if (provider.error != null)
               Padding(

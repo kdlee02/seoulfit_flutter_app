@@ -19,6 +19,16 @@ const kSuccess = Color(0xFF10B981);
 const kDanger = Color(0xFFE53E3E);
 const kDangerWash = Color(0xFFFDECEC);
 
+/// 여행 일차별 구분색. 일정 지도와 완주 기록 지도가 같은 날짜를 같은 색으로
+/// 그려야 해서 여기 한 벌만 둔다. 목록보다 일수가 많으면 순환한다.
+const kDayColors = [
+  kMint,
+  Color(0xFF457B9D), // sky blue
+  Color(0xFFF59E0B), // amber
+  Color(0xFF7C3AED), // violet
+  Color(0xFFE63946), // persimmon
+];
+
 /// Spacing scale (4pt grid). Use these instead of ad-hoc magic numbers so
 /// rhythm stays consistent across screens.
 class Insets {

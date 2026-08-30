@@ -7,6 +7,7 @@ import '../providers/travel_provider.dart';
 import '../services/checkin_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_status_bar.dart';
+import '../widgets/visited_route_map.dart';
 
 /// Everything recorded so far, rendered from the local store. There is no
 /// "finish the trip" step — the recap simply reflects whatever has been
@@ -85,6 +86,14 @@ class _TripRecapScreenState extends State<TripRecapScreen> {
         .where((d) => trip.stampFor(d) != StampTier.none)
         .length;
     final unrecorded = trip.plannedDays.length - trip.checkedDays.length;
+    // Empty for records written before coordinates were snapshotted, and for
+    // a trip where nothing visited had a location — the rest of the recap
+    // still renders in both cases.
+    final pointsByDay = {
+      for (final day in trip.plannedDays)
+        if (trip.visitedPointsFor(day).isNotEmpty)
+          day: trip.visitedPointsFor(day),
+    };
 
     return Scaffold(
       backgroundColor: kCanvas,
@@ -120,68 +129,90 @@ class _TripRecapScreenState extends State<TripRecapScreen> {
                   style: GoogleFonts.plusJakartaSans(
                       fontSize: 12, color: kSubtext)),
             ],
-            // Gated on hasEnoughData: one checked day out of five would render
-            // a confident-looking comparison from almost no data. Worded as a
-            // score, never as a probability or an accuracy — the critic's
-            // feasibility term is a deterministic 0..1 rating of the plan, not
-            // a prediction of whether this traveller would finish it.
-            if (trip.feasibilityScore != null &&
-                rate != null &&
-                trip.hasEnoughData) ...[
+            if (pointsByDay.isNotEmpty) ...[
               const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: kCard,
-                  border: Border.all(color: kCardBorder),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('실행가능성 점수와 비교',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: kInk)),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _Stat('AI 실행가능성 점수',
-                            '${(trip.feasibilityScore! * 100).round()}점'),
-                        _Stat('실제 완료율', '${(rate * 100).round()}%'),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                        '실행가능성 점수는 식사 시간대·이동 시간·영업시간을 계산한 '
-                        '일정 자체의 점수예요. 완주 확률이 아니라서 두 숫자가 '
-                        '달라도 예측이 틀린 건 아닙니다.',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11, color: kSubtext, height: 1.5)),
-                  ],
+              VisitedRouteMap(pointsByDay: pointsByDay),
+              const SizedBox(height: 12),
+              // The stamp is decoration; these fractions are the actual record,
+              // so they stay on screen even though the per-day cards are gone.
+              _DayLegend(trip: trip),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/trip-story'),
+                  icon: const Icon(Icons.ios_share_rounded, size: 18),
+                  label: Text('스토리용으로 보기',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
               ),
-            ],
-            const SizedBox(height: 20),
-            for (final day in trip.plannedDays) ...[
-              _DayRow(
-                day: day,
-                tier: trip.stampFor(day),
-                visited: trip.checkins[day]?.visited
-                        .where((n) => trip.planned[day]!.contains(n))
-                        .length ??
-                    0,
-                planned: trip.planned[day]?.length ?? 0,
-                recorded: trip.checkins.containsKey(day),
-              ),
-              const SizedBox(height: 10),
+            ] else ...[
+              const SizedBox(height: 20),
+              _DayLegend(trip: trip),
             ],
           ],
         ),
       ),
     );
+  }
+}
+
+/// One line per planned day: the day's colour dot, its number, and the exact
+/// visited/planned fraction — or 미기록 when it was never checked in.
+class _DayLegend extends StatelessWidget {
+  final TripCheckin trip;
+  const _DayLegend({required this.trip});
+
+  @override
+  Widget build(BuildContext context) {
+    final drawnDays = trip.plannedDays
+        .where((d) => trip.visitedPointsFor(d).isNotEmpty)
+        .toList();
+    return Wrap(
+      spacing: 14,
+      runSpacing: 8,
+      children: [
+        for (final day in trip.plannedDays)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  // Only days with a drawn route carry a palette colour; the
+                  // index must match VisitedRouteMap's, which skips days that
+                  // drew nothing.
+                  color: drawnDays.contains(day)
+                      ? kDayColors[
+                          drawnDays.indexOf(day) % kDayColors.length]
+                      : kCardBorder,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                _label(day),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: trip.checkins.containsKey(day) ? kInk : kSubtext,
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  String _label(int day) {
+    final stops = trip.planned[day] ?? const <String>[];
+    final entry = trip.checkins[day];
+    if (entry == null) return 'Day $day 미기록';
+    final visited = entry.visited.where(stops.contains).length;
+    return 'Day $day $visited/${stops.length}';
   }
 }
 
@@ -202,59 +233,4 @@ class _Stat extends StatelessWidget {
                   GoogleFonts.plusJakartaSans(fontSize: 12, color: kSubtext)),
         ],
       );
-}
-
-class _DayRow extends StatelessWidget {
-  final int day;
-  final StampTier tier;
-  final int visited;
-  final int planned;
-  final bool recorded;
-
-  const _DayRow({
-    required this.day,
-    required this.tier,
-    required this.visited,
-    required this.planned,
-    required this.recorded,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // The stamp is decoration; the exact fraction next to it is the real record.
-    final opacity = switch (tier) {
-      StampTier.full => 1.0,
-      StampTier.faded => 0.35,
-      StampTier.none => 0.0,
-    };
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: kCard,
-        border: Border.all(color: kCardBorder),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Opacity(
-            opacity: opacity,
-            child: const Icon(Icons.verified_rounded, color: kMint, size: 26),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text('Day $day',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15, fontWeight: FontWeight.w700, color: kInk)),
-          ),
-          Text(
-            recorded ? '$planned곳 중 $visited곳' : '미기록',
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                color: recorded ? kInk : kSubtext,
-                fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
 }

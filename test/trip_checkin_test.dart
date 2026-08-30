@@ -109,4 +109,110 @@ void main() {
     expect(it.feasibilityScore, isNull);
     expect(it.overallScore, isNull);
   });
+
+  test('fromStops snapshots coordinates, skipping stops that have none', () {
+    final stops = [
+      Poi.fromJson({'name': 'A', 'lat': 37.5796, 'lng': 126.9770}, day: 1),
+      Poi.fromJson({'name': 'B'}, day: 1), // no coords — must not be stored
+      Poi.fromJson({'name': 'C', 'lat': 37.5665, 'lng': 126.9780}, day: 2),
+    ];
+    final trip = TripCheckin.fromStops('t9', stops, null);
+    expect(trip.coords['A'], [37.5796, 126.9770]);
+    expect(trip.coords['C'], [37.5665, 126.9780]);
+    expect(trip.coords.containsKey('B'), isFalse);
+    // The stop itself still counts toward the plan — only its pin is missing.
+    expect(trip.planned[1], ['A', 'B']);
+  });
+
+  test('fromStops collects the district from each address', () {
+    final stops = [
+      Poi.fromJson(
+          {'name': 'A', 'address': '서울특별시 종로구 사직로 161'}, day: 1),
+      Poi.fromJson({'name': 'B', 'address': '서울 종로구 율곡로 99'}, day: 1),
+      Poi.fromJson({'name': 'C', 'address': '서울특별시 성북구 성북로 102'}, day: 2),
+      Poi.fromJson({'name': 'D', 'address': '주소 없음'}, day: 2),
+    ];
+    final trip = TripCheckin.fromStops('t9', stops, null);
+    expect(trip.areas, {'종로구', '성북구'});
+  });
+
+  test('latLngFor returns only coordinates for visited stops in order', () {
+    final stops = [
+      Poi.fromJson({'name': 'A', 'lat': 1.0, 'lng': 2.0}, day: 1),
+      Poi.fromJson({'name': 'B', 'lat': 3.0, 'lng': 4.0}, day: 1),
+      Poi.fromJson({'name': 'C', 'lat': 5.0, 'lng': 6.0}, day: 1),
+    ];
+    final trip = TripCheckin.fromStops('t9', stops, null)
+        .withDay(1, const DayCheckin(visited: {'C', 'A'}));
+    // Plan order, not the order the Set happens to iterate in.
+    expect(trip.visitedPointsFor(1), [
+      const VisitedPoint('A', 1.0, 2.0),
+      const VisitedPoint('C', 5.0, 6.0),
+    ]);
+  });
+
+  test('visitedPointsFor drops visited stops that have no coordinates', () {
+    final stops = [
+      Poi.fromJson({'name': 'A', 'lat': 1.0, 'lng': 2.0}, day: 1),
+      Poi.fromJson({'name': 'B'}, day: 1),
+    ];
+    final trip = TripCheckin.fromStops('t9', stops, null)
+        .withDay(1, const DayCheckin(visited: {'A', 'B'}));
+    expect(trip.visitedPointsFor(1), [const VisitedPoint('A', 1.0, 2.0)]);
+  });
+
+  test('visitedPointsFor is empty for an unrecorded day', () {
+    final stops = [
+      Poi.fromJson({'name': 'A', 'lat': 1.0, 'lng': 2.0}, day: 1),
+    ];
+    expect(TripCheckin.fromStops('t9', stops, null).visitedPointsFor(1),
+        isEmpty);
+  });
+
+  test('coords and areas survive the json round-trip', () {
+    final stops = [
+      Poi.fromJson(
+          {'name': 'A', 'lat': 1.5, 'lng': 2.5, 'address': '서울 마포구 와우산로'},
+          day: 1),
+    ];
+    final trip = TripCheckin.fromStops('t9', stops, 0.9)
+        .withDay(1, const DayCheckin(visited: {'A'}));
+    final back = TripCheckin.fromJson(trip.toJson());
+    expect(back.coords['A'], [1.5, 2.5]);
+    expect(back.areas, {'마포구'});
+    expect(back.visitedPointsFor(1), [const VisitedPoint('A', 1.5, 2.5)]);
+  });
+
+  test('withDay preserves coords and areas', () {
+    final stops = [
+      Poi.fromJson({'name': 'A', 'lat': 1.0, 'lng': 2.0, 'address': '서울 중구 세종대로'},
+          day: 1),
+    ];
+    final trip = TripCheckin.fromStops('t9', stops, null);
+    final after = trip.withDay(1, const DayCheckin(visited: {'A'}));
+    expect(after.coords, trip.coords);
+    expect(after.areas, trip.areas);
+  });
+
+  test('a record saved before coords existed still loads', () {
+    // Records written by the pre-map build carry no coords/areas keys at all.
+    final back = TripCheckin.fromJson({
+      'trip_id': 'old',
+      'planned': {
+        '1': ['A']
+      },
+      'checkins': {
+        '1': {
+          'visited': ['A'],
+          'misses': <String, String>{}
+        }
+      },
+      'feasibility_score': 0.8,
+    });
+    expect(back.coords, isEmpty);
+    expect(back.areas, isEmpty);
+    expect(back.visitedPointsFor(1), isEmpty);
+    // Everything that does not need coordinates still works.
+    expect(back.completionRate, 1.0);
+  });
 }

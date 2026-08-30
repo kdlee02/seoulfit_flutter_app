@@ -142,6 +142,10 @@ class ApiService {
               'itinerary': {
                 'planned': trip.planned.map((k, v) => MapEntry(k.toString(), v)),
                 'feasibility_score': trip.feasibilityScore,
+                // Carried so offline analysis can place a trip on a map
+                // without re-resolving POI names to coordinates.
+                'coords': trip.coords,
+                'areas': trip.areas.toList(),
               },
               'days': trip.checkins
                   .map((k, v) => MapEntry(k.toString(), v.toJson())),

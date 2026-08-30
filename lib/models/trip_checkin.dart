@@ -35,6 +35,28 @@ class DayCheckin {
       );
 }
 
+/// One visited stop with a place on the map, in plan order.
+class VisitedPoint {
+  final String name;
+  final double lat;
+  final double lng;
+
+  const VisitedPoint(this.name, this.lat, this.lng);
+
+  @override
+  bool operator ==(Object other) =>
+      other is VisitedPoint &&
+      other.name == name &&
+      other.lat == lat &&
+      other.lng == lng;
+
+  @override
+  int get hashCode => Object.hash(name, lat, lng);
+
+  @override
+  String toString() => 'VisitedPoint($name, $lat, $lng)';
+}
+
 /// One trip's check-in record. [planned] is snapshotted from the confirmed
 /// selection at creation time — `TravelProvider.selectedStops` lives in memory
 /// only and would be gone by the second evening.
@@ -50,11 +72,25 @@ class TripCheckin {
   /// `critic_report.after.feasibility_score` at confirmation time, 0..1.
   final double? feasibilityScore;
 
+  /// POI name → `[lat, lng]`, snapshotted alongside [planned].
+  ///
+  /// Kept separate from [planned] on purpose: the completion-rate,
+  /// stamp and data-sufficiency logic all read [planned] and must not have to
+  /// care whether a stop happens to have coordinates. Stops the backend sent
+  /// without a location are simply absent here.
+  final Map<String, List<double>> coords;
+
+  /// Districts ("종로구", "성북구") seen across the snapshotted stops. Used to
+  /// title the recap; empty when no address carried one.
+  final Set<String> areas;
+
   const TripCheckin({
     required this.tripId,
     required this.planned,
     this.checkins = const {},
     this.feasibilityScore,
+    this.coords = const {},
+    this.areas = const {},
   });
 
   /// Snapshot the confirmed selection. Day 0 normalises to 1, matching the
@@ -65,14 +101,33 @@ class TripCheckin {
     double? feasibilityScore,
   ) {
     final planned = <int, List<String>>{};
+    final coords = <String, List<double>>{};
+    final areas = <String>{};
     for (final s in stops) {
       (planned[s.day == 0 ? 1 : s.day] ??= <String>[]).add(s.name);
+      final lat = s.lat;
+      final lng = s.lng;
+      if (lat != null && lng != null) coords[s.name] = [lat, lng];
+      final area = _districtOf(s.address);
+      if (area != null) areas.add(area);
     }
     return TripCheckin(
       tripId: tripId,
       planned: planned,
       feasibilityScore: feasibilityScore,
+      coords: coords,
+      areas: areas,
     );
+  }
+
+  /// First whitespace-delimited token ending in 구, e.g. "종로구" out of
+  /// "서울특별시 종로구 사직로 161". Null when the address carries none — a
+  /// missing district only costs the recap its title.
+  static String? _districtOf(String address) {
+    for (final token in address.split(RegExp(r'\s+'))) {
+      if (token.length >= 2 && token.endsWith('구')) return token;
+    }
+    return null;
   }
 
   List<int> get plannedDays => planned.keys.toList()..sort();
@@ -114,11 +169,32 @@ class TripCheckin {
   bool get hasEnoughData =>
       planned.isNotEmpty && checkedDays.length / planned.length >= 0.5;
 
+  /// The stops actually visited on [day] that have a location, in plan order.
+  ///
+  /// Plan order, not the order [DayCheckin.visited] happens to iterate: the map
+  /// draws these as a path, so the sequence is the whole point. Empty for an
+  /// unrecorded day, and for records written before coordinates were stored.
+  List<VisitedPoint> visitedPointsFor(int day) {
+    final entry = checkins[day];
+    final stops = planned[day];
+    if (entry == null || stops == null) return const [];
+    final points = <VisitedPoint>[];
+    for (final name in stops) {
+      if (!entry.visited.contains(name)) continue;
+      final c = coords[name];
+      if (c == null || c.length < 2) continue;
+      points.add(VisitedPoint(name, c[0], c[1]));
+    }
+    return points;
+  }
+
   TripCheckin withDay(int day, DayCheckin entry) => TripCheckin(
         tripId: tripId,
         planned: planned,
         checkins: {...checkins, day: entry},
         feasibilityScore: feasibilityScore,
+        coords: coords,
+        areas: areas,
       );
 
   Map<String, dynamic> toJson() => {
@@ -126,6 +202,8 @@ class TripCheckin {
         'planned': planned.map((k, v) => MapEntry(k.toString(), v)),
         'checkins': checkins.map((k, v) => MapEntry(k.toString(), v.toJson())),
         'feasibility_score': feasibilityScore,
+        'coords': coords,
+        'areas': areas.toList(),
       };
 
   factory TripCheckin.fromJson(Map<String, dynamic> json) => TripCheckin(
@@ -143,5 +221,13 @@ class TripCheckin {
           ),
         ),
         feasibilityScore: (json['feasibility_score'] as num?)?.toDouble(),
+        // Absent in records written before the recap grew a map.
+        coords: ((json['coords'] as Map?) ?? const {}).map(
+          (k, v) => MapEntry(
+            k as String,
+            (v as List).map((n) => (n as num).toDouble()).toList(),
+          ),
+        ),
+        areas: ((json['areas'] as List?) ?? const []).cast<String>().toSet(),
       );
 }
