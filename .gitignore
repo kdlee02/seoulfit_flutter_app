@@ -70,3 +70,5 @@ ios/Flutter/flutter_export_environment.sh
 # Agent tooling (higgsfield skills) — not project code
 .agents/
 skills-lock.json
+
+backend/checkins.db

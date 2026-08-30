@@ -37,3 +37,7 @@ serpapi
 # Runs through langchain-google-genai; needs NEMOGUARDRAILS_LLM_FRAMEWORK=langchain
 # (guardrail_gate.py sets this before importing nemoguardrails).
 nemoguardrails
+
+# Trip check-in persistence (checkin_store.py). Render injects DATABASE_URL;
+# without it the store falls back to a local SQLite file and this is unused.
+psycopg[binary]>=3.1

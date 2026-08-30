@@ -75,16 +75,7 @@ class _FinalItineraryMapScreenState extends State<FinalItineraryMapScreen> {
     );
   }
 
-  double? _score(Itinerary it) {
-    final raw = it.raw;
-    final direct = raw['overall_score'] ?? raw['score'];
-    if (direct is num) return direct.toDouble();
-    final report = raw['critic_report'];
-    if (report is Map && report['overall_score'] is num) {
-      return (report['overall_score'] as num).toDouble();
-    }
-    return null;
-  }
+  double? _score(Itinerary it) => it.overallScore;
 
   Widget _dayPills(List<ItineraryDay> days) {
     if (days.length <= 1) return const SizedBox.shrink();

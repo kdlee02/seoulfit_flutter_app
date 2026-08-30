@@ -44,7 +44,7 @@ _BASE_DIR = Path(__file__).resolve().parent
 # v3: v2 + seoul.json 매칭으로 얻은 opening_hours 필드(93건; 없으면 필드 생략).
 # v4: v3 + TourAPI(EngService2) 배치 매칭으로 얻은 opening_hours 추가(99건, source=tourapi).
 # 원본 course_data.json은 그대로 두고 별도 파일로 관리한다.
-COURSE_DATA_PATH = _BASE_DIR / "course_data_v4.json"
+COURSE_DATA_PATH = _BASE_DIR / "dataset" / "course_data_v4.json"
 VECTORSTORE_DIR = _BASE_DIR / "vectorstore"
 
 EMBEDDING_MODEL = "models/gemini-embedding-001"
