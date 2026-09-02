@@ -286,6 +286,7 @@ def candidate_from_course_poi(raw: dict[str, Any]) -> dict[str, Any]:
     address = raw.get("address_en") or raw.get("address_ko") or raw.get("address") or ""
     lat = raw.get("lat")
     lng = raw.get("lng")
+    opening_hours = raw.get("opening_hours")
 
     item = {
         "name": name,
@@ -298,7 +299,13 @@ def candidate_from_course_poi(raw: dict[str, Any]) -> dict[str, Any]:
         "area": raw.get("area"),
         "source_kind": "course",
         "is_area_type": bool(raw.get("is_area_type")),
-        "opening_hours": raw.get("opening_hours"),
+        "is_generic_activity": bool(raw.get("is_generic_activity")),
+        "opening_hours": opening_hours,
+        # course_data_v6: Google Places Legacy Place Details로 얻은 정기 휴무
+        # 요일 리스트(예: ["Tuesday"]), 데이터 없으면 None. opening_hours 안에
+        # 중첩되어 있지만 Critic 규칙(CLOSED_ON_ASSIGNED_DAY 등)에서 바로 쓰기
+        # 편하도록 is_area_type과 같은 방식으로 최상위 필드로도 꺼내둔다.
+        "closed_weekday": (opening_hours or {}).get("closed_weekday"),
     }
     item["area"] = item["area"] or infer_area_from_poi(item)
     return item
@@ -350,6 +357,11 @@ def build_candidate_pool(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
     for course in state.get("retrieved_courses") or []:
         for raw in course.get("sequence", []) or []:
             item = candidate_from_course_poi(raw)
+            if item.get("is_generic_activity"):
+                # 활동 카테고리 라벨(예: "Karaoke", "Jjimjilbang")일 뿐 특정 업체가
+                # 아닌 POI는 후보 풀에서 제외한다 — 예약/방문 가능한 장소로 착각해
+                # 일정에 꽂히는 것을 막기 위함.
+                continue
             key = normalize_text(item.get("name"))
             if key:
                 pool[key] = item

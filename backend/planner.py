@@ -300,6 +300,92 @@ def fetch_text_places(
     return places
 
 
+# ---------------------------------------------------------------------------
+# Google Places — weekly (regular) closure day lookup
+#
+# Places API (New)'s `regularOpeningHours` field is what the docs recommend
+# for this, but that API is NOT enabled on this project's Google Cloud key
+# (places.googleapis.com returns 403 SERVICE_DISABLED — see
+# backend/scripts/places_api_probe.py). The legacy Place Details endpoint's
+# `opening_hours` field is functionally equivalent for our purpose (it has
+# `weekday_text` with an explicit "Tuesday: Closed" line when a place has a
+# fixed weekly closure day) and already works with the current key, so this
+# uses that instead. If Places API (New) is enabled later, swap the two
+# functions below for a single `places:searchText`/Place Details (New) call
+# with `X-Goog-FieldMask: regularOpeningHours` and read `.specialDays`/the
+# per-day `open`/`close` list the same way.
+# ---------------------------------------------------------------------------
+
+_WEEKDAY_NAMES = [
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+]
+
+
+def find_place_id(
+    *, name: str, address: str, lat: float | None, lng: float | None, api_key: str
+) -> str | None:
+    """Legacy Find Place — resolves a (name, address) pair to a Google place_id.
+    Location-biased when lat/lng are available to avoid mismatching a same-named
+    place elsewhere. Returns None on any failure (never raises)."""
+    if not api_key or not name:
+        return None
+
+    url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
+    params = {
+        "input": f"{name}, {address}" if address else name,
+        "inputtype": "textquery",
+        "fields": "place_id,name,formatted_address",
+        "key": api_key,
+    }
+    if lat is not None and lng is not None:
+        params["locationbias"] = f"point:{lat},{lng}"
+
+    data = _google_get(url, params)
+    candidates = data.get("candidates") or []
+    if not candidates:
+        return None
+    return candidates[0].get("place_id")
+
+
+def fetch_weekly_closure(*, place_id: str, api_key: str) -> dict[str, Any] | None:
+    """Legacy Place Details, Contact Data tier only (fields=opening_hours) —
+    returns the raw `opening_hours` object, or None if the place has no
+    published hours / the request failed."""
+    if not api_key or not place_id:
+        return None
+
+    url = "https://maps.googleapis.com/maps/api/place/details/json"
+    params = {
+        "place_id": place_id,
+        "fields": "name,opening_hours,business_status",
+        "key": api_key,
+    }
+    data = _google_get(url, params)
+    result = data.get("result") or {}
+    return result.get("opening_hours")
+
+
+def derive_closed_weekdays(opening_hours: dict[str, Any] | None) -> list[str] | None:
+    """Parses `weekday_text` (e.g. "Tuesday: Closed") into a list of weekday
+    names the place is regularly closed. Returns [] if it has hours every day,
+    None if there's no usable weekday_text at all (caller should treat that as
+    "no data", not "open every day")."""
+    if not opening_hours:
+        return None
+    weekday_text = opening_hours.get("weekday_text") or []
+    if not weekday_text:
+        return None
+
+    closed = []
+    for line in weekday_text:
+        day, _, hours = line.partition(":")
+        if "closed" in hours.strip().lower():
+            day = day.strip()
+            if day in _WEEKDAY_NAMES:
+                closed.append(day)
+    return closed
+
+
 def fetch_kpop_places_for_area(
     *,
     area: str,
