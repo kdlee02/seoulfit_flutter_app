@@ -24,16 +24,7 @@ class ItineraryMap extends StatefulWidget {
 class _ItineraryMapState extends State<ItineraryMap> {
   final MapController _mapController = MapController();
 
-  /// Distinct colors per day, drawn from the SeoulFit palette.
-  static const List<Color> _dayColors = [
-    kMint,
-    Color(0xFF457B9D), // sky blue
-    Color(0xFFF59E0B), // amber
-    Color(0xFF7C3AED), // violet
-    Color(0xFFE63946), // persimmon
-  ];
-
-  Color _colorFor(int dayIndex) => _dayColors[dayIndex % _dayColors.length];
+  Color _colorFor(int dayIndex) => kDayColors[dayIndex % kDayColors.length];
 
   void _zoomBy(double delta) {
     final camera = _mapController.camera;

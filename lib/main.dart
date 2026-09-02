@@ -8,11 +8,15 @@ import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/conversational_intake_screen.dart';
+import 'screens/live_help_screen.dart';
 import 'screens/slot_parsing_screen.dart';
 import 'screens/itinerary_generation_screen.dart';
 import 'screens/final_itinerary_map_screen.dart';
 import 'screens/user_selection_screen.dart';
 import 'screens/route_variation_screen.dart';
+import 'screens/trip_checkin_screen.dart';
+import 'screens/trip_recap_screen.dart';
+import 'screens/trip_story_screen.dart';
 import 'screens/transit_explore_screen.dart';
 import 'screens/seoul_lens_screen.dart';
 import 'screens/profile_screen.dart';
@@ -47,11 +51,15 @@ class SeoulFitApp extends StatelessWidget {
           '/': (ctx) => const SplashScreen(),
           '/onboarding': (ctx) => const OnboardingScreen(),
           '/chat': (ctx) => const ConversationalIntakeScreen(),
+          '/live-help': (ctx) => const LiveHelpScreen(),
           '/slot-parsing': (ctx) => const SlotParsingScreen(),
           '/generating': (ctx) => const ItineraryGenerationScreen(),
           '/itinerary-map': (ctx) => const FinalItineraryMapScreen(),
           '/user-selection': (ctx) => const UserSelectionScreen(),
           '/route-variation': (ctx) => const RouteVariationScreen(),
+          '/trip-checkin': (ctx) => const TripCheckinScreen(),
+          '/trip-recap': (ctx) => const TripRecapScreen(),
+          '/trip-story': (ctx) => const TripStoryScreen(),
           '/transit-explore': (ctx) => const TransitExploreScreen(),
           '/seoul-lens': (ctx) => const SeoulLensScreen(),
           '/profile': (ctx) => const ProfileScreen(),

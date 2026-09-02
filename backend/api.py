@@ -8,6 +8,7 @@ Production (Render binds $PORT):
     python -m uvicorn api:app --host 0.0.0.0 --port $PORT
 """
 
+import json
 import os
 import sys
 
@@ -55,7 +56,9 @@ if not os.getenv("GOOGLE_API_KEY"):
 
 from graph import build_graph, clear_thread
 from lens import router as lens_router
+from live_help import router as live_help_router
 from guardrail_gate import is_blocked
+from checkin_store import save_checkin
 
 # Canned reply when the input gatekeeper blocks an off-topic / injection /
 # jailbreak message. Kept friendly and on-brand with collect_node's greeting.
@@ -102,6 +105,9 @@ app.add_middleware(
 
 # Lens (camera → landmark) endpoints
 app.include_router(lens_router)
+
+# 여행 중 도우미 (주변 추천 · 응급실) endpoints
+app.include_router(live_help_router)
 
 
 # ---------------------------------------------------------------------------
@@ -152,6 +158,13 @@ class ClosureCheckItem(BaseModel):
 
 class ClosureCheckRequest(BaseModel):
     items: list[ClosureCheckItem]   # 한 일정당 15~25개 예상
+
+
+class CheckinRequest(BaseModel):
+    trip_id: str
+    device_id: str
+    itinerary: dict     # snapshot: planned stops per day + feasibility_score
+    days: dict          # day number (as str) → {visited: [...], misses: {...}}
 
 
 # ---------------------------------------------------------------------------
@@ -628,6 +641,24 @@ def poi_closure_check(req: ClosureCheckRequest):
         traceback.print_exc()
         results = [_unknown_result(it.poi_name, it.visit_date) for it in req.items]
     return {"results": results}
+
+
+@app.post("/trip/checkin")
+def trip_checkin(req: CheckinRequest):
+    """Store one trip's check-in snapshot. Write-only: the client renders its
+    recap from its own local copy, so there is no read path here. Returns
+    stored=false rather than an error when persistence is unavailable."""
+    # Trust-boundary validation: ids are used as a primary key, and the two
+    # JSON blobs come straight off the wire.
+    if not req.trip_id or len(req.trip_id) > 128:
+        raise HTTPException(status_code=422, detail="invalid trip_id")
+    if not req.device_id or len(req.device_id) > 128:
+        raise HTTPException(status_code=422, detail="invalid device_id")
+    payload_bytes = len(json.dumps(req.itinerary)) + len(json.dumps(req.days))
+    if payload_bytes > 256_000:
+        raise HTTPException(status_code=413, detail="payload too large")
+
+    return {"stored": save_checkin(req.trip_id, req.device_id, req.itinerary, req.days)}
 
 
 if __name__ == "__main__":

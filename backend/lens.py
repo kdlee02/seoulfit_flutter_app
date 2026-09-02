@@ -29,7 +29,7 @@ _GEMINI_MODEL = "gemini-2.5-flash"
 # Local Seoul RAG dataset
 # ──────────────────────────────────────────
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_SEOUL_DATA_PATH = os.path.join(_HERE, "seoul.json")
+_SEOUL_DATA_PATH = os.path.join(_HERE, "dataset", "seoul.json")
 _KOREAN_SLUG_RE = re.compile(r"^https://korean\.visitseoul\.net/attractions/([^/?]+)")
 
 

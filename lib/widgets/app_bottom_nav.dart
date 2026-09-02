@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'chat_mode_toggle.dart' show lastChatRoute;
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -35,7 +36,10 @@ class AppBottomNav extends StatelessWidget {
     if (index == currentIndex) return;
     // Switch tabs (replace rather than stack) so the five destinations behave
     // like a bottom tab bar. Each target screen handles its own empty state.
-    Navigator.pushReplacementNamed(context, _routes[index]);
+    // Index 0 (Chat) has two sub-routes ('/chat', '/live-help'); resume
+    // whichever was last active instead of always resetting to Plan mode.
+    final target = index == 0 ? lastChatRoute : _routes[index];
+    Navigator.pushReplacementNamed(context, target);
   }
 
   @override

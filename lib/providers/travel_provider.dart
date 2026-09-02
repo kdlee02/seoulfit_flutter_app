@@ -46,6 +46,10 @@ class TravelProvider extends ChangeNotifier {
   bool get confirmed => state?.confirmed ?? false;
   Itinerary? get itinerary => state?.itinerary;
 
+  /// The backend thread id for this planning session, reused as the trip id so
+  /// check-in records line up with the conversation that produced the plan.
+  String get tripId => _api.threadId;
+
   /// All itinerary POIs flattened across days, in itinerary order.
   List<Poi> get allPois => [
         for (final d in (itinerary?.days ?? const [])) ...d.pois,

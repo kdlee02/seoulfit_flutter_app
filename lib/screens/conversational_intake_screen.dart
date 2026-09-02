@@ -6,6 +6,7 @@ import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mascot_widget.dart';
 import '../widgets/animations.dart';
+import '../widgets/chat_mode_toggle.dart';
 import '../providers/travel_provider.dart';
 
 /// Starter prompts shown before the traveller has typed anything, so the empty
@@ -100,6 +101,8 @@ class _ConversationalIntakeScreenState
                       children: [
                         Text(
                           'SeoulFit Buddy 🐣',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -108,27 +111,15 @@ class _ConversationalIntakeScreenState
                         ),
                         Text(
                           'Ready to explore Seoul?',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
                               fontSize: 12, color: kSubtext),
                         ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: kMintLight,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'AI Chat',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: kMint),
-                    ),
-                  ),
+                  const ChatModeToggle(liveMode: false),
                 ],
               ),
             ),
@@ -160,7 +151,11 @@ class _ConversationalIntakeScreenState
                     ),
             ),
             // Suggested prompts: only while the conversation is just starting.
-            if (messages.length <= 1 && !provider.loading)
+            // Also dropped while the keyboard is up: the fixed chrome above and
+            // below the message list already fills a shrunken body, and holding
+            // the chips there overflows it. They are a starting hint anyway —
+            // nobody needs suggestions while they are mid-sentence.
+            if (messages.length <= 1 && !provider.loading && !keyboardOpen)
               _SuggestedPrompts(onTap: _sendText),
             if (provider.error != null)
               Padding(
