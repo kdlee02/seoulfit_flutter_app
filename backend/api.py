@@ -144,6 +144,16 @@ class TransitLegsRequest(BaseModel):
     stops: list[TransitStop]    # ordered list of selected stops
 
 
+class ClosureCheckItem(BaseModel):
+    poi_name: str
+    address: str = ""
+    visit_date: str            # "YYYY-MM-DD"
+
+
+class ClosureCheckRequest(BaseModel):
+    items: list[ClosureCheckItem]   # 한 일정당 15~25개 예상
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -598,6 +608,26 @@ def transit_legs(req: TransitLegsRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
     return {"transit_legs": legs}
+
+
+@app.post("/poi-closure-check")
+def poi_closure_check(req: ClosureCheckRequest):
+    """Final Route 화면에서, 확정된 stops + 실제 방문일(visit_date)로 임시휴관
+    여부를 Google Search grounding으로 확인한다.
+
+    Best-effort: 어떤 실패든(API 오류, 타임아웃, 파싱 실패) 절대 500을 내지
+    않고 해당 항목을 unknown으로 채워 반환한다 — 이 체크가 일정 생성/표시
+    자체를 막아서는 안 된다."""
+    from closure_check import check_batch, _unknown_result
+
+    tuples = [(it.poi_name, it.address, it.visit_date) for it in req.items]
+    try:
+        results = check_batch(tuples)
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        results = [_unknown_result(it.poi_name, it.visit_date) for it in req.items]
+    return {"results": results}
 
 
 if __name__ == "__main__":
