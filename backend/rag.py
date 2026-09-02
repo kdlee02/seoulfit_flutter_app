@@ -51,7 +51,10 @@ _BASE_DIR = Path(__file__).resolve().parent
 #     인용 첨부율 12.5%) 정기 휴무 판정은 이쪽으로 옮김(scripts/
 #     google_places_closed_weekday_fill.py).
 # 원본 course_data.json은 그대로 두고 별도 파일로 관리한다.
-COURSE_DATA_PATH = _BASE_DIR / "course_data_v6.json"
+# v1~v6 전부 backend/dataset/ 밑으로 이동(원격의 "move data files under
+# dataset/" 구조에 맞춤, 2026-09-02). 안 쓰는 중간 버전 파일도 지우지 않고
+# 그대로 dataset/ 안에 둔다.
+COURSE_DATA_PATH = _BASE_DIR / "dataset" / "course_data_v6.json"
 VECTORSTORE_DIR = _BASE_DIR / "vectorstore"
 
 EMBEDDING_MODEL = "models/gemini-embedding-001"

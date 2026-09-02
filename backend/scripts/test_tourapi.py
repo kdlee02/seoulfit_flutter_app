@@ -49,7 +49,7 @@ sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = SCRIPT_DIR.parent
-COURSE_DATA_PATH = BACKEND_DIR / "course_data.json"
+COURSE_DATA_PATH = BACKEND_DIR / "dataset" / "course_data.json"
 RESULT_PATH = SCRIPT_DIR / "tourapi_test_result.json"
 
 load_dotenv(BACKEND_DIR / ".env")
