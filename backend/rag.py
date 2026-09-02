@@ -17,7 +17,7 @@ import json
 import os
 import re
 import time
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -43,8 +43,15 @@ _BASE_DIR = Path(__file__).resolve().parent
 # (거리/구역을 가리키는 POI를 구분하기 위해 추가됨).
 # v3: v2 + seoul.json 매칭으로 얻은 opening_hours 필드(93건; 없으면 필드 생략).
 # v4: v3 + TourAPI(EngService2) 배치 매칭으로 얻은 opening_hours 추가(99건, source=tourapi).
+# v5: v4 + is_generic_activity 플래그(16건) — "Karaoke"/"Jjimjilbang"처럼 특정
+#     업체가 아니라 활동 카테고리 라벨인 POI를 표시(126개 코스 전수 검토로 확정).
+# v6: v5 + opening_hours.closed_weekday(151건) — Google Places Legacy Place
+#     Details(opening_hours.weekday_text)로 얻은 정기 휴무 요일. LLM 웹서칭
+#     기반 closure_check.py보다 훨씬 신뢰도가 높아(151/192 vs grounding
+#     인용 첨부율 12.5%) 정기 휴무 판정은 이쪽으로 옮김(scripts/
+#     google_places_closed_weekday_fill.py).
 # 원본 course_data.json은 그대로 두고 별도 파일로 관리한다.
-COURSE_DATA_PATH = _BASE_DIR / "course_data_v4.json"
+COURSE_DATA_PATH = _BASE_DIR / "course_data_v6.json"
 VECTORSTORE_DIR = _BASE_DIR / "vectorstore"
 
 EMBEDDING_MODEL = "models/gemini-embedding-001"
@@ -402,6 +409,125 @@ def _days_from_date_range(text: str) -> int:
         if 0 <= (b - a) <= 60:
             return (b - a) + 1
     return 0
+
+
+# ---------------------------------------------------------------------------
+# Trip start date — best-effort extraction of an actual calendar date from the
+# same free-text travel_dates string _parse_num_days() reads. Separate from
+# (and doesn't touch) _days_from_date_range()/_parse_num_days() above: those
+# are already relied on for day-count and are left exactly as they were to
+# avoid regressing them; this is new, additive, independently-testable logic.
+# ---------------------------------------------------------------------------
+
+_ISO_DATE_RE = re.compile(r"\d{4}-\d{1,2}-\d{1,2}")
+_KOREAN_MONTH_DAY_RE = re.compile(r"(\d{1,2})\s*월\s*(\d{1,2})\s*일")
+_KOREAN_WEEKDAY_RE = re.compile(r"(다음\s*주|이번\s*주|금주|차주)?\s*([월화수목금토일])\s*요일")
+_KOREAN_WEEKDAY_INDEX = {"월": 0, "화": 1, "수": 2, "목": 3, "금": 4, "토": 5, "일": 6}
+_ENGLISH_WEEKDAY_RE = re.compile(
+    r"\b(next|this)?\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b",
+    re.IGNORECASE,
+)
+_ENGLISH_WEEKDAY_INDEX = {
+    "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
+    "friday": 4, "saturday": 5, "sunday": 6,
+}
+_RANGE_SEP_RE = re.compile(r"\s*(?:to|through|until|thru|부터|까지|~|–|—|-)\s*")
+
+
+def _nearest_future(candidate: date, today: date) -> date:
+    """연도가 없는 날짜가 이미 지났으면 내년으로 밀어서 '가장 가까운 미래'로 해석."""
+    if candidate < today:
+        try:
+            return candidate.replace(year=candidate.year + 1)
+        except ValueError:
+            return candidate  # 2/29 같은 극단 케이스는 그냥 그대로 둔다
+    return candidate
+
+
+def _resolve_weekday_phrase(weekday: int, qualifier: str, today: date) -> date:
+    """'다음 주 화요일'/'next Tuesday'/'이번 주 화요일'/'this Tuesday'/수식어 없는
+    '화요일'을 실제 날짜로 변환. 수식어 없으면 오늘 이후 가장 가까운 그 요일(오늘
+    당일은 포함하지 않음 — 여행 계획이 "오늘부터"라면 사용자가 그렇게 말했을 것)."""
+    if qualifier in ("다음주", "차주", "next"):
+        this_monday = today - timedelta(days=today.weekday())
+        return this_monday + timedelta(weeks=1, days=weekday)
+    if qualifier in ("이번주", "금주", "this"):
+        this_monday = today - timedelta(days=today.weekday())
+        return this_monday + timedelta(days=weekday)
+    days_ahead = (weekday - today.weekday()) % 7
+    days_ahead = days_ahead or 7
+    return today + timedelta(days=days_ahead)
+
+
+def parse_trip_start_date(text: str | None, *, today: date | None = None) -> str | None:
+    """자유 텍스트(travel_dates)에서 여행 시작일을 최대한 추출해 ISO
+    "YYYY-MM-DD" 문자열로 반환한다.
+
+    - 연도가 명시 안 된 날짜는 '가장 가까운 미래'로 해석한다(예: 지금이 9월인데
+      "6월 15일"이면 내년 6월 15일).
+    - 앵커할 캘린더 날짜가 전혀 없는 입력("3 days", "3일간", "4박5일"만 있고
+      요일/월일 언급이 없는 경우)은 None을 반환한다 — 이건 폴백이지 에러가
+      아니다. 호출부는 기존처럼 일수만으로 진행해야 한다.
+    """
+    if not text:
+        return None
+    text = text.strip()
+    if not text or text.upper() == "MISSING":
+        return None
+
+    today = today or date.today()
+
+    # 1. ISO 날짜가 이미 텍스트에 있으면 그대로 신뢰 (가장 확실한 신호).
+    iso_match = _ISO_DATE_RE.search(text)
+    if iso_match:
+        try:
+            return datetime.strptime(iso_match.group(), "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            pass
+
+    # 2. 상대 요일 표현: "다음 주 화요일" / "next Tuesday" / 수식어 없는 요일.
+    m = _KOREAN_WEEKDAY_RE.search(text)
+    if m:
+        qualifier = (m.group(1) or "").replace(" ", "")
+        weekday = _KOREAN_WEEKDAY_INDEX[m.group(2)]
+        return _resolve_weekday_phrase(weekday, qualifier, today).isoformat()
+
+    m = _ENGLISH_WEEKDAY_RE.search(text)
+    if m:
+        qualifier = (m.group(1) or "").lower()
+        weekday = _ENGLISH_WEEKDAY_INDEX[m.group(2).lower()]
+        return _resolve_weekday_phrase(weekday, qualifier, today).isoformat()
+
+    # 3. 한국어 "N월 N일" (연도 없음) — 가장 가까운 미래로 해석.
+    m = _KOREAN_MONTH_DAY_RE.search(text)
+    if m:
+        month, day = int(m.group(1)), int(m.group(2))
+        try:
+            candidate = date(today.year, month, day)
+        except ValueError:
+            return None
+        return _nearest_future(candidate, today).isoformat()
+
+    # 4. 순수 기간 표현("3 days", "4박5일", "일주일")뿐이면 앵커할 날짜가 없다 —
+    #    dateutil의 fuzzy 모드가 "3"을 날짜로 잘못 해석해버리는 걸 막기 위해,
+    #    실제 날짜처럼 보이는 신호(월 이름/ISO/M-D 슬래시)가 전혀 없으면 여기서
+    #    바로 포기한다.
+    start_part = _RANGE_SEP_RE.split(text, maxsplit=1)[0].strip() or text
+    if not _looks_like_single_date(start_part) and not _looks_like_single_date(text):
+        return None
+
+    try:
+        from dateutil import parser as _dp
+
+        parsed = _dp.parse(start_part, fuzzy=True, default=datetime(today.year, 1, 1))
+        candidate = parsed.date()
+    except (ValueError, OverflowError, ImportError, TypeError):
+        return None
+
+    has_explicit_year = bool(re.search(r"\b(19|20)\d{2}\b", text))
+    if not has_explicit_year:
+        candidate = _nearest_future(candidate, today)
+    return candidate.isoformat()
 
 
 def _parse_num_days(duration: str | None) -> int:

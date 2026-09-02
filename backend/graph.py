@@ -9,6 +9,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from state import TravelState
 from planner import make_retrieve_node, plan_node
 from critic_repair import make_critic_repair_node
+from rag import parse_trip_start_date
 
 # ---------------------------------------------------------------------------
 # Module-level API key (set by build_graph)
@@ -195,6 +196,10 @@ def collect_node(state: TravelState) -> TravelState:
                 value = getattr(result, field, "").strip()
                 if value and value.upper() != "MISSING":
                     updates[field] = value
+            if "travel_dates" in updates:
+                # 실제 캘린더 날짜를 뽑을 수 있으면 채우고, 못 뽑으면(예: "3일간")
+                # None으로 남긴다 — 폴백이지 에러가 아니므로 여기서 멈추지 않는다.
+                updates["trip_start_date"] = parse_trip_start_date(updates["travel_dates"])
         except Exception as e:
             return {**state, "messages": [AIMessage(
                 content=f"Sorry, I had trouble understanding that. Could you try again? ({e})"
@@ -260,9 +265,14 @@ def handle_confirm_node(state: TravelState) -> TravelState:
     field = intent.lower()
     if field in ALL_FIELDS:
         next_step = "collecting_region" if field == "region" else "collecting_basics"
+        reset: dict = {field: None}
+        if field == "travel_dates":
+            # travel_dates가 다시 채워질 때까지 묵은 trip_start_date가 남아있지
+            # 않도록 같이 지운다 (다음 턴에 collecting_basics에서 둘 다 새로 채워짐).
+            reset["trip_start_date"] = None
         return {
             **state,
-            field: None,
+            **reset,
             "current_step": next_step,
             "messages": [AIMessage(content=f"Got it! {FIELD_QUESTIONS[field]}")]
         }
