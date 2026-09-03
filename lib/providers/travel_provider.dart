@@ -19,6 +19,14 @@ class TravelProvider extends ChangeNotifier {
   final List<ChatMessage> messages = [];
   TravelState? state;
   bool loading = false;
+
+  /// True only while a message the user typed is in flight. The composer gates
+  /// on this, not on [loading]: [loading] is also true during the automatic
+  /// greeting fired on screen entry, and gating the composer on that meant a
+  /// slow or failed greeting left the send button and the return key dead
+  /// while the field still accepted text — the chat looked like it refused to
+  /// let you type.
+  bool sending = false;
   String? error;
 
   /// Stops the user picked on the selection screen, in visit order. Consumed
@@ -105,20 +113,28 @@ class TravelProvider extends ChangeNotifier {
   }
 
   /// Sends a user message, appends it optimistically, then the AI reply.
-  Future<void> sendMessage(String text) async {
+  /// [timeout] overrides the default conversational budget. The itinerary
+  /// generation turn passes ApiService.generationTimeout.
+  Future<void> sendMessage(String text, {Duration? timeout}) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
     messages.add(ChatMessage(trimmed, isUser: true));
+    sending = true;
     notifyListeners();
-    await _send(trimmed);
+    try {
+      await _send(trimmed, timeout: timeout);
+    } finally {
+      sending = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> _send(String? text) async {
+  Future<void> _send(String? text, {Duration? timeout}) async {
     loading = true;
     error = null;
     notifyListeners();
     try {
-      final s = await _api.chat(text);
+      final s = await _api.chat(text, timeout: timeout);
       state = s;
       final reply = s.reply;
       if (reply != null && reply.isNotEmpty) {
@@ -144,6 +160,7 @@ class TravelProvider extends ChangeNotifier {
     state = null;
     error = null;
     loading = false;
+    sending = false;
     notifyListeners();
   }
 }

@@ -6,6 +6,7 @@ import '../widgets/app_status_bar.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/mascot_widget.dart';
 import '../widgets/animations.dart';
+import '../services/api_service.dart';
 import '../providers/travel_provider.dart';
 
 class ItineraryGenerationScreen extends StatefulWidget {
@@ -56,7 +57,11 @@ class _ItineraryGenerationScreenState extends State<ItineraryGenerationScreen>
     final provider = context.read<TravelProvider>();
     // Send the confirmation so the backend runs RAG + planning + critic-repair.
     if (!provider.hasItinerary) {
-      await provider.sendMessage('confirm');
+      // RAG + planner + critic-repair, measured at 71s on a warm local
+      // backend. The default conversational timeout cuts it off well short of
+      // that and the screen then reports "Need a bit more info".
+      await provider.sendMessage('confirm',
+          timeout: ApiService.generationTimeout);
     }
     if (!mounted) return;
     _generationDone = true;

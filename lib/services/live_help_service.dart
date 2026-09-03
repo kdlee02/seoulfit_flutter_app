@@ -81,6 +81,14 @@ class LiveHelpService {
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
+  /// Google Place 사진 한 장의 URL. 백엔드 프록시를 가리킨다.
+  ///
+  /// 구글 원본 URL(`.../place/photo?...&key=...`)을 그대로 쓰면 Places 키가
+  /// 앱 트래픽에 그대로 실린다. 백엔드가 서버에서 받아 바이트만 돌려주므로
+  /// 키는 서버 밖으로 나가지 않는다. [width] 는 서버가 100~800 으로 자른다.
+  static String placePhotoUrl(String photoRef, {int width = 400}) =>
+      '$_base/place-photo?ref=${Uri.encodeQueryComponent(photoRef)}&w=$width';
+
   /// 도보권 카페/음식점. [type] 은 Google Places 타입 (`cafe`, `restaurant`).
   static Future<List<NearbyPlace>> fetchNearby(LatLng at, String type) async {
     final json = await _post('nearby', {
@@ -107,6 +115,50 @@ class LiveHelpService {
     return [
       for (final h in list)
         if (h is Map) EmergencyRoom.fromJson(Map<String, dynamic>.from(h)),
+    ];
+  }
+
+  /// 주변 관광 POI 를 거리순으로. [category] 가 null 이면 전체(칩의 'All').
+  ///
+  /// 반경 인자가 없다 — 서버가 반경으로 자르지 않고 상위 [want] 건을 준다.
+  /// POI 밀도가 지역마다 10배 넘게 차이나서 반경을 고정하면 빈 화면이 나온다.
+  static Future<List<TourPoi>> fetchTourPois(
+    LatLng at, {
+    String? category,
+    int want = 20,
+  }) async {
+    final json = await _post('nearby-poi', {
+      'lat': at.latitude,
+      'lng': at.longitude,
+      'category': category,
+      'want': want,
+    });
+    final list = json['pois'] as List? ?? const [];
+    return [
+      for (final p in list)
+        if (p is Map) TourPoi.fromJson(Map<String, dynamic>.from(p)),
+    ];
+  }
+
+  /// 주변 쇼핑 POI 를 거리순으로. [category] 가 null 이면 전체(칩의 'All').
+  ///
+  /// fetchTourPois 와 같은 계약이다 — 서버가 반경으로 자르지 않고 상위 [want]
+  /// 건을 준다. 면세점(DF)은 전체 5건뿐이라 몇 km 짜리가 나올 수 있다.
+  static Future<List<ShoppingPoi>> fetchShoppingPois(
+    LatLng at, {
+    String? category,
+    int want = 20,
+  }) async {
+    final json = await _post('nearby-shopping', {
+      'lat': at.latitude,
+      'lng': at.longitude,
+      'category': category,
+      'want': want,
+    });
+    final list = json['pois'] as List? ?? const [];
+    return [
+      for (final p in list)
+        if (p is Map) ShoppingPoi.fromJson(Map<String, dynamic>.from(p)),
     ];
   }
 }

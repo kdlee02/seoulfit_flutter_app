@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "SeoulFit Retrieval and Grounding",
+    "output": "docs/diagrams/retrieval-grounding.html",
+    "viewBox": [
+      1080,
+      500
+    ],
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "index-build",
+        "label": "Building the index",
+        "focus": [
+          "courses",
+          "doc",
+          "embed",
+          "faiss"
+        ],
+        "note": "One curated course becomes one document — the corpus is never split below course level."
+      },
+      {
+        "id": "query-plan",
+        "label": "Planning the queries",
+        "focus": [
+          "slots",
+          "segments",
+          "query"
+        ],
+        "note": "A trip is cut into day segments before anything is searched, so each area gets its own query."
+      },
+      {
+        "id": "ranking",
+        "label": "Search and re-rank",
+        "focus": [
+          "faiss",
+          "search",
+          "rerank",
+          "anchors"
+        ],
+        "note": "Over-fetch three times k, then push off-neighbourhood courses below in-area ones."
+      }
+    ]
+  },
+  "stages": [
+    {
+      "label": "Inputs"
+    },
+    {
+      "label": "Prepare"
+    },
+    {
+      "label": "Index and query"
+    },
+    {
+      "label": "Search"
+    },
+    {
+      "label": "Anchors"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "slots",
+      "type": "frontend",
+      "label": "Confirmed slots",
+      "sublabel": "dates, areas, purpose",
+      "stage": 0,
+      "row": 0,
+      "tag": "per thread"
+    },
+    {
+      "id": "courses",
+      "type": "database",
+      "label": "Course corpus",
+      "sublabel": "course_data_v4.json",
+      "stage": 0,
+      "row": 2,
+      "tag": "curated"
+    },
+    {
+      "id": "segments",
+      "type": "backend",
+      "label": "Day segments",
+      "sublabel": "parse_day_segments",
+      "stage": 1,
+      "row": 0,
+      "tag": "days split by area"
+    },
+    {
+      "id": "doc",
+      "type": "backend",
+      "label": "One doc a course",
+      "sublabel": "_course_to_document",
+      "stage": 1,
+      "row": 2,
+      "tag": "no sub-chunking"
+    },
+    {
+      "id": "embed",
+      "type": "cloud",
+      "label": "Embeddings",
+      "sublabel": "gemini-embedding-001",
+      "stage": 2,
+      "row": 2,
+      "tag": "batches of 50"
+    },
+    {
+      "id": "query",
+      "type": "backend",
+      "label": "Segment query",
+      "sublabel": "area + purpose hint",
+      "stage": 2,
+      "row": 0,
+      "tag": "one per segment"
+    },
+    {
+      "id": "faiss",
+      "type": "database",
+      "label": "FAISS Index A",
+      "sublabel": "index.faiss + pkl",
+      "stage": 3,
+      "row": 2,
+      "tag": "cached singleton"
+    },
+    {
+      "id": "search",
+      "type": "backend",
+      "label": "Similarity search",
+      "sublabel": "over-fetch k x 3",
+      "stage": 3,
+      "row": 0,
+      "tag": "k = days + 1"
+    },
+    {
+      "id": "rerank",
+      "type": "backend",
+      "label": "Area re-rank",
+      "sublabel": "rerank_courses_by_area",
+      "stage": 4,
+      "row": 0,
+      "tag": "stable partition"
+    },
+    {
+      "id": "anchors",
+      "type": "backend",
+      "label": "Anchor courses",
+      "sublabel": "top k per segment",
+      "stage": 4,
+      "row": 2,
+      "tag": "to the planner"
+    }
+  ],
+  "flows": [
+    {
+      "id": "slots-segments",
+      "from": "slots",
+      "to": "segments",
+      "label": "region, category, dates",
+      "classification": "confirmed state",
+      "variant": "emphasis",
+      "labelDy": 64
+    },
+    {
+      "id": "segments-query",
+      "from": "segments",
+      "to": "query",
+      "label": "per-segment area + hint",
+      "classification": "no blended query",
+      "variant": "emphasis",
+      "labelDy": 64
+    },
+    {
+      "id": "query-search",
+      "from": "query",
+      "to": "search",
+      "label": "query string",
+      "classification": "natural language",
+      "variant": "emphasis",
+      "labelDy": 64
+    },
+    {
+      "id": "courses-doc",
+      "from": "courses",
+      "to": "doc",
+      "label": "one record per course",
+      "classification": "the chunk unit",
+      "labelDy": -58
+    },
+    {
+      "id": "doc-embed",
+      "from": "doc",
+      "to": "embed",
+      "label": "flattened page_content",
+      "classification": "title, themes, POIs",
+      "labelDy": -58
+    },
+    {
+      "id": "embed-faiss",
+      "from": "embed",
+      "to": "faiss",
+      "label": "one vector per course",
+      "classification": "offline build",
+      "variant": "emphasis",
+      "labelDy": -58
+    },
+    {
+      "id": "faiss-search",
+      "from": "faiss",
+      "to": "search",
+      "label": "nearest neighbours",
+      "classification": "k x 3 docs",
+      "variant": "emphasis",
+      "labelAt": [
+        745,
+        271
+      ]
+    },
+    {
+      "id": "search-rerank",
+      "from": "search",
+      "to": "rerank",
+      "label": "deduped by course_id",
+      "classification": "vector rank kept",
+      "labelDy": 64
+    },
+    {
+      "id": "rerank-anchors",
+      "from": "rerank",
+      "to": "anchors",
+      "label": "in-area courses first",
+      "classification": "top k",
+      "variant": "emphasis",
+      "labelAt": [
+        960,
+        271
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "The chunk is a whole course",
+      "items": [
+        "page_content is one flattened string: title, source, themes, then one line per POI",
+        "Metadata carries the entire raw course, so retrieval returns the full payload, not a snippet"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Building the index",
+      "items": [
+        "Embedded 50 documents at a time with a 60 second gap, five retries honouring the server's retry_delay",
+        "Saved to disk with save_local and held as a module singleton keyed on the API key"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Breadth per segment",
+      "items": [
+        "k = max(2, min(6, days + 1)), so a five-day area asks for six anchors and a one-day area asks for two",
+        "The search fetches three times k, dedupes on course_id, then keeps the top k after the area re-rank"
+      ]
+    }
+  ]
+}

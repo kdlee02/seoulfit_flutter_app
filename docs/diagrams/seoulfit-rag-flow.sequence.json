@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "SeoulFit RAG 일정 생성 파이프라인",
+    "output": "seoulfit-rag-flow.html",
+    "viewBox": [
+      1080,
+      605
+    ],
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "views": [
+      {
+        "id": "intake",
+        "label": "슬롯 수집",
+        "focus": [
+          "client",
+          "api",
+          "rails",
+          "graph",
+          "gemini"
+        ],
+        "note": "가드레일을 통과한 메시지가 6개 슬롯으로 추출되는 구간. companion·pace는 수집만 되고 이후 아무 데도 쓰이지 않는다."
+      },
+      {
+        "id": "retrieval",
+        "label": "세그먼트 검색",
+        "focus": [
+          "graph",
+          "faiss",
+          "places"
+        ],
+        "note": "여행이 지역별 세그먼트로 쪼개진 뒤 세그먼트마다 독립 FAISS 검색이 돈다. 식당·카페·K-POP은 벡터가 아니라 Google Places가 채운다."
+      },
+      {
+        "id": "generation",
+        "label": "일정 생성",
+        "focus": [
+          "graph",
+          "gemini"
+        ],
+        "note": "세그먼트 블록 프롬프트로 단 한 번의 Gemini 호출. 실패하면 3단 JSON 복구 사다리가 돈다."
+      },
+      {
+        "id": "grounding",
+        "label": "결정론적 접지",
+        "focus": [
+          "graph",
+          "guards",
+          "api",
+          "client"
+        ],
+        "note": "LLM 출력에서 화이트리스트에 없는 POI를 삭제하고, 점수를 매기고, 고친 뒤 다시 채점한다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "Flutter",
+      "sublabel": "thread_id 세션"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "POST /chat"
+    },
+    {
+      "id": "rails",
+      "type": "security",
+      "label": "NeMo Rail",
+      "sublabel": "self check input"
+    },
+    {
+      "id": "graph",
+      "type": "backend",
+      "label": "LangGraph",
+      "sublabel": "StateGraph"
+    },
+    {
+      "id": "gemini",
+      "type": "external",
+      "label": "Gemini",
+      "sublabel": "2.5 Flash"
+    },
+    {
+      "id": "faiss",
+      "type": "database",
+      "label": "FAISS",
+      "sublabel": "126 코스 Index A"
+    },
+    {
+      "id": "places",
+      "type": "external",
+      "label": "Places",
+      "sublabel": "Google 실시간"
+    },
+    {
+      "id": "guards",
+      "type": "backend",
+      "label": "Validator",
+      "sublabel": "+ Critic-Repair"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 296,
+      "label": "슬롯 수집"
+    },
+    {
+      "from": 300,
+      "to": 412,
+      "label": "세그먼트 검색"
+    },
+    {
+      "from": 416,
+      "to": 472,
+      "label": "일정 생성"
+    },
+    {
+      "from": 476,
+      "to": 546,
+      "label": "결정론적 접지"
+    }
+  ],
+  "messages": [
+    {
+      "id": "post-chat",
+      "from": "client",
+      "to": "api",
+      "y": 170,
+      "label": "POST /chat {thread_id, message}",
+      "variant": "emphasis",
+      "note": "클라이언트는 상태를 돌려보내지 않는다. 대화 전체는 thread_id로 서버 체크포인트에 산다."
+    },
+    {
+      "id": "rail-check",
+      "from": "api",
+      "to": "rails",
+      "y": 198,
+      "label": "self check input rail",
+      "variant": "security",
+      "note": "input 레일만 실행. 차단되면 그래프를 아예 호출하지 않고 정형 응답을 돌려준다. 예외가 나면 fail-open으로 통과시킨다."
+    },
+    {
+      "id": "invoke",
+      "from": "api",
+      "to": "graph",
+      "y": 226,
+      "label": "invoke — 신규 HumanMessage만",
+      "variant": "default",
+      "note": "전체 state를 넘기면 add_messages 리듀서가 히스토리를 매 턴 두 배로 만든다."
+    },
+    {
+      "id": "slot-extract",
+      "from": "graph",
+      "to": "gemini",
+      "y": 254,
+      "label": "6개 슬롯 추출 · JSON mode",
+      "variant": "default"
+    },
+    {
+      "id": "slot-return",
+      "from": "gemini",
+      "to": "graph",
+      "y": 282,
+      "label": "region · category · travel_dates",
+      "variant": "return",
+      "note": "MISSING 값은 기록하지 않아 슬롯이 턴을 넘어 살아남는다. 2회 연속 실패는 {}로 조용히 떨어진다."
+    },
+    {
+      "id": "faiss-search",
+      "from": "graph",
+      "to": "faiss",
+      "y": 314,
+      "label": "세그먼트별 검색 k=days+1, ×3 버퍼",
+      "variant": "emphasis",
+      "note": "여행 전체가 아니라 지역 세그먼트마다 한 번씩 검색한다."
+    },
+    {
+      "id": "faiss-return",
+      "from": "faiss",
+      "to": "graph",
+      "y": 342,
+      "label": "앵커 코스 · 지역 재랭킹 후 상위 k",
+      "variant": "return",
+      "note": "코스 전체 dict가 metadata에 들어 있어 벡터는 주소 지정 수단일 뿐이다."
+    },
+    {
+      "id": "places-fill",
+      "from": "graph",
+      "to": "places",
+      "y": 370,
+      "label": "지역별 갭 필 · cafe/kpop/shop 트리거",
+      "variant": "default"
+    },
+    {
+      "id": "places-return",
+      "from": "places",
+      "to": "graph",
+      "y": 398,
+      "label": "평점 POI · name|lat|lng 중복 제거",
+      "variant": "return",
+      "note": "텍스트 검색 결과는 좌표로 지역을 다시 추론해 요청 지역 밖이면 버린다."
+    },
+    {
+      "id": "plan-call",
+      "from": "graph",
+      "to": "gemini",
+      "y": 430,
+      "label": "세그먼트 블록 프롬프트 · 앵커 + 보완",
+      "variant": "emphasis",
+      "note": "DAY M-N CANDIDATES 블록 + 지역 규칙 + Places 목록을 한 번에 넣는다."
+    },
+    {
+      "id": "plan-return",
+      "from": "gemini",
+      "to": "graph",
+      "y": 458,
+      "label": "itinerary JSON · 3단 파싱 사다리",
+      "variant": "return",
+      "note": "펜스 제거 → 따옴표·쉼표 보수 → LLM 1회 복구 → 실패 시 파일 덤프."
+    },
+    {
+      "id": "validate",
+      "from": "graph",
+      "to": "guards",
+      "y": 490,
+      "label": "validator 7패스 → critic 채점·수리·재채점",
+      "variant": "emphasis",
+      "note": "화이트리스트에 없는 POI는 고치지 않고 삭제한다."
+    },
+    {
+      "id": "response",
+      "from": "api",
+      "to": "client",
+      "y": 518,
+      "label": "StateResponse + itinerary",
+      "variant": "return",
+      "note": "critic_report에 수리 전후 점수가 함께 담긴다."
+    }
+  ],
+  "activations": [
+    {
+      "participant": "api",
+      "from": 166,
+      "to": 524,
+      "type": "backend"
+    },
+    {
+      "participant": "rails",
+      "from": 193,
+      "to": 216,
+      "type": "security"
+    },
+    {
+      "participant": "graph",
+      "from": 222,
+      "to": 496,
+      "type": "backend"
+    },
+    {
+      "participant": "gemini",
+      "from": 250,
+      "to": 287,
+      "type": "external"
+    },
+    {
+      "participant": "faiss",
+      "from": 310,
+      "to": 347,
+      "type": "database"
+    },
+    {
+      "participant": "places",
+      "from": 366,
+      "to": 403,
+      "type": "external"
+    },
+    {
+      "participant": "gemini",
+      "from": 426,
+      "to": 463,
+      "type": "external"
+    },
+    {
+      "participant": "guards",
+      "from": 486,
+      "to": 514,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "LLM 호출은 다섯 번뿐",
+      "items": [
+        "가드레일 1회 + 슬롯 추출 1회 + 의도 분류 1회 (턴마다)",
+        "일정 생성 1회 + JSON 복구 0~1회",
+        "생성 이후는 전부 결정론적 파이썬이다"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "검색을 지배하는 슬롯은 셋",
+      "items": [
+        "travel_dates → 6단 우선순위로 일수 하나만 뽑는다",
+        "region + category → 등장 순서대로 지역 리스트와 절별 purpose 힌트",
+        "restrictions는 프롬프트에만, companion·pace는 어디에도 안 쓰인다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "신뢰도가 낮아지는 3층 구조",
+      "items": [
+        "프롬프트가 규칙을 선언하고",
+        "validator가 위반을 삭제하고 화이트리스트로 메우고",
+        "critic이 채점 → 수리 → 재채점한다"
+      ]
+    }
+  ]
+}

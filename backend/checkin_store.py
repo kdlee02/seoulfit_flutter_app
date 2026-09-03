@@ -34,14 +34,20 @@ CREATE TABLE IF NOT EXISTS trip_checkins (
 )
 """
 
+# trip_id is chosen by the client on an endpoint with no login, so without the
+# trailing WHERE anyone could overwrite anyone else's row just by reusing their
+# trip_id. The guard keeps the row owned by the device that created it: a
+# mismatched device_id updates 0 rows instead of clobbering. Both SQLite (3.24+)
+# and Postgres accept a WHERE on ON CONFLICT DO UPDATE, so this stays one
+# statement on both engines.
 _UPSERT = """
 INSERT INTO trip_checkins (trip_id, device_id, itinerary, days, updated_at)
 VALUES ({p}, {p}, {p}, {p}, {p})
 ON CONFLICT (trip_id) DO UPDATE SET
-    device_id  = EXCLUDED.device_id,
     itinerary  = EXCLUDED.itinerary,
     days       = EXCLUDED.days,
     updated_at = EXCLUDED.updated_at
+WHERE trip_checkins.device_id = EXCLUDED.device_id
 """
 
 _SELECT = """
@@ -77,7 +83,8 @@ def save_checkin(
 ) -> bool:
     """Upsert one trip's record. Returns False on any failure instead of
     raising — the client keeps its own local copy, so a storage outage must
-    never surface as an app error."""
+    never surface as an app error. Also returns False when trip_id already
+    belongs to a different device_id: the write is refused, not applied."""
     try:
         conn, ph = _connect(db_path)
         try:
@@ -94,9 +101,15 @@ def save_checkin(
                         datetime.now(timezone.utc).isoformat(),
                     ),
                 )
+                written = cur.rowcount != 0
         finally:
             conn.close()
-        return True
+        if not written:
+            logger.warning(
+                "checkin_store: refused save for trip_id=%s — owned by another device",
+                trip_id,
+            )
+        return written
     except Exception:
         logger.exception(
             "checkin_store: save_checkin failed for trip_id=%s", trip_id

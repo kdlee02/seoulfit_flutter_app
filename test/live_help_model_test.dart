@@ -128,4 +128,78 @@ void main() {
     expect(p.openNow, isTrue);
     expect(p.placeId, 'ChIJ_onion_seongsu');
   });
+
+
+  test('NearbyPlace carries the photo reference, never a keyed URL', () {
+    final p = NearbyPlace.fromJson(const {
+      'name': 'Starbucks Korea Press Center',
+      'address': '124 Sejong-daero',
+      'distance_m': 82,
+      'photo_ref': 'AVoNoXTlWIkqC7D005kbZHvIPiAy4lAjuGORdfYymag',
+    });
+    expect(p.photoRef, startsWith('AVoNoX'));
+
+    // Places 결과 20건 중 1건은 사진이 없다. 카드가 사진 자리를 접을 수
+    // 있도록 null 이 아니라 빈 문자열이어야 한다.
+    final noPhoto = NearbyPlace.fromJson(const {'name': 'Cafe', 'distance_m': 10});
+    expect(noPhoto.photoRef, '');
+  });
+
+  test('TourPoi trims the Korean half of the title and formats distance', () {
+    // TourAPI 제목은 'English (한글)' 형식이고 앱은 영문 UI 다. 괄호 안 한글이
+    // 남으면 카드가 두 줄로 밀리고 지도 마커 툴팁도 깨진다.
+    final near = TourPoi.fromJson(const {
+      'id': '126079', 'title': 'Seoul Forest (서울숲)', 'category': 'NA',
+      'address': '273 Ttukseom-ro, Seongdong-gu, Seoul',
+      'lat': 37.5443, 'lng': 127.0374, 'distance_m': 420,
+      'image': 'https://tong.visitkorea.or.kr/a.jpg', 'overview': 'A city park.',
+      'hours': 'Open 24 hr', 'closed': '', 'fee': '', 'parking': 'Available',
+      'tel': '+82-2-460-2905', 'homepage': 'parks.seoul.go.kr',
+    });
+    expect(near.name, 'Seoul Forest');
+    expect(near.distanceLabel, '420 m');
+
+    // 반경 제한이 없어 km 단위 결과가 흔하다.
+    final far = TourPoi.fromJson(const {
+      'title': 'Hangang River', 'category': 'NA', 'distance_m': 4727,
+    });
+    expect(far.name, 'Hangang River');
+    expect(far.distanceLabel, '4.7 km');
+    expect(far.image, '');
+    expect(far.lat, 0);
+  });
+
+  test('ShoppingPoi maps the Visit Seoul fields and formats distance', () {
+    final p = ShoppingPoi.fromJson(const {
+      'id': 'ENP6ptemj',
+      'title': 'Shinsegae The Heritage',
+      'category': 'DS',
+      'address': '42 Namdaemun-ro, Jung-gu, Seoul',
+      'lat': 37.5610, 'lng': 126.9805,
+      'distance_m': 640,
+      'image': 'https://api.visitseoul.net/comm/getImage?srvcId=MEDIA',
+      'summary': 'A shopping and cultural complex.',
+      'overview': 'Long body text.',
+      'hours': 'Normal business hours 10:30-20:00',
+      'tel': '1588-1234',
+      'homepage': 'https://www.shinsegae.com/index.do',
+      'subway': 'Subway Line 4, Hoehyeon Station, Exit 7, 187m',
+    });
+    expect(p.category, 'DS');
+    expect(p.distanceLabel, '640 m');
+    expect(p.subway, contains('Hoehyeon'));
+
+    // 결측이 흔한 필드들. 시트가 그 줄을 숨길 수 있도록 빈 문자열이어야 한다
+    // (null 이면 렌더링에서 터진다). 영업시간 285/310, 홈페이지 229/310.
+    final bare = ShoppingPoi.fromJson(const {
+      'title': 'Some Market', 'category': 'TM', 'distance_m': 2400,
+    });
+    expect(bare.hours, '');
+    expect(bare.tel, '');
+    expect(bare.homepage, '');
+    expect(bare.subway, '');
+    expect(bare.image, '');
+    expect(bare.lat, 0);
+    expect(bare.distanceLabel, '2.4 km');
+  });
 }

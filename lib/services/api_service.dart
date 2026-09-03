@@ -30,19 +30,39 @@ class ApiService {
     return 'trip-$ts-$tail';
   }
 
+  /// Conversational turns: collect_node plus one Gemini call, measured at
+  /// 3-7s. 30s is generous headroom without leaving a dead network hanging.
+  static const chatTimeout = Duration(seconds: 30);
+
+  /// The 'confirm' turn instead runs RAG retrieval, the planner and
+  /// critic-repair end to end — measured at 71s against a warm local backend,
+  /// so it needs its own budget. Anything at or below the conversational
+  /// timeout silently fails itinerary generation and the app reports
+  /// "Need a bit more info".
+  static const generationTimeout = Duration(seconds: 180);
+
   /// Sends a user message (or null for the initial greeting) and returns
   /// the updated [TravelState] including the latest AI reply.
-  Future<TravelState> chat(String? message) async {
+  ///
+  /// [timeout] defaults to [chatTimeout]; pass [generationTimeout] for the
+  /// turn that builds the itinerary.
+  Future<TravelState> chat(String? message, {Duration? timeout}) async {
     final body = jsonEncode({
       'thread_id': threadId,
       'message': message,
     });
 
-    final response = await http.post(
-      Uri.parse('$_base/chat'),
-      headers: {'Content-Type': 'application/json'},
-      body: body,
-    );
+    // Some timeout is needed: without one this hangs forever against a host
+    // that drops packets instead of refusing them — a sleeping Render
+    // instance, a firewall DROP, a wrong LAN IP — and TravelProvider keeps
+    // `loading` true for the whole wait.
+    final response = await http
+        .post(
+          Uri.parse('$_base/chat'),
+          headers: {'Content-Type': 'application/json'},
+          body: body,
+        )
+        .timeout(timeout ?? chatTimeout);
 
     if (response.statusCode == 200) {
       final json =
@@ -55,7 +75,9 @@ class ApiService {
 
   /// Resets the conversation on the backend.
   Future<void> reset() async {
-    await http.post(Uri.parse('$_base/reset?thread_id=$threadId'));
+    await http
+        .post(Uri.parse('$_base/reset?thread_id=$threadId'))
+        .timeout(const Duration(seconds: 8));
   }
 
   /// POSTs `{name, type}` to a `/poi-*` endpoint and returns `json[field]`,

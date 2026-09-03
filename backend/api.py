@@ -29,8 +29,12 @@ set_verbose(False)
 # ──────────────────────────────────────────────────────────────────────────────
 
 from dotenv import load_dotenv
+import threading as _threading
+import time as _time
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse as _JSONResponse
 from typing import Optional
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage, AIMessage
@@ -71,6 +75,70 @@ _graph = build_graph(GEMINI_API_KEY)
 
 app = FastAPI(title="Seoul Travel Buddy API")
 
+
+# ---------------------------------------------------------------------------
+# Rate limit — every endpoint below is unauthenticated, and the expensive ones
+# spend real money per call (Gemini on /chat, /poi-*, /analyze-landmark; two
+# Gemini calls plus a SerpApi search on /poi-image; Google Places on /nearby;
+# E-Gen, which caps us at 1000 calls/day, on /emergency-rooms). Without a limit
+# one loop from one browser tab drains the quota for everyone.
+#
+# Registered BEFORE CORSMiddleware so CORS ends up outermost and a 429 still
+# carries Access-Control-Allow-Origin — otherwise the browser reports an opaque
+# CORS failure instead of the real status.
+#
+# ponytail: in-process fixed window, so the budget is per worker and resets on
+# deploy. Move to Redis if this ever runs more than one instance.
+# ---------------------------------------------------------------------------
+_METERED_PATHS = {
+    "/chat", "/poi-summary", "/poi-detail", "/poi-image",
+    "/analyze-landmark", "/nearby", "/nearby-poi", "/nearby-shopping",
+    "/emergency-rooms", "/place-photo",
+}
+# 120/min, not 30: user_selection_screen renders one card per candidate stop
+# and each fires fetchPoiDetail on build, and final_itinerary_map_screen
+# fires summary + image per stop, so a legitimate screen load is already a
+# 20-40 call burst. An abuse loop does thousands, so the gap is wide enough.
+_RATE_LIMIT = int(os.getenv("RATE_LIMIT_PER_MIN", "120"))
+_RATE_WINDOW = 60.0
+_rate_hits: dict[str, tuple[float, int]] = {}
+_rate_lock = _threading.Lock()
+
+
+def _client_ip(request) -> str:
+    # Render terminates TLS at its proxy, so request.client.host is the proxy.
+    # Trust the first X-Forwarded-For hop only because we know we sit behind
+    # exactly one. Direct-to-internet deploys must drop this branch: the header
+    # is attacker-controlled and would make the limit trivially bypassable.
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+@app.middleware("http")
+async def _rate_limit(request, call_next):
+    if request.url.path not in _METERED_PATHS:
+        return await call_next(request)
+    now = _time.monotonic()
+    ip = _client_ip(request)
+    with _rate_lock:
+        start, count = _rate_hits.get(ip, (now, 0))
+        if now - start >= _RATE_WINDOW:
+            start, count = now, 0
+        count += 1
+        _rate_hits[ip] = (start, count)
+        if len(_rate_hits) > 10_000:  # bound the dict; drop stale windows
+            _rate_hits.clear()
+    if count > _RATE_LIMIT:
+        retry_after = max(1, int(_RATE_WINDOW - (now - start)))
+        return _JSONResponse(
+            {"detail": "Rate limit exceeded. Try again shortly."},
+            status_code=429,
+            headers={"Retry-After": str(retry_after)},
+        )
+    return await call_next(request)
+
 # CORS — in dev (FRONTEND_ORIGIN unset) we allow any origin so `flutter
 # run -d chrome` and similar tools work without ceremony. In prod, set
 # FRONTEND_ORIGIN to a comma-separated list of the deployed frontend URLs.
@@ -91,16 +159,25 @@ def _normalize_origin(o: str) -> str:
 
 
 _frontend_origin = os.getenv("FRONTEND_ORIGIN", "").strip()
-_cors_origins = (
-    [_normalize_origin(o) for o in _frontend_origin.split(",") if o.strip()]
-    if _frontend_origin
-    else ["*"]
+_cors_origins = [
+    _normalize_origin(o) for o in _frontend_origin.split(",") if o.strip()
+]
+# With FRONTEND_ORIGIN unset we used to fall back to "*", which let any page on
+# the internet drive this API from a visitor's browser — and every /chat,
+# /poi-*, /analyze-landmark call spends Gemini / SerpApi / Places quota. Fall
+# back to localhost-any-port instead so `flutter run -d chrome` still works and
+# a missing prod env var fails closed. Native iOS/Android send no Origin header
+# and are unaffected by CORS either way.
+_cors_kwargs = (
+    {"allow_origins": _cors_origins}
+    if _cors_origins
+    else {"allow_origin_regex": r"^http://(localhost|127\.0\.0\.1)(:\d+)?$"}
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
+    **_cors_kwargs,
 )
 
 # Lens (camera → landmark) endpoints
@@ -122,8 +199,32 @@ def healthz():
 # Request / Response models
 # ---------------------------------------------------------------------------
 
+# Session ids are the only thing standing between one visitor's itinerary and
+# another's (there is no login). The Flutter client generates
+# "trip-<base36 ts>-<8 chars from Random.secure()>", so require an id long
+# enough that guessing another session is impractical, and never fall back to a
+# shared default — "travel-session-1" put every client that omitted the field
+# on one conversation that anyone could read via /state or wipe via /reset.
+# str(e) went straight to an unauthenticated client. The text is whatever
+# Gemini / SerpApi / langchain raised — module paths, request shapes,
+# sometimes a full request URL. Log it, do not serve it.
+_INTERNAL_ERROR = "Internal error"
+
+_THREAD_ID_MIN = 16
+_THREAD_ID_MAX = 128
+
+
+def _require_thread_id(thread_id: str) -> str:
+    if not (_THREAD_ID_MIN <= len(thread_id) <= _THREAD_ID_MAX):
+        raise HTTPException(
+            status_code=422,
+            detail=f"thread_id must be {_THREAD_ID_MIN}-{_THREAD_ID_MAX} characters",
+        )
+    return thread_id
+
+
 class ChatRequest(BaseModel):
-    thread_id: str = "travel-session-1"
+    thread_id: str
     message: Optional[str] = None  # None on first call → triggers greeting
 
 
@@ -199,6 +300,7 @@ def _run(thread_id: str, user_input: Optional[str]) -> dict:
 def chat(req: ChatRequest):
     """Send a message (or None for the initial greeting) and get back
     the updated state plus the latest AI reply."""
+    _require_thread_id(req.thread_id)
     # Input gatekeeper (NeMo self-check): drop off-topic / prompt-injection /
     # jailbreak messages before they reach the planner. Empty message (the
     # greeting turn) is never blocked. Fails open on any guardrail error.
@@ -222,7 +324,7 @@ def chat(req: ChatRequest):
     except Exception as e:
         import traceback
         traceback.print_exc()          # prints full stack to uvicorn terminal
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=_INTERNAL_ERROR)
 
     return StateResponse(
         travel_dates=new_state.get("travel_dates"),
@@ -239,9 +341,9 @@ def chat(req: ChatRequest):
 
 
 @app.get("/state", response_model=StateResponse)
-def get_state(thread_id: str = "travel-session-1"):
+def get_state(thread_id: str):
     """Return current state without invoking the graph."""
-    state = _get_state(thread_id)
+    state = _get_state(_require_thread_id(thread_id))
     return StateResponse(
         travel_dates=state.get("travel_dates"),
         category=state.get("category"),
@@ -257,9 +359,9 @@ def get_state(thread_id: str = "travel-session-1"):
 
 
 @app.post("/reset")
-def reset(thread_id: str = "travel-session-1"):
+def reset(thread_id: str):
     """Clear one thread's conversation without touching any other sessions."""
-    clear_thread(thread_id)
+    clear_thread(_require_thread_id(thread_id))
     return {"status": "reset"}
 
 
@@ -284,8 +386,10 @@ def poi_summary(req: PoiSummaryRequest):
             contents=prompt,
         )
         return {"summary": (response.text or "").strip()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=_INTERNAL_ERROR)
 
 
 @app.post("/poi-arrival-tip")
@@ -316,8 +420,10 @@ def poi_arrival_tip(req: PoiSummaryRequest):
             contents=prompt,
         )
         return {"arrival_tip": (response.text or "").strip()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=_INTERNAL_ERROR)
 
 
 @app.post("/poi-image")
@@ -391,8 +497,10 @@ def poi_image(req: PoiSummaryRequest):
         if not chosen or chosen.lower() == "none":
             return {"image_url": ""}
         return {"image_url": chosen}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=_INTERNAL_ERROR)
 
 
 @app.post("/poi-detail")
@@ -443,8 +551,10 @@ def poi_detail(req: PoiSummaryRequest):
             contents=format_prompt,
         )
         return {"detail": (fmt_resp.text or "").strip()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=_INTERNAL_ERROR)
 
 
 class EventsRequest(BaseModel):
@@ -609,7 +719,7 @@ def transit_legs(req: TransitLegsRequest):
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=_INTERNAL_ERROR)
     return {"transit_legs": legs}
 
 

@@ -23,30 +23,29 @@ def test_haversine():
     assert haversine_m(37.5, 127.0, 37.5, 127.0) == 0
 
 
-def test_filter_places_drops_low_review_counts():
+def test_filter_places_keeps_low_review_counts():
+    # 리뷰 수로 거르지 않는다. 좌표·평점·리뷰수는 신금호 이디야 실측값이고
+    # 155m 는 하버사인 실계산 결과다.
     results = [
-        # 좌표·평점·리뷰수는 신금호 이디야 실측값이다. 155m 는 하버사인 실계산 결과.
         {"place_id": "a", "name": "Busy Cafe", "user_ratings_total": 80, "rating": 4.1,
          "vicinity": "Seongdong-gu", "geometry": {"location": {"lat": 37.553945, "lng": 127.019638}}},
         {"place_id": "b", "name": "Quiet Cafe", "user_ratings_total": 3, "rating": 5.0,
          "vicinity": "Seongdong-gu", "geometry": {"location": {"lat": 37.5537, "lng": 127.0214}}},
     ]
     out = filter_places(results, 37.553675, 127.021367)
-    assert set(out) == {"a"}, out
+    assert set(out) == {"a", "b"}, out
     assert out["a"]["distance_m"] == 155, out["a"]["distance_m"]
     assert out["a"]["reviews"] == 80
 
 
 def test_filter_places_treats_missing_review_key_as_zero():
     # 구글은 리뷰가 0인 업소에서 user_ratings_total 과 rating 을 아예 뺀다.
-    # KeyError 로 터지지 않고, 리뷰 0개로 읽혀 필터에서 떨어져야 한다.
+    # KeyError 로 터지지 않고 rating None / reviews 0 으로 남되 살아남아야 한다.
     results = [
         {"place_id": "new", "name": "Brand New Cafe",
          "geometry": {"location": {"lat": 37.5537, "lng": 127.0214}}},
     ]
-    assert filter_places(results, 37.553675, 127.021367) == {}
-    # min_reviews 를 0 으로 낮추면 통과하되 rating 은 None 으로 남는다.
-    kept = filter_places(results, 37.553675, 127.021367, min_reviews=0)
+    kept = filter_places(results, 37.553675, 127.021367)
     assert kept["new"]["rating"] is None
     assert kept["new"]["reviews"] == 0
     assert kept["new"]["open_now"] is None
@@ -176,9 +175,74 @@ def test_egen_allows_legitimate_empty_result():
         _unpatch_egen_http(original_get, original_key)
 
 
+def test_nearby_poi_sorts_by_distance_and_caps_want():
+    # 강남 좌표. 431건 전량에서 거리순 상위 N 을 뽑는지 — 반경으로 자르지 않으므로
+    # POI 가 드문 지역에서도 want 만큼은 항상 채워져야 한다.
+    out = live_help.nearby_poi(
+        live_help.NearbyPoiRequest(lat=37.4979, lng=127.0276, want=5)
+    )["pois"]
+    assert len(out) == 5, len(out)
+    dists = [p["distance_m"] for p in out]
+    assert dists == sorted(dists), dists
+    # 상세를 한 응답에 담는다 — 앱이 2차 호출 없이 바텀시트를 그린다.
+    assert "overview" in out[0] and "image" in out[0]
+
+
+def test_nearby_poi_category_filter_is_exclusive():
+    out = live_help.nearby_poi(
+        live_help.NearbyPoiRequest(lat=37.4979, lng=127.0276, category="NA", want=20)
+    )["pois"]
+    assert out, "Nature 는 27건 있으므로 비면 안 된다"
+    assert {p["category"] for p in out} == {"NA"}
+
+
+def test_tour_poi_dataset_excludes_clinics_and_food():
+    # 데이터 계약: 의료(EX050800 219건)와 음식(FD 90건)은 빌드 단계에서 걸러졌다.
+    # 여기가 깨지면 성형외과가 '체험관광'으로 지도에 뜬다.
+    assert len(live_help._TOUR_POIS) == 431, len(live_help._TOUR_POIS)
+    assert {p["category"] for p in live_help._TOUR_POIS} == {
+        "VE", "EX", "HS", "NA", "LS", "AC"
+    }
+    # tel 은 걸 수 있는 번호여야 한다 — 1330 은 관광공사 공용 안내번호라
+    # 이 POI 의 번호가 아니다.
+    assert not [p for p in live_help._TOUR_POIS if "1330" in p["tel"]]
+    # 이미지 URL 이 평문 http 면 iOS ATS 가 막아 사진이 통째로 안 뜬다.
+    assert not [p for p in live_help._TOUR_POIS if p["image"].startswith("http://")]
+
+
+def test_filter_places_carries_the_photo_reference_not_a_url():
+    """앱에 photo_reference 만 준다. 구글 사진 URL 은 key 를 쿼리에 달아야
+    열려서, 그대로 내려보내면 Places 키가 앱 트래픽에 실린다."""
+    rows = [{
+        "place_id": "p1", "name": "Cafe",
+        "geometry": {"location": {"lat": 37.5, "lng": 127.0}},
+        "photos": [{"photo_reference": "AVoNoXABC", "width": 4000}],
+    }]
+    got = live_help.filter_places(rows, 37.5, 127.0)["p1"]
+    assert got["photo_ref"] == "AVoNoXABC"
+    assert not any("key=" in str(v) for v in got.values()), got
+
+
+def test_filter_places_leaves_photo_ref_empty_when_absent():
+    rows = [{"place_id": "p2", "name": "Cafe",
+             "geometry": {"location": {"lat": 37.5, "lng": 127.0}}}]
+    assert live_help.filter_places(rows, 37.5, 127.0)["p2"]["photo_ref"] == ""
+
+
+def test_place_photo_rejects_a_missing_or_oversized_reference():
+    from fastapi import HTTPException
+    for bad in ("", "x" * 1001):
+        try:
+            live_help.place_photo(ref=bad)
+        except HTTPException as e:
+            assert e.status_code in (422, 503), e.status_code
+        else:
+            raise AssertionError(f"{bad[:12]!r} should have been refused")
+
+
 if __name__ == "__main__":
     test_haversine()
-    test_filter_places_drops_low_review_counts()
+    test_filter_places_keeps_low_review_counts()
     test_filter_places_treats_missing_review_key_as_zero()
     test_filter_places_skips_rows_without_coordinates()
     test_parse_beds_reads_er_phone_and_capacity()
@@ -187,4 +251,10 @@ if __name__ == "__main__":
     test_join_er_respects_want()
     test_egen_raises_on_error_envelope_without_resultcode()
     test_egen_allows_legitimate_empty_result()
+    test_nearby_poi_sorts_by_distance_and_caps_want()
+    test_nearby_poi_category_filter_is_exclusive()
+    test_tour_poi_dataset_excludes_clinics_and_food()
+    test_filter_places_carries_the_photo_reference_not_a_url()
+    test_filter_places_leaves_photo_ref_empty_when_absent()
+    test_place_photo_rejects_a_missing_or_oversized_reference()
     print("live_help self-check ok")

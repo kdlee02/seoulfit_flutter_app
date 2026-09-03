@@ -7,6 +7,7 @@ import '../widgets/app_bottom_nav.dart';
 import '../widgets/mascot_widget.dart';
 import '../widgets/animations.dart';
 import '../widgets/chat_mode_toggle.dart';
+import '../config/api_base.dart';
 import '../providers/travel_provider.dart';
 
 /// Starter prompts shown before the traveller has typed anything, so the empty
@@ -75,14 +76,19 @@ class _ConversationalIntakeScreenState
   Widget build(BuildContext context) {
     final provider = context.watch<TravelProvider>();
     final messages = provider.messages;
-    // Keyboard up → drop the bottom tab bar so the fixed chrome fits the
-    // shrunken body (otherwise the Column overflows by a few px while typing).
-    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    final mq = MediaQuery.of(context);
+    final keyboardInset = mq.viewInsets.bottom;
+    // viewPadding, not padding: padding.bottom collapses to 0 the moment the
+    // keyboard appears, which is half of the jump this screen used to have.
+    final safeBottom = mq.viewPadding.bottom;
+    final keyboardOpen = keyboardInset > 0;
     _scrollToBottom();
 
     return Scaffold(
       backgroundColor: kCanvas,
       body: SafeArea(
+        // Bottom inset handled by _BottomChrome so it can shrink continuously.
+        bottom: false,
         child: Column(
           children: [
             const AppStatusBar(),
@@ -93,7 +99,7 @@ class _ConversationalIntakeScreenState
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                  const MascotWidget(size: 38, variant: MascotVariant.chip),
+                  const MascotWidget(size: 38),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -160,8 +166,15 @@ class _ConversationalIntakeScreenState
             if (provider.error != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                // Name the URL we actually tried. On a physical device the
+                // default apiBase is http://localhost:8000, which is the phone
+                // itself — the old ':8000' wording sent you looking at a
+                // backend that was running fine on your Mac all along. Pass
+                // --dart-define=API_BASE_URL=http://<your-LAN-ip>:8000.
                 child: Text(
-                  'Connection error — is the backend running on :8000?',
+                  "Can't reach the backend at "
+                  '${apiBase.isEmpty ? "same-origin" : apiBase}'
+                  ' — on a real device pass --dart-define=API_BASE_URL.',
                   style: GoogleFonts.plusJakartaSans(
                       fontSize: 12, color: kWarningBorder),
                 ),
@@ -219,24 +232,24 @@ class _ConversationalIntakeScreenState
                         ),
                         maxLines: null,
                         textInputAction: TextInputAction.send,
-                        onSubmitted: provider.loading ? null : (_) => _send(),
+                        onSubmitted: provider.sending ? null : (_) => _send(),
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   PressableScale(
-                    onTap: provider.loading ? null : _send,
+                    onTap: provider.sending ? null : _send,
                     scale: 0.88,
                     child: Container(
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: provider.loading
+                        color: provider.sending
                             ? kMint.withValues(alpha: 0.4)
                             : kMint,
                         shape: BoxShape.circle,
                         boxShadow:
-                            provider.loading ? null : Elevations.mintGlow,
+                            provider.sending ? null : Elevations.mintGlow,
                       ),
                       child: const Icon(Icons.send_rounded,
                           color: Colors.white, size: 18),
@@ -245,10 +258,61 @@ class _ConversationalIntakeScreenState
                 ],
               ),
             ),
-            if (!keyboardOpen) const AppBottomNav(currentIndex: 0),
+            // The tab bar and the home-indicator inset used to vanish the
+            // instant viewInsets.bottom became non-zero, while Scaffold had
+            // shrunk the body by only a pixel. Net effect: the input row
+            // lurched 105px DOWN out from under the user's finger on the first
+            // frame of the keyboard animation. The tap never landed, focus was
+            // never taken, the keyboard retracted and the bar sprang back —
+            // "the whole bar comes down and I can't type". Collapse them in
+            // step with the keyboard instead.
+            _BottomChrome(keyboardInset: keyboardInset, safeBottom: safeBottom),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Tab bar + home-indicator inset, consumed by the keyboard from the bottom up
+/// rather than removed all at once.
+///
+/// Their combined height exactly matches how much Scaffold shrinks the body, so
+/// the input row above stays put until the keyboard has eaten both, then rides
+/// up with it. Removing them on `viewInsets.bottom > 0` instead made the row
+/// jump down by their full height on the animation's first frame.
+class _BottomChrome extends StatelessWidget {
+  final double keyboardInset;
+  final double safeBottom;
+
+  const _BottomChrome({required this.keyboardInset, required this.safeBottom});
+
+  /// Matches the fixed height in AppBottomNav.
+  static const double _navHeight = 72;
+
+  @override
+  Widget build(BuildContext context) {
+    // The keyboard covers the home-indicator gap first, then the tab bar.
+    final safeLeft = (safeBottom - keyboardInset).clamp(0.0, safeBottom);
+    final eatenFromNav = (keyboardInset - safeBottom).clamp(0.0, _navHeight);
+    final navLeft = _navHeight - eatenFromNav;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (navLeft > 0)
+          // Align's heightFactor reserves a fraction of the child's height and
+          // ClipRect hides the rest, so the bar slides out of view instead of
+          // being squashed or overflowing.
+          ClipRect(
+            child: Align(
+              alignment: Alignment.topCenter,
+              heightFactor: navLeft / _navHeight,
+              child: const AppBottomNav(currentIndex: 0),
+            ),
+          ),
+        SizedBox(height: safeLeft),
+      ],
     );
   }
 }

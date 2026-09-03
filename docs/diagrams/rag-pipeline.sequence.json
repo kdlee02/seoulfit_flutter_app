@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "SeoulFit Itinerary Agent — Request to Itinerary",
+    "output": "docs/diagrams/rag-pipeline.html",
+    "viewBox": [1080, 615],
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "views": [
+      { "id": "intake", "label": "Slot intake", "focus": ["app", "api", "agent", "gemini"], "note": "Gemini JSON-mode slot extraction repeats until the user confirms the trip summary." },
+      { "id": "retrieval", "label": "Segmented retrieval", "focus": ["agent", "faiss", "places"], "note": "Per-area FAISS anchors, then Google Places fills the gaps curated courses leave open." },
+      { "id": "generation", "label": "Plan and repair", "focus": ["agent", "gemini", "critic", "api", "app"], "note": "Gemini drafts the itinerary; the critic scores it and the repairer patches it before it ships." }
+    ]
+  },
+  "participants": [
+    { "id": "app",    "type": "frontend", "label": "Flutter App",    "sublabel": "api_service.dart" },
+    { "id": "api",    "type": "backend",  "label": "FastAPI",        "sublabel": "POST /chat" },
+    { "id": "agent",  "type": "backend",  "label": "LangGraph",      "sublabel": "TravelState" },
+    { "id": "gemini", "type": "cloud",    "label": "Gemini Flash",   "sublabel": "JSON mode" },
+    { "id": "faiss",  "type": "database", "label": "FAISS Index A",  "sublabel": "course_data_v4" },
+    { "id": "places", "type": "external", "label": "Google Places",  "sublabel": "gap fill" },
+    { "id": "critic", "type": "backend",  "label": "Critic/Repair",  "sublabel": "score and patch" }
+  ],
+  "segments": [
+    { "from": 152, "to": 306, "label": "Slot intake" },
+    { "from": 312, "to": 376, "label": "Segmented retrieval" },
+    { "from": 382, "to": 446, "label": "Plan generation" },
+    { "from": 452, "to": 546, "label": "Critique and return" }
+  ],
+  "messages": [
+    { "id": "chat-post",    "from": "app",    "to": "api",    "y": 186, "label": "POST /chat {thread_id, message}", "variant": "emphasis", "note": "A NeMo self-check input rail screens the message first and fails open on any error." },
+    { "id": "graph-invoke", "from": "api",    "to": "agent",  "y": 220, "label": "invoke(thread_id), checkpointed state", "variant": "emphasis" },
+    { "id": "slot-extract", "from": "agent",  "to": "gemini", "y": 254, "label": "extract slots + intent — one JSON retry", "variant": "default" },
+    { "id": "confirm-ask",  "from": "agent",  "to": "app",    "y": 288, "label": "trip summary, await 'confirm' — turn repeats", "variant": "dashed" },
+    { "id": "segment-query","from": "agent",  "to": "faiss",  "y": 326, "label": "per-segment search, top-k anchors back", "variant": "emphasis", "note": "parse_day_segments splits a multi-area trip first; rerank_courses_by_area then demotes off-neighborhood courses." },
+    { "id": "places-fetch", "from": "agent",  "to": "places", "y": 358, "label": "gap fill: cafe, food, K-POP, shopping", "variant": "default" },
+    { "id": "plan-prompt",  "from": "agent",  "to": "gemini", "y": 396, "label": "ItineraryPlanner prompt: anchors + supplements", "variant": "emphasis" },
+    { "id": "plan-json",    "from": "gemini", "to": "agent",  "y": 428, "label": "itinerary JSON, then validate and repair", "variant": "return", "note": "Fence and comma repair, FixJSON fallback, then a deterministic pass against the candidate pool." },
+    { "id": "critic-hand",  "from": "agent",  "to": "critic", "y": 466, "label": "score, patch, re-score", "variant": "emphasis", "note": "Coverage and feasibility weigh 0.35 each; duplicates and foreigner friction 0.15 each." },
+    { "id": "critic-back",  "from": "critic", "to": "api",    "y": 498, "label": "repaired itinerary + before/after report", "variant": "return" },
+    { "id": "response",     "from": "api",    "to": "app",    "y": 528, "label": "200 StateResponse with itinerary", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "api",    "from": 182, "to": 532, "type": "backend" },
+    { "participant": "agent",  "from": 216, "to": 502, "type": "backend" },
+    { "participant": "gemini", "from": 249, "to": 259, "type": "cloud" },
+    { "participant": "gemini", "from": 391, "to": 433, "type": "cloud" },
+    { "participant": "faiss",  "from": 321, "to": 331, "type": "database" },
+    { "participant": "places", "from": 353, "to": 363, "type": "external" },
+    { "participant": "critic", "from": 461, "to": 503, "type": "backend" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What grounds the plan",
+      "items": [
+        "Curated Seoul courses in FAISS, embedded with gemini-embedding-001",
+        "One query per day segment, never one blended search"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Where the model fails safely",
+      "items": [
+        "The input rail fails open rather than dropping the endpoint",
+        "Deterministic validation runs before the critic"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "How the result is judged",
+      "items": [
+        "Area coverage and day feasibility weigh 0.35 each",
+        "Before and after reports ship with the itinerary"
+      ]
+    }
+  ]
+}

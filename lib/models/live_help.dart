@@ -1,7 +1,7 @@
-/// 여행 중 도우미 세 기능의 데이터 모델.
+/// 여행 중 도우미 네 기능의 데이터 모델.
 ///
-/// [Embassy] 는 앱에 번들된 assets/data/embassies.json 에서,
-/// 나머지 둘은 백엔드 /nearby · /emergency-rooms 응답에서 온다.
+/// [Embassy] 는 앱에 번들된 assets/data/embassies.json 에서, 나머지 셋은
+/// 백엔드 /nearby · /emergency-rooms · /nearby-poi 응답에서 온다.
 library;
 
 String _str(Object? v) => v is String ? v : '';
@@ -131,6 +131,11 @@ class NearbyPlace {
 
   final String placeId;
 
+  /// Google Place Photos 참조. 사진 URL 은 Places 키를 쿼리에 달아야 열려서
+  /// 앱에는 이 참조만 온다 — 이미지는 백엔드 `/place-photo` 가 대신 받아
+  /// 준다. 20건 중 19건에 있고, 비어 있으면 카드가 사진 자리를 접는다.
+  final String photoRef;
+
   const NearbyPlace({
     required this.name,
     required this.address,
@@ -141,6 +146,7 @@ class NearbyPlace {
     required this.reviews,
     required this.openNow,
     required this.placeId,
+    required this.photoRef,
   });
 
   factory NearbyPlace.fromJson(Map<String, dynamic> j) => NearbyPlace(
@@ -153,5 +159,161 @@ class NearbyPlace {
         reviews: _int(j['reviews']),
         openNow: j['open_now'] is bool ? j['open_now'] as bool : null,
         placeId: _str(j['place_id']),
+        photoRef: _str(j['photo_ref']),
       );
+}
+
+/// 주변 관광 POI 한 곳. 백엔드 `/nearby-poi` 응답이며, 한국관광공사 TourAPI
+/// 사전 수집분(서울 431건)에서 온다.
+///
+/// 목록 표시와 상세 시트가 같은 객체를 쓴다 — 서버가 상세까지 한 응답에
+/// 담아주므로 카드를 열 때 추가 호출이 없다.
+class TourPoi {
+  final String id;
+  final String title;
+
+  /// 한국관광공사 대분류 코드(`VE`/`EX`/`HS`/`NA`/`LS`/`AC`).
+  /// 마커·칩 색을 고르는 키라 표시용 이름과 분리해 둔다.
+  final String category;
+
+  final String address;
+  final double lat;
+  final double lng;
+  final int distanceM;
+
+  /// 431건 중 313건만 있다. 비어 있으면 플레이스홀더를 그린다.
+  final String image;
+
+  /// 영문 소개. 평균 600자라 카드가 아니라 상세 시트에서만 펼친다.
+  final String overview;
+
+  /// 아래 여섯은 결측이 흔하다. 비어 있으면 그 줄을 통째로 숨긴다.
+  final String hours;
+  final String closed;
+  final String fee;
+  final String parking;
+  final String tel;
+  final String homepage;
+
+  const TourPoi({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.address,
+    required this.lat,
+    required this.lng,
+    required this.distanceM,
+    required this.image,
+    required this.overview,
+    required this.hours,
+    required this.closed,
+    required this.fee,
+    required this.parking,
+    required this.tel,
+    required this.homepage,
+  });
+
+  factory TourPoi.fromJson(Map<String, dynamic> j) => TourPoi(
+        id: _str(j['id']),
+        title: _str(j['title']),
+        category: _str(j['category']),
+        address: _str(j['address']),
+        lat: _dbl(j['lat']),
+        lng: _dbl(j['lng']),
+        distanceM: _int(j['distance_m']),
+        image: _str(j['image']),
+        overview: _str(j['overview']),
+        hours: _str(j['hours']),
+        closed: _str(j['closed']),
+        fee: _str(j['fee']),
+        parking: _str(j['parking']),
+        tel: _str(j['tel']),
+        homepage: _str(j['homepage']),
+      );
+
+  /// TourAPI 제목은 `English (한글)` 형식이다. 영문 UI 라 괄호 앞만 쓴다.
+  String get name {
+    final i = title.indexOf(' (');
+    return i > 0 ? title.substring(0, i) : title;
+  }
+
+  /// 1km 미만은 미터로, 그 이상은 소수 한 자리 km 로. 관광 POI 는 반경 제한이
+  /// 없어 6km 짜리도 나오므로 거리 표기가 정직해야 한다.
+  String get distanceLabel => distanceM < 1000
+      ? '$distanceM m'
+      : '${(distanceM / 1000).toStringAsFixed(1)} km';
+}
+
+/// 주변 쇼핑 POI 한 곳. 백엔드 `/nearby-shopping` 응답이며 서울관광재단
+/// Visit Seoul API 수집분(dataset/shopping_poi.json)에서 온다.
+///
+/// 서울관광재단이 골라 쓴 '가볼 만한 쇼핑 장소' 310건. 전량에 좌표·설명문·
+/// 대표 이미지가 있고 영업시간은 285/310, 지하철 안내는 308/310 에 있다.
+class ShoppingPoi {
+  final String id;
+  final String title;
+
+  /// Visit Seoul 하위 분류 코드(`SP`/`TM`/`MO`/`DS`/`DF`/`SW`).
+  /// 마커·칩 색을 고르는 키라 표시용 이름과 분리해 둔다.
+  final String category;
+
+  final String address;
+  final double lat;
+  final double lng;
+  final int distanceM;
+
+  /// 310건 전량에 있다.
+  final String image;
+
+  /// 한 줄 소개. 카드 부제로 쓴다.
+  final String summary;
+
+  /// 본문. HTML 은 빌드 단계에서 걷어냈다.
+  final String overview;
+
+  /// 아래 넷은 결측이 있다. 비어 있으면 그 줄을 통째로 숨긴다.
+  final String hours;
+  final String tel;
+  final String homepage;
+  final String subway;
+
+  const ShoppingPoi({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.address,
+    required this.lat,
+    required this.lng,
+    required this.distanceM,
+    required this.image,
+    required this.summary,
+    required this.overview,
+    required this.hours,
+    required this.tel,
+    required this.homepage,
+    required this.subway,
+  });
+
+  factory ShoppingPoi.fromJson(Map<String, dynamic> j) => ShoppingPoi(
+        id: _str(j['id']),
+        title: _str(j['title']),
+        category: _str(j['category']),
+        address: _str(j['address']),
+        lat: _dbl(j['lat']),
+        lng: _dbl(j['lng']),
+        distanceM: _int(j['distance_m']),
+        image: _str(j['image']),
+        summary: _str(j['summary']),
+        overview: _str(j['overview']),
+        hours: _str(j['hours']),
+        tel: _str(j['tel']),
+        homepage: _str(j['homepage']),
+        subway: _str(j['subway']),
+      );
+
+  /// TourPoi 와 같은 규칙. 1km 미만은 미터, 그 이상은 소수 한 자리 km.
+  /// 반경 제한이 없어 몇 km 짜리도 나오므로 표기가 정직해야 한다.
+  String get distanceLabel => distanceM < 1000
+      ? '$distanceM m'
+      : '${(distanceM / 1000).toStringAsFixed(1)} km';
 }
