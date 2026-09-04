@@ -146,6 +146,78 @@ class ApiService {
     }
   }
 
+  /// Ranks up to 3 replacement candidates for [currentPoi] in [dayArea],
+  /// each with pre-computed warnings (e.g. closed on the day's weekday).
+  /// Returns the raw `candidates` list as-is — the selection screen reads it
+  /// directly since it's already shaped for display, not worth a typed model.
+  Future<List<Map<String, dynamic>>> fetchSwapCandidates({
+    required int day,
+    required int slotIndex,
+    required String currentPoi,
+    required String dayArea,
+    String? currentPoiType,
+    List<String> excludedIds = const [],
+  }) async {
+    final response = await http
+        .post(
+          Uri.parse('$_base/swap-candidates'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'thread_id': threadId,
+            'day': day,
+            'slot_index': slotIndex,
+            'current_poi': currentPoi,
+            'day_area': dayArea,
+            'current_poi_type': currentPoiType,
+            'excluded_ids': excludedIds,
+          }),
+        )
+        .timeout(const Duration(seconds: 20));
+
+    if (response.statusCode != 200) {
+      throw Exception('Backend error ${response.statusCode}: ${response.body}');
+    }
+    final json =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final list = json['candidates'] as List? ?? const [];
+    return [
+      for (final c in list)
+        if (c is Map) Map<String, dynamic>.from(c),
+    ];
+  }
+
+  /// Re-runs Critic -> Repair -> Critic on the persisted itinerary with the
+  /// given slot edits applied, and persists the repaired result so the next
+  /// call (another swap, another revalidate) builds on top of it. Returns the
+  /// raw response — `before`/`after` critic reports plus `repaired_itinerary`.
+  Future<Map<String, dynamic>> revalidate({
+    List<String> excludedIds = const [],
+    Map<String, String> swappedSlots = const {},
+    Map<String, List<String>> dayOrder = const {},
+    Map<String, int> dayStartShift = const {},
+  }) async {
+    final response = await http
+        .post(
+          Uri.parse('$_base/revalidate'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'thread_id': threadId,
+            'edits': {
+              'excluded_ids': excludedIds,
+              'swapped_slots': swappedSlots,
+              'day_order': dayOrder,
+              'day_start_shift': dayStartShift,
+            },
+          }),
+        )
+        .timeout(const Duration(seconds: 30));
+
+    if (response.statusCode != 200) {
+      throw Exception('Backend error ${response.statusCode}: ${response.body}');
+    }
+    return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+  }
+
   /// Sends one trip's check-in snapshot to the backend. Write-only and
   /// best-effort: the client renders its recap from local storage, so a false
   /// here costs nothing but a missing row in the research table.

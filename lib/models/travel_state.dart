@@ -239,6 +239,11 @@ class Poi {
   final int stayMinutes;
   final String notes;
 
+  /// Neighborhood key (e.g. "jongno", "hongdae") — critic_repair.as_output_poi
+  /// already sends this, it just wasn't read here before. Needed as the
+  /// `day_area` param for POST /swap-candidates.
+  final String? area;
+
   /// Itinerary day this POI belongs to (1-based), injected from the parent
   /// [ItineraryDay] so the day grouping survives even when POIs are flattened
   /// into a single list (selection screen, route summary). 0 if unknown.
@@ -252,6 +257,7 @@ class Poi {
     this.lng,
     required this.stayMinutes,
     required this.notes,
+    this.area,
     this.day = 0,
   });
 
@@ -263,6 +269,7 @@ class Poi {
         lng: (json['lng'] as num?)?.toDouble(),
         stayMinutes: (json['stay_minutes'] as num?)?.toInt() ?? 0,
         notes: json['notes'] as String? ?? '',
+        area: json['area'] as String?,
         day: day,
       );
 }

@@ -200,7 +200,21 @@ def fetch_nearby_places(
 
     data = _google_get(url, params)
     results = data.get("results", []) or []
-    filtered = [r for r in results if float(r.get("rating") or 0) >= min_rating]
+    # A hotel with a well-known in-house restaurant genuinely carries BOTH
+    # "lodging" and "restaurant" in Google's own types[] (confirmed live for
+    # "Hotel Prince Seoul": types=[..., "lodging", ..., "restaurant"]), so a
+    # `place_type in types` check doesn't filter it out of a restaurant/cafe
+    # search -- Google's server-side type filter already passed it through as
+    # a legitimate match. That hotel then shows up as a "similar" swap
+    # candidate for an actual standalone restaurant, which is misleading even
+    # though it's not technically wrong. Explicitly drop anything Google also
+    # tags "lodging" from non-lodging searches -- we never want a hotel
+    # filling a restaurant/cafe/shopping slot.
+    filtered = [
+        r for r in results
+        if float(r.get("rating") or 0) >= min_rating
+        and "lodging" not in (r.get("types") or [])
+    ]
 
     places: list[dict[str, Any]] = []
     for r in filtered[:max_results]:
@@ -270,6 +284,13 @@ def fetch_text_places(
         seen.add(name.lower())
 
         if r.get("business_status") and r.get("business_status") != "OPERATIONAL":
+            continue
+
+        # Same "hotel with a notable restaurant" issue as fetch_nearby_places
+        # -- a text query like "best restaurants in X" can legitimately surface
+        # a hotel Google also tags "lodging". Drop it so it never fills a
+        # restaurant/cafe/shopping slot as a swap candidate.
+        if "lodging" in (r.get("types") or []):
             continue
 
         rating = float(r.get("rating") or 0)

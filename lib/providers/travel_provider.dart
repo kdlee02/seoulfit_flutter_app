@@ -88,6 +88,39 @@ class TravelProvider extends ChangeNotifier {
     }
   }
 
+  /// Thin passthroughs so screens never need direct [ApiService] access —
+  /// every call must share this session's [_api] instance (and therefore its
+  /// [threadId]) or the backend has no persisted itinerary to look up.
+  Future<List<Map<String, dynamic>>> fetchSwapCandidates({
+    required int day,
+    required int slotIndex,
+    required String currentPoi,
+    required String dayArea,
+    String? currentPoiType,
+    List<String> excludedIds = const [],
+  }) =>
+      _api.fetchSwapCandidates(
+        day: day,
+        slotIndex: slotIndex,
+        currentPoi: currentPoi,
+        dayArea: dayArea,
+        currentPoiType: currentPoiType,
+        excludedIds: excludedIds,
+      );
+
+  Future<Map<String, dynamic>> revalidate({
+    List<String> excludedIds = const [],
+    Map<String, String> swappedSlots = const {},
+    Map<String, List<String>> dayOrder = const {},
+    Map<String, int> dayStartShift = const {},
+  }) =>
+      _api.revalidate(
+        excludedIds: excludedIds,
+        swappedSlots: swappedSlots,
+        dayOrder: dayOrder,
+        dayStartShift: dayStartShift,
+      );
+
   /// The real transit leg the backend computed between two POIs that were
   /// adjacent in the original itinerary, or null if they weren't adjacent.
   TransitLeg? legBetween(Poi a, Poi b) {

@@ -304,6 +304,7 @@ def candidate_from_course_poi(raw: dict[str, Any]) -> dict[str, Any]:
         # Station") — 방문지가 아니라 이동 마커일 뿐이라 is_generic_activity와
         # 같은 방식으로 후보 풀에서 제외한다.
         "is_transit_marker": bool(raw.get("is_transit_marker")),
+        "rating": raw.get("rating"),
         "opening_hours": opening_hours,
         # course_data_v6: Google Places Legacy Place Details로 얻은 정기 휴무
         # 요일 리스트(예: ["Tuesday"]), 데이터 없으면 None. opening_hours 안에
@@ -332,6 +333,7 @@ def candidate_from_google(raw: dict[str, Any]) -> dict[str, Any]:
         "notes": google_note(raw),
         "area": raw.get("area"),
         "source_kind": "google",
+        "rating": raw.get("rating"),
     }
     item["area"] = item["area"] or infer_area_from_poi(item)
     return item
@@ -409,6 +411,82 @@ def used_name_set(itinerary: dict[str, Any]) -> set[str]:
             if key:
                 used.add(key)
     return used
+
+
+def apply_slot_edits(
+    itinerary: dict[str, Any],
+    edits: dict[str, Any],
+    pool: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """User Selection 화면에서 사용자가 건드린 슬롯 상태를 itinerary에 반영한다
+    (POST /revalidate). 여기서는 구조만 바꾸고 검증/복구는 안 한다 — 호출부가
+    이 결과를 CriticAgent/RepairAgent에 넘긴다.
+
+    POI는 안정적인 id가 없어서(as_output_poi에 id 필드 자체가 없음) 전부
+    normalize_text(name) 기준으로 매칭한다 — build_candidate_pool과 동일한 키.
+
+    적용 순서: 제외 -> 교체 -> day 내 재정렬 -> day 번호 이동. 이 순서가
+    아니면(예: 재정렬을 먼저 하면) day_order에 적힌 이름이 swap으로 바뀐
+    새 이름과 안 맞을 수 있어서 이 순서를 지킨다.
+    """
+    import copy
+
+    itinerary = copy.deepcopy(itinerary)
+    days = itinerary.get("days") or []
+    by_day_num = {safe_int(d.get("day"), -1): d for d in days}
+
+    excluded = {normalize_text(x) for x in (edits.get("excluded_ids") or [])}
+    swapped = {normalize_text(k): v for k, v in (edits.get("swapped_slots") or {}).items()}
+    day_order = edits.get("day_order") or {}          # {"1": [poi_name, ...]}
+    day_start_shift = edits.get("day_start_shift") or {}  # {"2": 1}
+
+    # 1. 제외
+    if excluded:
+        for d in days:
+            d["pois"] = [
+                p for p in (d.get("pois") or [])
+                if normalize_text(poi_name(p)) not in excluded
+            ]
+
+    # 2. 교체 — 후보 풀에서 새 POI를 찾아 통째로 갈아끼운다. 풀에 없으면(예:
+    # /swap-candidates를 거치지 않고 임의 이름을 보낸 경우) 원본을 그대로 둔다
+    # — 조용히 실패해서 슬롯이 사라지는 것보다 낫다.
+    if swapped:
+        for d in days:
+            new_pois = []
+            for p in d.get("pois") or []:
+                key = normalize_text(poi_name(p))
+                new_name = swapped.get(key)
+                new_item = pool.get(normalize_text(new_name)) if new_name else None
+                if new_item:
+                    new_pois.append(as_output_poi(
+                        new_item, note_suffix="Swapped via /swap-candidates."
+                    ))
+                else:
+                    new_pois.append(p)
+            d["pois"] = new_pois
+
+    # 3. day 내 순서
+    for day_str, order in day_order.items():
+        d = by_day_num.get(safe_int(day_str, -1))
+        if not d:
+            continue
+        pos = {normalize_text(n): i for i, n in enumerate(order)}
+        d["pois"] = sorted(
+            d.get("pois") or [],
+            key=lambda p: pos.get(normalize_text(poi_name(p)), len(order)),
+        )
+
+    # 4. day 번호 이동 — 실제 캘린더 요일이 바뀌므로 CLOSED_ON_ASSIGNED_DAY 같은
+    # 요일 기반 규칙이 이후 재평가 단계에서 새 번호로 다시 체크된다.
+    if day_start_shift:
+        for day_str, shift in day_start_shift.items():
+            d = by_day_num.get(safe_int(day_str, -1))
+            if d and shift:
+                d["day"] = safe_int(d.get("day"), 0) + safe_int(shift, 0)
+        days.sort(key=lambda d: safe_int(d.get("day"), 0))
+
+    return itinerary
 
 
 def candidates_for_area(

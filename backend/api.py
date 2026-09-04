@@ -268,6 +268,39 @@ class CheckinRequest(BaseModel):
     days: dict          # day number (as str) → {visited: [...], misses: {...}}
 
 
+class SlotEdits(BaseModel):
+    # POI에 안정적인 id가 없어서(critic_repair.as_output_poi에 id 필드 자체가
+    # 없음) 전부 원래 poi_name 문자열로 식별한다 — build_candidate_pool과 동일한
+    # normalize_text() 매칭 기준.
+    excluded_ids: list[str] = []            # 제거된 POI 이름
+    swapped_slots: dict[str, str] = {}      # {기존 POI 이름: 새 POI 이름}
+    day_order: dict[str, list[str]] = {}    # {"1": [poi_name, ...]} 해당 day의 새 순서
+    day_start_shift: dict[str, int] = {}    # {"2": 1} = Day 2가 Day 3으로 이동
+
+
+class RevalidateRequest(BaseModel):
+    thread_id: str
+    edits: SlotEdits
+
+
+class SwapCandidatesRequest(BaseModel):
+    thread_id: str
+    day: int
+    slot_index: int
+    current_poi: str
+    day_area: str
+    # 프론트가 이미 들고 있는 현재 POI의 type (Poi.type). candidate pool은
+    # retrieved_courses/google_supplement에서만 채워지는데, LLM이 일정에 직접
+    # 써넣은 POI(예: 호텔)는 pool에 아예 없을 수 있다 — 그 경우 pool 조회로
+    # type을 못 찾아 카테고리 필터가 통째로 빠지면서 카페 자리에 호텔이,
+    # 호텔 자리에 레스토랑이 뜨는 버그가 났다. 프론트가 보내는 이 값을
+    # pool 조회보다 우선해서 항상 같은 카테고리로만 후보를 좁힌다.
+    current_poi_type: Optional[str] = None
+    time_window: Optional[str] = None
+    purpose: Optional[str] = None
+    excluded_ids: list[str] = []
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -769,6 +802,141 @@ def trip_checkin(req: CheckinRequest):
         raise HTTPException(status_code=413, detail="payload too large")
 
     return {"stored": save_checkin(req.trip_id, req.device_id, req.itinerary, req.days)}
+
+
+@app.post("/revalidate")
+def revalidate(req: RevalidateRequest):
+    """User Selection 화면에서 사용자가 편집한 슬롯 상태(제외/교체/재정렬/day
+    이동)를 반영한 뒤, CriticAgent -> RepairAgent -> CriticAgent 순서로 다시
+    돌려서 이슈/점수를 before-after로 준다. graph.py의 critic_repair 노드는
+    /chat 한 턴 안에서만 도는데, 여기가 User Selection 이후 재검증하는 유일한
+    경로다 — day_start_shift로 day 번호가 바뀌면 실제 요일도 바뀌므로,
+    요일 기반 규칙(CLOSED_ON_ASSIGNED_DAY 등)이 여기서 새로 체크된다.
+
+    끝나면 새 itinerary를 체크포인트에 저장한다(update_state) — 이어지는
+    편집(재교체, 재정렬)이 이 결과 위에서 계속되도록."""
+    from critic_repair import CriticAgent, RepairAgent, apply_slot_edits, build_candidate_pool
+    from planner import compute_transit_legs
+
+    thread_id = _require_thread_id(req.thread_id)
+    state = _get_state(thread_id)
+    if not state.get("itinerary"):
+        raise HTTPException(status_code=404, detail="no itinerary for this thread_id")
+
+    try:
+        pool = build_candidate_pool(state)
+        edited_itinerary = apply_slot_edits(
+            state["itinerary"], req.edits.model_dump(), pool
+        )
+        edited_state = {**state, "itinerary": edited_itinerary}
+
+        critic = CriticAgent()
+        before_report = critic.evaluate(edited_state)
+
+        repaired_itinerary, repair_log = RepairAgent().repair(edited_state, before_report)
+        for day in repaired_itinerary.get("days") or []:
+            day["transit_legs"] = compute_transit_legs(day.get("pois") or [])
+
+        after_state = {**edited_state, "itinerary": repaired_itinerary}
+        after_report = critic.evaluate(after_state)
+
+        _graph.update_state(_config(thread_id), {"itinerary": repaired_itinerary})
+    except HTTPException:
+        raise
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=_INTERNAL_ERROR)
+
+    return {
+        "before": before_report,
+        "after": after_report,
+        "repaired_itinerary": repaired_itinerary,
+        "repair_log": repair_log,
+    }
+
+
+@app.post("/swap-candidates")
+def swap_candidates(req: SwapCandidatesRequest):
+    """current_poi와 같은 슬롯 성격(식당/카페 등)의 대체 후보 최대 3개를,
+    같은 area 안에서 찾아 반환한다. 각 후보에는 사전 검증 경고가 붙는다 —
+    특히 closed_weekday와 이 day의 실제 요일(trip_start_date + day로 계산)이
+    겹치면 "화요일 정기휴무" 식으로 미리 알려준다.
+
+    is_generic_activity/is_transit_marker로 걸러진 POI는 build_candidate_pool
+    단계에서 이미 후보 풀에 없으므로 여기서 따로 걸러낼 필요가 없다.
+
+    v1 범위: time_window/purpose는 스키마에는 받지만 아직 후보 필터링에는
+    안 쓴다(슬롯별 시간대·목적 매칭에 쓸 신호가 POI 데이터에 없음) — 나중에
+    확장 여지로 받아만 둔 상태임을 명시."""
+    from critic_repair import build_candidate_pool, candidates_for_area, normalize_text
+    from date_utils import weekday_for_day
+
+    thread_id = _require_thread_id(req.thread_id)
+    state = _get_state(thread_id)
+    if not state.get("itinerary"):
+        raise HTTPException(status_code=404, detail="no itinerary for this thread_id")
+
+    try:
+        pool = build_candidate_pool(state)
+        current = pool.get(normalize_text(req.current_poi))
+        # current_poi_type(프론트가 보낸 실제 type)을 pool 조회보다 우선한다 —
+        # pool에 없는 POI(호텔 등 LLM이 직접 써넣은 것)라도 카테고리 필터가
+        # 반드시 걸리도록.
+        type_hint = req.current_poi_type or (current["type"] if current else None)
+        preferred_types = {normalize_text(type_hint)} if type_hint else set()
+
+        exclude = {normalize_text(x) for x in req.excluded_ids}
+        exclude.add(normalize_text(req.current_poi))
+
+        # candidates_for_area's own sort order (source_kind/type) is shared with
+        # RepairAgent's fill-in logic -- don't touch it. Re-sort its output by
+        # rating on top instead, so this endpoint prefers rated candidates
+        # without changing repair's existing behavior.
+        filtered = candidates_for_area(
+            pool, req.day_area, exclude=exclude, preferred_types=preferred_types,
+        )
+        rated = sorted(
+            (i for i in filtered if i.get("rating") is not None),
+            key=lambda i: -i["rating"],
+        )
+        unrated = [i for i in filtered if i.get("rating") is None]
+        ranked = (rated + unrated)[:3]
+
+        weekday = None
+        trip_start_date = state.get("trip_start_date")
+        if trip_start_date:
+            try:
+                weekday = weekday_for_day(trip_start_date, req.day, lang="en")
+            except (ValueError, TypeError):
+                weekday = None  # 폴백 -- 요일 경고만 생략, 나머지는 계속 진행
+
+        candidates = []
+        for item in ranked:
+            warnings: list[str] = []
+            closed = item.get("closed_weekday") or []
+            if weekday and weekday in closed:
+                warnings.append(f"{weekday} 정기휴무 — Day {req.day}과 겹칠 수 있음")
+            if item.get("is_area_type"):
+                warnings.append("특정 업체가 아니라 지역/거리 전체를 가리키는 POI")
+
+            candidates.append({
+                "poi_name": item.get("name"),
+                "poi_type": item.get("type"),
+                "address": item.get("address"),
+                "lat": item.get("lat"),
+                "lng": item.get("lng"),
+                "rating": item.get("rating"),
+                "warnings": warnings,
+            })
+    except HTTPException:
+        raise
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=_INTERNAL_ERROR)
+
+    return {"candidates": candidates}
 
 
 if __name__ == "__main__":
