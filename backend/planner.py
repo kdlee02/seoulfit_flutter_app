@@ -866,6 +866,12 @@ def _format_one_course(
 
     poi_lines: list[str] = []
     for p in c.get("sequence", []) or []:
+        # Same exclusion as _build_candidate_pool -- don't even show the LLM an
+        # activity-category label, a bare subway-station marker, or a venue
+        # flagged for naming review as if it were a plannable destination.
+        if p.get("is_generic_activity") or p.get("is_transit_marker") or p.get("requires_review"):
+            continue
+
         name = p.get("poi_name", "")
         address = p.get("address_en") or p.get("address_ko", "")
         lat = p.get("lat")
@@ -899,6 +905,12 @@ def _format_one_course(
 
 
 def _format_one_poi(poi: dict[str, Any]) -> str:
+    # Same exclusion as _build_candidate_pool / _format_one_course -- return
+    # "" for anything flagged as not a real plannable destination so it never
+    # reaches the LLM prompt. Caller skips empty lines.
+    if poi.get("is_generic_activity") or poi.get("is_transit_marker") or poi.get("requires_review"):
+        return ""
+
     name = poi.get("poi_name", "")
     address = poi.get("address_en") or poi.get("address_ko", "")
     lat = poi.get("lat")
@@ -954,10 +966,11 @@ def _format_segment_block(seg: dict[str, Any]) -> str:
 
     suppl = seg.get("supplement_pois") or []
     if suppl:
-        lines.append("")
-        lines.append("[SUPPLEMENT POIs — individual additions for gaps in anchor courses]")
-        for poi in suppl:
-            lines.append(_format_one_poi(poi))
+        rendered_pois = [line for poi in suppl if (line := _format_one_poi(poi))]
+        if rendered_pois:
+            lines.append("")
+            lines.append("[SUPPLEMENT POIs — individual additions for gaps in anchor courses]")
+            lines.extend(rendered_pois)
 
     return "\n".join(lines)
 
@@ -1006,6 +1019,14 @@ def _poi_from_course_item(p: dict[str, Any]) -> dict[str, Any]:
         "notes": "",
         "area": area,
         "source_kind": "course",
+        # Mirrors critic_repair.candidate_from_course_poi -- these three flags
+        # mark POIs that aren't real visitable destinations (activity-category
+        # labels like "Karaoke", pure subway-station markers, or venues whose
+        # naming needs manual review). _build_candidate_pool excludes anything
+        # with one of these set so it can never be planned/auto-filled in.
+        "is_generic_activity": bool(p.get("is_generic_activity")),
+        "is_transit_marker": bool(p.get("is_transit_marker")),
+        "requires_review": bool(p.get("requires_review")),
     }
 
 
@@ -1056,6 +1077,14 @@ def _build_candidate_pool(
     for c in courses:
         for raw in c.get("sequence", []) or []:
             item = _poi_from_course_item(raw)
+            if (
+                item.get("is_generic_activity")
+                or item.get("is_transit_marker")
+                or item.get("requires_review")
+            ):
+                # Not a real, plannable destination -- keep it out of both the
+                # LLM-picked and the programmatically-filled candidate set.
+                continue
             key = _normalize_text(item["name"])
             if key:
                 pool[key] = item
