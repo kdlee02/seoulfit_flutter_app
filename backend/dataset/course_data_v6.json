@@ -1174,7 +1174,8 @@
           "source": "seoul.json",
           "source_title": "Hangaram Art Museum",
           "match_tier": "exact_en"
-        }
+        },
+        "requires_review": true
       },
       {
         "sequence_order": 6,
@@ -1192,7 +1193,8 @@
           "source": "seoul.json",
           "source_title": "Seoul Arts Center - Seoul Calligraphy Art Museum",
           "match_tier": "loose_en"
-        }
+        },
+        "requires_review": true
       },
       {
         "sequence_order": 7,
@@ -1236,7 +1238,8 @@
         "lat": 37.561932226923545,
         "lng": 126.9950242709765,
         "estimated_stay_time": "15",
-        "is_area_type": false
+        "is_area_type": false,
+        "is_transit_marker": true
       },
       {
         "sequence_order": 2,
@@ -1329,7 +1332,8 @@
         "lat": 37.5603175897877,
         "lng": 126.9066479821644,
         "estimated_stay_time": "15",
-        "is_area_type": false
+        "is_area_type": false,
+        "is_transit_marker": true
       },
       {
         "sequence_order": 2,
@@ -1400,7 +1404,8 @@
         "lat": 37.57308321178237,
         "lng": 127.01377198908666,
         "estimated_stay_time": "15",
-        "is_area_type": true
+        "is_area_type": true,
+        "is_transit_marker": true
       },
       {
         "sequence_order": 2,
@@ -2478,7 +2483,8 @@
         "lat": 37.55744529756238,
         "lng": 126.92677875006298,
         "estimated_stay_time": "45",
-        "is_area_type": false
+        "is_area_type": false,
+        "is_transit_marker": true
       }
     ]
   },
@@ -3793,7 +3799,8 @@
         "lat": 37.56800093330146,
         "lng": 126.94739669374786,
         "estimated_stay_time": 15,
-        "is_area_type": false
+        "is_area_type": false,
+        "is_transit_marker": true
       },
       {
         "sequence_order": 2,
@@ -3875,7 +3882,8 @@
         "lat": 37.57682155051477,
         "lng": 126.98603658847797,
         "estimated_stay_time": 15,
-        "is_area_type": false
+        "is_area_type": false,
+        "is_transit_marker": true
       },
       {
         "sequence_order": 2,
@@ -3982,7 +3990,8 @@
         "lat": 37.57582675867173,
         "lng": 126.97329642936916,
         "estimated_stay_time": 15,
-        "is_area_type": false
+        "is_area_type": false,
+        "is_transit_marker": true
       },
       {
         "sequence_order": 2,
@@ -8770,7 +8779,8 @@
         "lat": 37.58120599016959,
         "lng": 127.00297367804146,
         "estimated_stay_time": 20,
-        "is_area_type": false
+        "is_area_type": false,
+        "requires_review": true
       },
       {
         "sequence_order": 3,
@@ -8781,7 +8791,8 @@
         "lat": 37.582094790802614,
         "lng": 127.00317872868854,
         "estimated_stay_time": 20,
-        "is_area_type": false
+        "is_area_type": false,
+        "requires_review": true
       },
       {
         "sequence_order": 4,
@@ -9583,7 +9594,8 @@
           "source": "seoul.json",
           "source_title": "Seoul Arts Center - Seoul Calligraphy Art Museum",
           "match_tier": "loose_en"
-        }
+        },
+        "requires_review": true
       },
       {
         "sequence_order": 2,
@@ -9601,7 +9613,8 @@
           "source": "seoul.json",
           "source_title": "예술의전당 한가람미술관",
           "match_tier": "exact_ko"
-        }
+        },
+        "requires_review": true
       },
       {
         "sequence_order": 3,
