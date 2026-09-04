@@ -6,3 +6,4 @@ __pycache__/
 planner_last_failed.txt
 .env
 *.env
+*.bak

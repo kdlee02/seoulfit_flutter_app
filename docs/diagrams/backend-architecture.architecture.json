@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SeoulFit Backend Architecture",
+    "output": "docs/diagrams/backend-architecture.html",
+    "viewBox": [
+      1080,
+      600
+    ],
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "planning-path",
+        "label": "Itinerary path",
+        "focus": [
+          "app",
+          "api",
+          "agent",
+          "rag",
+          "planner",
+          "critic"
+        ],
+        "note": "The one request path that turns a chat message into a scored itinerary."
+      },
+      {
+        "id": "grounding",
+        "label": "Grounding sources",
+        "focus": [
+          "rag",
+          "faiss",
+          "planner",
+          "places",
+          "gemini"
+        ],
+        "note": "Curated courses ground the plan; Google Places only fills the gaps they leave."
+      },
+      {
+        "id": "side-features",
+        "label": "Side surfaces",
+        "focus": [
+          "app",
+          "api",
+          "side",
+          "rail"
+        ],
+        "note": "Lens and Live Help hang off the same FastAPI app, independent of the planner."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "Flutter App",
+      "sublabel": "SeoulFit client",
+      "pos": [
+        60,
+        40
+      ],
+      "size": [
+        200,
+        54
+      ]
+    },
+    {
+      "id": "side",
+      "type": "backend",
+      "label": "Lens + Live Help",
+      "sublabel": "lens.py, live_help.py",
+      "pos": [
+        60,
+        160
+      ],
+      "size": [
+        200,
+        54
+      ],
+      "tag": "TourAPI, E-Gen, ODsay"
+    },
+    {
+      "id": "gemini",
+      "type": "cloud",
+      "label": "Gemini",
+      "sublabel": "2.5 Flash, JSON mode",
+      "pos": [
+        60,
+        340
+      ],
+      "size": [
+        200,
+        54
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "api.py",
+      "pos": [
+        440,
+        40
+      ],
+      "size": [
+        200,
+        54
+      ],
+      "tag": "SQLite check-ins"
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "LangGraph",
+      "sublabel": "graph.py",
+      "pos": [
+        440,
+        160
+      ],
+      "size": [
+        200,
+        54
+      ],
+      "tag": "MemorySaver"
+    },
+    {
+      "id": "rag",
+      "type": "backend",
+      "label": "Retrieval",
+      "sublabel": "rag.py",
+      "pos": [
+        440,
+        280
+      ],
+      "size": [
+        200,
+        54
+      ]
+    },
+    {
+      "id": "planner",
+      "type": "backend",
+      "label": "Planner",
+      "sublabel": "planner.py",
+      "pos": [
+        440,
+        400
+      ],
+      "size": [
+        200,
+        54
+      ]
+    },
+    {
+      "id": "critic",
+      "type": "backend",
+      "label": "Critic + Repair",
+      "sublabel": "critic_repair.py",
+      "pos": [
+        440,
+        516
+      ],
+      "size": [
+        200,
+        54
+      ]
+    },
+    {
+      "id": "rail",
+      "type": "security",
+      "label": "NeMo Rail",
+      "sublabel": "guardrail_gate.py",
+      "pos": [
+        820,
+        40
+      ],
+      "size": [
+        200,
+        54
+      ]
+    },
+    {
+      "id": "faiss",
+      "type": "database",
+      "label": "FAISS Index A",
+      "sublabel": "course_data_v4",
+      "pos": [
+        820,
+        280
+      ],
+      "size": [
+        200,
+        54
+      ]
+    },
+    {
+      "id": "places",
+      "type": "external",
+      "label": "Google Places",
+      "sublabel": "gap supplements",
+      "pos": [
+        820,
+        400
+      ],
+      "size": [
+        200,
+        54
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LangGraph StateGraph — checkpointed per thread_id",
+      "wraps": [
+        "agent",
+        "rag",
+        "planner",
+        "critic"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "app-api",
+      "from": "app",
+      "to": "api",
+      "label": "REST /chat, /events, /trip",
+      "variant": "emphasis"
+    },
+    {
+      "id": "api-rail",
+      "from": "api",
+      "to": "rail",
+      "label": "check input",
+      "variant": "security"
+    },
+    {
+      "id": "api-side",
+      "from": "api",
+      "to": "side",
+      "label": "mounted routers",
+      "variant": "dashed"
+    },
+    {
+      "id": "api-agent",
+      "from": "api",
+      "to": "agent",
+      "label": "invoke(thread_id)",
+      "variant": "emphasis",
+      "labelAt": [
+        540,
+        127
+      ]
+    },
+    {
+      "id": "agent-gemini",
+      "from": "agent",
+      "to": "gemini",
+      "label": "slot + intent extraction"
+    },
+    {
+      "id": "agent-rag",
+      "from": "agent",
+      "to": "rag",
+      "label": "confirmed trip slots",
+      "variant": "emphasis",
+      "labelAt": [
+        540,
+        247
+      ]
+    },
+    {
+      "id": "rag-faiss",
+      "from": "rag",
+      "to": "faiss",
+      "label": "per-segment search",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rag-planner",
+      "from": "rag",
+      "to": "planner",
+      "label": "top-k anchor courses",
+      "variant": "emphasis",
+      "labelAt": [
+        540,
+        367
+      ]
+    },
+    {
+      "id": "planner-gemini",
+      "from": "planner",
+      "to": "gemini",
+      "label": "itinerary draft",
+      "variant": "emphasis"
+    },
+    {
+      "id": "planner-places",
+      "from": "planner",
+      "to": "places",
+      "label": "gap fill per area"
+    },
+    {
+      "id": "planner-critic",
+      "from": "planner",
+      "to": "critic",
+      "label": "draft itinerary",
+      "variant": "emphasis",
+      "labelAt": [
+        540,
+        485
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Planning path",
+      "items": [
+        "One LangGraph StateGraph owns the trip: collect, confirm, retrieve, plan, critique",
+        "State is checkpointed per thread_id, so each chat turn resumes where the last one stopped"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Grounding",
+      "items": [
+        "FAISS Index A holds curated Seoul courses, embedded with gemini-embedding-001",
+        "Google Places supplements only the cafe, food, K-POP and shopping gaps"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Side surfaces",
+      "items": [
+        "Lens identifies a landmark from a photo and joins it to the Seoul open dataset",
+        "Live Help serves nearby POIs, emergency-room beds and transit from public APIs"
+      ]
+    }
+  ]
+}

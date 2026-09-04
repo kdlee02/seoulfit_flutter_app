@@ -1,0 +1,464 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SeoulFit 백엔드 아키텍처 — RAG 일정 생성",
+    "output": "seoulfit-rag-architecture.html",
+    "viewBox": [
+      1080,
+      500
+    ],
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/kdlee02/seoulfit_flutter_app",
+      "revision": "e04db38868475cda3275cde8a95b043ea5d03d7c"
+    },
+    "views": [
+      {
+        "id": "offline",
+        "label": "오프라인 인덱스",
+        "focus": [
+          "dataset",
+          "embed",
+          "faiss"
+        ],
+        "note": "코스 1건이 문서 1건. 분할하지 않고 코스 전체 dict를 metadata에 넣어 벡터를 주소 지정용으로만 쓴다."
+      },
+      {
+        "id": "ingress",
+        "label": "인그레스와 상태",
+        "focus": [
+          "client",
+          "api",
+          "rails",
+          "graph"
+        ],
+        "note": "클라이언트는 thread_id만 보낸다. 대화 상태는 전부 MemorySaver 체크포인트에 있다."
+      },
+      {
+        "id": "retrieval",
+        "label": "세그먼트 검색",
+        "focus": [
+          "retrieve",
+          "faiss",
+          "places"
+        ],
+        "note": "지역별 세그먼트마다 독립 검색. 벡터가 못 채우는 식당·카페·K-POP은 Places가 메운다."
+      },
+      {
+        "id": "generation",
+        "label": "일정 생성",
+        "focus": [
+          "plan",
+          "gemini",
+          "places"
+        ],
+        "note": "세그먼트 블록 프롬프트로 Gemini를 한 번 부르고, 돌아온 JSON을 즉시 화이트리스트로 검증한다."
+      },
+      {
+        "id": "grounding",
+        "label": "접지와 채점",
+        "focus": [
+          "plan",
+          "critic",
+          "odsay"
+        ],
+        "note": "validator가 삭제·보충하고 critic이 채점·수리·재채점한다. 여기부터는 모델이 개입하지 않는다."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Flutter",
+      "sublabel": "thread_id 하나만 전송",
+      "pos": [
+        40,
+        56
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "rails",
+      "type": "security",
+      "label": "NeMo Rail",
+      "sublabel": "self check input 전용",
+      "tag": "예외 시 fail-open",
+      "pos": [
+        255,
+        56
+      ],
+      "size": [
+        145,
+        62
+      ],
+      "sources": [
+        {
+          "path": "backend/guardrail_gate.py",
+          "line": 38,
+          "label": "is_blocked"
+        }
+      ]
+    },
+    {
+      "id": "gemini",
+      "type": "external",
+      "label": "Gemini 2.5 Flash",
+      "sublabel": "JSON mode · 턴당 2회",
+      "pos": [
+        470,
+        56
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "POST /chat · /state · /reset",
+      "pos": [
+        40,
+        216
+      ],
+      "size": [
+        145,
+        62
+      ],
+      "sources": [
+        {
+          "path": "backend/api.py",
+          "line": 199,
+          "label": "chat"
+        }
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "backend",
+      "label": "collect · confirm",
+      "sublabel": "슬롯 6개 · 의도 분류",
+      "tag": "companion·pace 미사용",
+      "pos": [
+        255,
+        216
+      ],
+      "size": [
+        145,
+        62
+      ],
+      "sources": [
+        {
+          "path": "backend/graph.py",
+          "line": 342,
+          "label": "build_graph"
+        }
+      ]
+    },
+    {
+      "id": "retrieve",
+      "type": "backend",
+      "label": "retrieve node",
+      "sublabel": "일수 파싱 · 지역 세그먼트",
+      "tag": "geo.py 3.2km 인접",
+      "pos": [
+        470,
+        216
+      ],
+      "size": [
+        145,
+        62
+      ],
+      "sources": [
+        {
+          "path": "backend/rag.py",
+          "line": 583,
+          "label": "retrieve_for_segments"
+        }
+      ]
+    },
+    {
+      "id": "plan",
+      "type": "backend",
+      "label": "plan node",
+      "sublabel": "프롬프트 · validator 7패스",
+      "tag": "환각 POI 삭제",
+      "pos": [
+        685,
+        216
+      ],
+      "size": [
+        145,
+        62
+      ],
+      "sources": [
+        {
+          "path": "backend/planner.py",
+          "line": 1112,
+          "label": "_validate_and_repair"
+        }
+      ]
+    },
+    {
+      "id": "critic",
+      "type": "backend",
+      "label": "critic_repair",
+      "sublabel": "채점 · 수리 · 재채점",
+      "tag": "지역 로직 재구현",
+      "pos": [
+        900,
+        216
+      ],
+      "size": [
+        145,
+        62
+      ],
+      "sources": [
+        {
+          "path": "backend/critic_repair.py",
+          "line": 996,
+          "label": "critic_repair_node"
+        }
+      ]
+    },
+    {
+      "id": "dataset",
+      "type": "database",
+      "label": "course_data_v4",
+      "sublabel": "126 코스 · 552 POI",
+      "tag": "opening_hours 보강",
+      "pos": [
+        40,
+        376
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "embed",
+      "type": "cloud",
+      "label": "gemini-embedding",
+      "sublabel": "001 · 50개씩 60초 슬립",
+      "pos": [
+        255,
+        376
+      ],
+      "size": [
+        145,
+        62
+      ],
+      "sources": [
+        {
+          "path": "backend/rag.py",
+          "line": 181,
+          "label": "build_or_load_vectorstore"
+        }
+      ]
+    },
+    {
+      "id": "faiss",
+      "type": "database",
+      "label": "FAISS Index A",
+      "sublabel": "코스 1건 = 문서 1건",
+      "tag": "코스 dict를 metadata에",
+      "pos": [
+        470,
+        376
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "places",
+      "type": "external",
+      "label": "Google Places",
+      "sublabel": "식당 · 카페 · K-POP · 쇼핑",
+      "tag": "좌표로 지역 재검증",
+      "pos": [
+        685,
+        376
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "odsay",
+      "type": "external",
+      "label": "ODsay · Kakao",
+      "sublabel": "대중교통 · 길찾기 딥링크",
+      "tag": "키 없으면 생략",
+      "pos": [
+        900,
+        376
+      ],
+      "size": [
+        145,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "입력 게이트",
+      "wraps": [
+        "rails"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "LangGraph StateGraph — MemorySaver 스레드 체크포인트",
+      "wraps": [
+        "graph",
+        "retrieve",
+        "plan",
+        "critic"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "오프라인 인덱스 빌드",
+      "wraps": [
+        "dataset",
+        "embed"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "chat-in",
+      "from": "client",
+      "to": "api",
+      "label": "POST /chat",
+      "variant": "emphasis",
+      "labelDy": 24
+    },
+    {
+      "id": "rail-check",
+      "from": "api",
+      "to": "rails",
+      "label": "입력 검사",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "invoke",
+      "from": "api",
+      "to": "graph",
+      "label": "invoke"
+    },
+    {
+      "id": "slot-llm",
+      "from": "graph",
+      "to": "gemini",
+      "label": "슬롯 추출",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "confirm-chain",
+      "from": "graph",
+      "to": "retrieve",
+      "label": "confirm"
+    },
+    {
+      "id": "vector-search",
+      "from": "retrieve",
+      "to": "faiss",
+      "label": "k×3 검색",
+      "labelDy": 24
+    },
+    {
+      "id": "anchors",
+      "from": "retrieve",
+      "to": "plan",
+      "label": "앵커 코스",
+      "variant": "emphasis"
+    },
+    {
+      "id": "plan-llm",
+      "from": "plan",
+      "to": "gemini",
+      "label": "생성 1회",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "gap-fill",
+      "from": "plan",
+      "to": "places",
+      "label": "갭 필",
+      "labelDy": 24
+    },
+    {
+      "id": "to-critic",
+      "from": "plan",
+      "to": "critic",
+      "label": "itinerary",
+      "variant": "emphasis"
+    },
+    {
+      "id": "legs",
+      "from": "critic",
+      "to": "odsay",
+      "label": "transit_legs",
+      "variant": "dashed",
+      "labelDy": 24
+    },
+    {
+      "id": "to-embed",
+      "from": "dataset",
+      "to": "embed",
+      "label": "문서화"
+    },
+    {
+      "id": "to-index",
+      "from": "embed",
+      "to": "faiss",
+      "label": "배치 적재",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "오프라인 인덱스",
+      "items": [
+        "126개 코스가 각각 문서 1건 — 청크 분할이 없다",
+        "코스 전체 dict가 metadata에 그대로 들어가 벡터는 주소 지정 수단일 뿐이다",
+        "50개씩 임베딩 후 60초 슬립, 429는 retry_delay를 파싱해 재시도"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "온라인 검색",
+      "items": [
+        "travel_dates·region·category 세 슬롯만 검색에 들어간다",
+        "여행을 지역 세그먼트로 쪼갠 뒤 세그먼트마다 따로 검색한다",
+        "k = clamp(일수+1, 2, 6), ×3 과다 조회 후 지역 재랭킹으로 절단"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "접지 계층",
+      "items": [
+        "validator가 후보 풀에 없는 POI를 고치지 않고 삭제한다",
+        "critic = 0.35 실행가능성 + 0.35 지역 + 0.15 중복 + 0.15 외국인 친화",
+        "수리 전후 리포트가 모두 응답의 critic_report에 담긴다"
+      ]
+    }
+  ]
+}

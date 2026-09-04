@@ -8,15 +8,29 @@ import '../models/live_help.dart';
 import '../services/kakao_links.dart';
 import '../services/live_help_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/animations.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/app_status_bar.dart';
 import '../widgets/chat_mode_toggle.dart';
 import '../widgets/mascot_widget.dart';
 
-enum _View { hub, passport, emergency, nearby }
+enum _View { hub, passport, emergency, nearby, explore, shopping }
+
+/// Explore 칩. `null` 은 전체이고, 나머지는 한국관광공사 대분류 코드다.
+/// 단일선택이라 항상 정확히 하나가 켜져 있다 — 다중선택이면 'All' 이
+/// "전부 켜기"인지 "필터 해제"인지 규칙을 하나 더 만들어야 한다.
+const _kTourCategories = <(String?, String)>[
+  (null, 'All'),
+  ('VE', 'Culture'),
+  ('EX', 'Experience'),
+  ('HS', 'History'),
+  ('NA', 'Nature'),
+  ('LS', 'Leisure'),
+  ('AC', 'Stay'),
+];
 
 /// 여행 중 도우미. 여행 전 챗봇(/chat)과 달리 LLM 을 호출하지 않고
-/// 퀵액션 3버튼으로만 동작한다 — 응급 상황에서 지연도 환각도 만들지 않기 위해서다.
+/// 퀵액션 4버튼으로만 동작한다 — 응급 상황에서 지연도 환각도 만들지 않기 위해서다.
 class LiveHelpScreen extends StatefulWidget {
   const LiveHelpScreen({super.key});
 
@@ -58,6 +72,10 @@ class _LiveHelpScreenState extends State<LiveHelpScreen> {
         return _LocationGate(builder: (at) => _EmergencyView(at));
       case _View.nearby:
         return _LocationGate(builder: (at) => _NearbyView(at));
+      case _View.explore:
+        return _LocationGate(builder: (at) => _ExploreView(at));
+      case _View.shopping:
+        return _LocationGate(builder: (at) => _ShoppingView(at));
     }
   }
 }
@@ -126,8 +144,7 @@ class _Hub extends StatelessWidget {
                 fontSize: 20, fontWeight: FontWeight.w800, color: kInk)),
         const SizedBox(height: Insets.xs),
         Text("Tell me what happened and I'll pull it up right away.",
-            style:
-                GoogleFonts.plusJakartaSans(fontSize: 13, color: kSubtext)),
+            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: kSubtext)),
         const SizedBox(height: Insets.xl),
         _ActionCard(
           icon: Icons.badge_outlined,
@@ -146,9 +163,23 @@ class _Hub extends StatelessWidget {
         const SizedBox(height: Insets.md),
         _ActionCard(
           icon: Icons.place_outlined,
-          title: 'Near me',
-          subtitle: 'Cafes and restaurants within walking distance',
+          title: 'Explore cafes & restaurants',
+          subtitle: 'Open spots within walking distance',
           onTap: () => onPick(_View.nearby),
+        ),
+        const SizedBox(height: Insets.md),
+        _ActionCard(
+          icon: Icons.museum_outlined,
+          title: 'Explore nearby',
+          subtitle: 'Sights, museums and parks around you',
+          onTap: () => onPick(_View.explore),
+        ),
+        const SizedBox(height: Insets.md),
+        _ActionCard(
+          icon: Icons.shopping_bag_outlined,
+          title: 'Shopping',
+          subtitle: 'Markets, malls and local shops near you',
+          onTap: () => onPick(_View.shopping),
         ),
       ],
     );
@@ -229,7 +260,8 @@ class _ActionCard extends StatelessWidget {
 /// 출발지 없이 by/ 스킴을 쓰면 카카오가 좌표 자리를 빈 값으로 읽어 경로가 깨진다.
 Uri _routeTo(LatLng? from, LatLng to, String name, KakaoRouteMode mode) =>
     from == null
-        ? kakaoSearch(name.trim().isEmpty ? '${to.latitude},${to.longitude}' : name)
+        ? kakaoSearch(
+            name.trim().isEmpty ? '${to.latitude},${to.longitude}' : name)
         : kakaoRoute(from: from, to: to, toName: name, mode: mode);
 
 Future<void> _launch(BuildContext context, Uri uri, String display) async {
@@ -405,9 +437,7 @@ class _PhonePill extends StatelessWidget {
               child: Text(label,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: kInk)),
+                      fontSize: 11, fontWeight: FontWeight.w700, color: kInk)),
             ),
           ],
         ),
@@ -436,8 +466,8 @@ class _EmbassyCard extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                   fontSize: 15, fontWeight: FontWeight.w700, color: kInk)),
           Text(e.countryKo,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12, color: kSubtext)),
+              style:
+                  GoogleFonts.plusJakartaSans(fontSize: 12, color: kSubtext)),
           const SizedBox(height: Insets.md),
           // 한글 주소를 그대로 노출한다 — 택시 기사에게 화면을 보여주는 용도다.
           Text(e.addressKo,
@@ -467,7 +497,8 @@ class _EmbassyCard extends StatelessWidget {
                 _MiniButton(
                   icon: Icons.language_rounded,
                   label: 'Website',
-                  onTap: () => _launch(context, Uri.parse(e.website), e.website),
+                  onTap: () =>
+                      _launch(context, Uri.parse(e.website), e.website),
                 ),
               if (e.email.isNotEmpty)
                 _MiniButton(
@@ -510,9 +541,7 @@ class _MiniButton extends StatelessWidget {
             const SizedBox(width: 6),
             Text(label,
                 style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    color: kInk)),
+                    fontSize: 11.5, fontWeight: FontWeight.w700, color: kInk)),
           ],
         ),
       ),
@@ -571,8 +600,7 @@ class _AreaPicker extends StatelessWidget {
                 fontSize: 16, fontWeight: FontWeight.w700, color: kInk)),
         const SizedBox(height: Insets.xs),
         Text('Pick the area you are in and I will search from there.',
-            style:
-                GoogleFonts.plusJakartaSans(fontSize: 13, color: kSubtext)),
+            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: kSubtext)),
         const SizedBox(height: Insets.lg),
         Wrap(
           spacing: Insets.sm,
@@ -612,28 +640,53 @@ const _kErFallback = <EmergencyRoom>[
   EmergencyRoom(
       name: '연세대학교의과대학세브란스병원',
       address: '서울특별시 서대문구 연세로 50-1 (신촌동)',
-      lat: 37.562117, lng: 126.940828, distanceKm: 0,
-      erPhone: '02-2227-7777', beds: 0, bedsState: 'unknown', updatedAt: ''),
+      lat: 37.562117,
+      lng: 126.940828,
+      distanceKm: 0,
+      erPhone: '02-2227-7777',
+      beds: 0,
+      bedsState: 'unknown',
+      updatedAt: ''),
   EmergencyRoom(
       name: '서울대학교병원',
       address: '서울특별시 종로구 대학로 101 (연건동)',
-      lat: 37.579666, lng: 126.998963, distanceKm: 0,
-      erPhone: '02-2072-2475', beds: 0, bedsState: 'unknown', updatedAt: ''),
+      lat: 37.579666,
+      lng: 126.998963,
+      distanceKm: 0,
+      erPhone: '02-2072-2475',
+      beds: 0,
+      bedsState: 'unknown',
+      updatedAt: ''),
   EmergencyRoom(
       name: '고려대학교의과대학부속병원 (안암병원)',
       address: '서울특별시 성북구 고려대로 73 (안암동5가)',
-      lat: 37.587156, lng: 127.026471, distanceKm: 0,
-      erPhone: '02-920-5374', beds: 0, bedsState: 'unknown', updatedAt: ''),
+      lat: 37.587156,
+      lng: 127.026471,
+      distanceKm: 0,
+      erPhone: '02-920-5374',
+      beds: 0,
+      bedsState: 'unknown',
+      updatedAt: ''),
   EmergencyRoom(
       name: '가톨릭대학교 서울성모병원',
       address: '서울특별시 서초구 반포대로 222 (반포동)',
-      lat: 37.501801, lng: 127.004727, distanceKm: 0,
-      erPhone: '02-2258-2370', beds: 0, bedsState: 'unknown', updatedAt: ''),
+      lat: 37.501801,
+      lng: 127.004727,
+      distanceKm: 0,
+      erPhone: '02-2258-2370',
+      beds: 0,
+      bedsState: 'unknown',
+      updatedAt: ''),
   EmergencyRoom(
       name: '서울아산병원',
       address: '서울특별시 송파구 올림픽로43길 88 (풍납동)',
-      lat: 37.526564, lng: 127.108238, distanceKm: 0,
-      erPhone: '02-3010-3333', beds: 0, bedsState: 'unknown', updatedAt: ''),
+      lat: 37.526564,
+      lng: 127.108238,
+      distanceKm: 0,
+      erPhone: '02-3010-3333',
+      beds: 0,
+      bedsState: 'unknown',
+      updatedAt: ''),
 ];
 
 /// 응급실. API 가 죽어도 119 안내와 대형병원 5곳은 항상 보인다.
@@ -695,14 +748,14 @@ class _EmergencyViewState extends State<_EmergencyView> {
                   ],
                 )
               : rooms == null
-                  ? const Center(
-                      child: CircularProgressIndicator(color: kMint))
+                  ? const Center(child: CircularProgressIndicator(color: kMint))
                   : ListView.separated(
                       padding: const EdgeInsets.all(Insets.lg),
                       itemCount: rooms.length,
                       separatorBuilder: (_, __) =>
                           const SizedBox(height: Insets.md),
-                      itemBuilder: (_, i) => _RoomCard(rooms[i], from: widget.at),
+                      itemBuilder: (_, i) =>
+                          _RoomCard(rooms[i], from: widget.at),
                     ),
         ),
       ],
@@ -814,8 +867,8 @@ class _RoomCard extends StatelessWidget {
           if (_formatBedsUpdatedAt(r.updatedAt) case final hint?) ...[
             const SizedBox(height: Insets.xs),
             Text(hint,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11, color: kSubtext)),
+                style:
+                    GoogleFonts.plusJakartaSans(fontSize: 11, color: kSubtext)),
           ],
           const SizedBox(height: Insets.md),
           Wrap(
@@ -836,8 +889,8 @@ class _RoomCard extends StatelessWidget {
                 label: 'Directions',
                 onTap: () => _launch(
                     context,
-                    _routeTo(from, LatLng(r.lat, r.lng), r.name,
-                        KakaoRouteMode.car),
+                    _routeTo(
+                        from, LatLng(r.lat, r.lng), r.name, KakaoRouteMode.car),
                     r.address),
               ),
             ],
@@ -857,8 +910,8 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: Insets.md, vertical: Insets.xs),
+      padding: const EdgeInsets.symmetric(
+          horizontal: Insets.md, vertical: Insets.xs),
       decoration:
           BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
       child: Text(text,
@@ -956,8 +1009,8 @@ class _NearbyViewState extends State<_NearbyView> {
                           horizontal: Insets.lg, vertical: Insets.sm),
                       decoration: BoxDecoration(
                         color: _type == t ? kMintLight : kCard,
-                        border: Border.all(
-                            color: _type == t ? kMint : kCardBorder),
+                        border:
+                            Border.all(color: _type == t ? kMint : kCardBorder),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(t == 'cafe' ? 'Cafes' : 'Restaurants',
@@ -974,7 +1027,10 @@ class _NearbyViewState extends State<_NearbyView> {
         if (places != null && places.isNotEmpty)
           _NearbyMap(
             me: widget.at,
-            places: places,
+            pins: [
+              for (final p in places)
+                (at: LatLng(p.lat, p.lng), color: kInk, fg: kCard),
+            ],
             onMarkerTap: _revealCard,
           ),
         Expanded(
@@ -985,8 +1041,7 @@ class _NearbyViewState extends State<_NearbyView> {
                           fontSize: 13, color: kSubtext)),
                 )
               : places == null
-                  ? const Center(
-                      child: CircularProgressIndicator(color: kMint))
+                  ? const Center(child: CircularProgressIndicator(color: kMint))
                   : places.isEmpty
                       ? Center(
                           child: Text('Nothing within walking distance here.',
@@ -1043,8 +1098,8 @@ class _PlaceCard extends StatelessWidget {
                 width: 22,
                 height: 22,
                 margin: const EdgeInsets.only(right: Insets.sm),
-                decoration: const BoxDecoration(
-                    color: kInk, shape: BoxShape.circle),
+                decoration:
+                    const BoxDecoration(color: kInk, shape: BoxShape.circle),
                 alignment: Alignment.center,
                 child: Text('$index',
                     style: GoogleFonts.plusJakartaSans(
@@ -1071,6 +1126,34 @@ class _PlaceCard extends StatelessWidget {
           Text('${p.distanceM} m · ${p.address}',
               style: GoogleFonts.plusJakartaSans(
                   fontSize: 12, color: kSubtext, height: 1.4)),
+          // Places 결과 20건 중 19건에 사진이 있다. 없으면 자리를 접는다 —
+          // 빈 회색 박스를 남기면 로딩이 멈춘 것처럼 보인다.
+          if (p.photoRef.isNotEmpty) ...[
+            const SizedBox(height: Insets.md),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                LiveHelpService.placePhotoUrl(p.photoRef, width: 800),
+                height: 132,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                loadingBuilder: (ctx, child, progress) => progress == null
+                    ? child
+                    : Container(
+                        height: 132,
+                        color: kCanvas,
+                        alignment: Alignment.center,
+                        child: const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: kMint),
+                        ),
+                      ),
+              ),
+            ),
+          ],
           const SizedBox(height: Insets.md),
           Wrap(
             spacing: Insets.sm,
@@ -1099,33 +1182,37 @@ class _PlaceCard extends StatelessWidget {
   }
 }
 
+/// 지도에 찍을 결과 하나. 색은 호출부가 정한다 — 주변 추천은 종류가 하나라
+/// 단색이고, Explore 는 카테고리색으로 6가지가 섞인다.
+typedef _Pin = ({LatLng at, Color color, Color fg});
 
-/// 주변 추천 상단의 작은 지도.
+/// 결과 목록 위의 작은 지도. 주변 추천과 Explore 가 같이 쓴다.
 ///
 /// kakao_map_plugin 이 아니라 flutter_map(OSM)을 쓴다 — 카카오 플러그인은
 /// ios/android 전용이라 브라우저 개발 루프가 깨지고, 이 화면은 타일만 있으면
 /// 되지 카카오 SDK 기능이 필요하지 않다. 길찾기는 카카오로 넘긴다.
 class _NearbyMap extends StatelessWidget {
   final LatLng me;
-  final List<NearbyPlace> places;
+  final List<_Pin> pins;
   final ValueChanged<int> onMarkerTap;
 
   const _NearbyMap({
     required this.me,
-    required this.places,
+    required this.pins,
     required this.onMarkerTap,
   });
 
-  /// 내 위치와 결과가 모두 들어오도록 잡은 경계. 결과가 반경 1000m 안이라
-  /// 여유값은 작게 둔다.
+  /// 내 위치와 결과가 모두 들어오도록 잡은 경계. 여유값은 작게 두지만,
+  /// Explore 는 반경 제한이 없어 6km 짜리 결과가 섞일 수 있으므로 경계 자체는
+  /// 넓게 잡히는 게 맞다 — 화면 밖 마커를 만드는 것보다 낫다.
   LatLngBounds get _bounds {
     var minLat = me.latitude, maxLat = me.latitude;
     var minLng = me.longitude, maxLng = me.longitude;
-    for (final p in places) {
-      minLat = p.lat < minLat ? p.lat : minLat;
-      maxLat = p.lat > maxLat ? p.lat : maxLat;
-      minLng = p.lng < minLng ? p.lng : minLng;
-      maxLng = p.lng > maxLng ? p.lng : maxLng;
+    for (final p in pins) {
+      minLat = p.at.latitude < minLat ? p.at.latitude : minLat;
+      maxLat = p.at.latitude > maxLat ? p.at.latitude : maxLat;
+      minLng = p.at.longitude < minLng ? p.at.longitude : minLng;
+      maxLng = p.at.longitude > maxLng ? p.at.longitude : maxLng;
     }
     const pad = 0.0012;
     return LatLngBounds(
@@ -1140,8 +1227,8 @@ class _NearbyMap extends StatelessWidget {
       height: 200,
       child: FlutterMap(
         options: MapOptions(
-          initialCameraFit:
-              CameraFit.bounds(bounds: _bounds, padding: const EdgeInsets.all(28)),
+          initialCameraFit: CameraFit.bounds(
+              bounds: _bounds, padding: const EdgeInsets.all(28)),
           interactionOptions: const InteractionOptions(
             flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
           ),
@@ -1171,16 +1258,16 @@ class _NearbyMap extends StatelessWidget {
                   ),
                 ),
               ),
-              for (var i = 0; i < places.length; i++)
+              for (var i = 0; i < pins.length; i++)
                 Marker(
-                  point: LatLng(places[i].lat, places[i].lng),
+                  point: pins[i].at,
                   width: 30,
                   height: 30,
                   child: GestureDetector(
                     onTap: () => onMarkerTap(i),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: kInk,
+                        color: pins[i].color,
                         shape: BoxShape.circle,
                         border: Border.all(color: kCard, width: 2),
                       ),
@@ -1189,7 +1276,7 @@ class _NearbyMap extends StatelessWidget {
                           style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
-                              color: kCard)),
+                              color: pins[i].fg)),
                     ),
                   ),
                 ),
@@ -1199,4 +1286,831 @@ class _NearbyMap extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 주변 관광 POI. 카테고리 칩(단일선택) + 거리순 상위 20건.
+///
+/// 카페/음식점을 다루는 [_NearbyView] 와 달리 반경으로 자르지 않는다 — POI
+/// 밀도가 지역마다 10배 넘게 차이나서(종로 1km 71건 vs 여의도 6건) 반경을
+/// 고정하면 어떤 지역에서는 빈 화면이 된다. 대신 거리를 정직하게 표기한다.
+class _ExploreView extends StatefulWidget {
+  final LatLng at;
+  const _ExploreView(this.at);
+
+  @override
+  State<_ExploreView> createState() => _ExploreViewState();
+}
+
+class _ExploreViewState extends State<_ExploreView> {
+  /// null 이면 전체. 단일선택이라 스칼라 하나로 충분하다.
+  String? _category;
+
+  List<TourPoi>? _pois;
+  bool _failed = false;
+
+  /// [_NearbyViewState] 와 같은 이유의 세대 카운터. 칩을 빠르게 연타하면
+  /// 먼저 보낸 요청이 나중에 도착할 수 있어, 최신 요청의 응답만 반영한다.
+  int _gen = 0;
+
+  final _scrollCtrl = ScrollController();
+  List<GlobalKey> _cardKeys = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load(null);
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  void _revealCard(int i) {
+    if (i >= _cardKeys.length) return;
+    final ctx = _cardKeys[i].currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(ctx,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        alignment: 0.1);
+  }
+
+  void _load(String? category) {
+    final gen = ++_gen;
+    setState(() {
+      _category = category;
+      _pois = null;
+      _failed = false;
+    });
+    LiveHelpService.fetchTourPois(widget.at, category: category).then((v) {
+      if (mounted && gen == _gen) {
+        setState(() {
+          _pois = v;
+          _cardKeys = List.generate(v.length, (_) => GlobalKey());
+        });
+      }
+    }).catchError((_) {
+      if (mounted && gen == _gen) setState(() => _failed = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pois = _pois;
+    return Column(
+      children: [
+        SizedBox(
+          height: 56,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: Insets.lg),
+            children: [
+              for (final (code, label) in _kTourCategories)
+                Padding(
+                  padding: const EdgeInsets.only(right: Insets.sm),
+                  child: _TourChip(
+                    label: label,
+                    // All 은 특정 카테고리색이 없으므로 브랜드 액센트를 쓴다.
+                    accent: code == null ? kMint : categoryColor(code),
+                    selected: _category == code,
+                    onTap: () {
+                      if (_category == code) return;
+                      _load(code);
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (pois != null && pois.isNotEmpty)
+          _NearbyMap(
+            me: widget.at,
+            pins: [
+              for (final p in pois)
+                (
+                  at: LatLng(p.lat, p.lng),
+                  color: categoryColor(p.category),
+                  fg: categoryFg(p.category),
+                ),
+            ],
+            onMarkerTap: _revealCard,
+          ),
+        Expanded(
+          child: _failed
+              ? Center(
+                  child: Text("Couldn't load places right now.",
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13, color: kSubtext)),
+                )
+              : pois == null
+                  ? const Center(child: CircularProgressIndicator(color: kMint))
+                  : pois.isEmpty
+                      ? Center(
+                          child: Text('Nothing in this category nearby.',
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 13, color: kSubtext)),
+                        )
+                      : ListView.separated(
+                          controller: _scrollCtrl,
+                          padding: const EdgeInsets.fromLTRB(
+                              Insets.lg, Insets.md, Insets.lg, Insets.xl),
+                          itemCount: pois.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: Insets.md),
+                          itemBuilder: (_, i) => _TourPoiCard(
+                            pois[i],
+                            key: i < _cardKeys.length ? _cardKeys[i] : null,
+                            index: i + 1,
+                            from: widget.at,
+                          ),
+                        ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 카테고리 칩. 선택 시 그 카테고리색으로 물든다 — 지도 마커와 같은 색이라
+/// 무엇을 보고 있는지 칩만 봐도 안다.
+class _TourChip extends StatelessWidget {
+  final String label;
+  final Color accent;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _TourChip({
+    required this.label,
+    required this.accent,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: Motion.fast,
+        curve: Motion.enter,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: Insets.lg),
+        decoration: BoxDecoration(
+          color: selected ? accent.withValues(alpha: 0.12) : kCard,
+          border: Border.all(color: selected ? accent : kCardBorder),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(label,
+            style: GoogleFonts.plusJakartaSans(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: selected ? accent : kSubtext)),
+      ),
+    );
+  }
+}
+
+/// 목록의 POI 한 장. 탭하면 설명·사진이 든 상세 시트가 올라온다.
+class _TourPoiCard extends StatelessWidget {
+  final TourPoi p;
+  final LatLng? from;
+
+  /// 지도 마커와 대응시키는 1-기반 순번.
+  final int index;
+
+  const _TourPoiCard(this.p, {super.key, required this.index, this.from});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = categoryColor(p.category);
+    return PressableScale(
+      onTap: () => _showTourPoiSheet(context, p, from),
+      child: Container(
+        padding: const EdgeInsets.all(Insets.md),
+        decoration: BoxDecoration(
+          color: kCard,
+          border: Border.all(color: kCardBorder),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            // 지도 마커와 같은 번호·같은 색. 둘을 눈으로 잇는 단서다.
+            Container(
+              width: 22,
+              height: 22,
+              margin: const EdgeInsets.only(right: Insets.sm),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              alignment: Alignment.center,
+              child: Text('$index',
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: categoryFg(p.category))),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(p.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: kInk)),
+                  const SizedBox(height: 2),
+                  Text('${p.distanceLabel} · ${p.address}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12, color: kSubtext)),
+                ],
+              ),
+            ),
+            const SizedBox(width: Insets.sm),
+            _TourThumb(p, size: 56),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 431건 중 118건은 사진이 없다. 그럴 때 회색 박스 대신 카테고리색을 옅게 깐
+/// 아이콘을 둔다 — 빈자리가 아니라 의도된 자리로 보이게.
+class _TourThumb extends StatelessWidget {
+  final TourPoi p;
+  final double size;
+
+  const _TourThumb(this.p, {required this.size});
+
+  static const _radius = 10.0;
+
+  static const _icons = <String, IconData>{
+    'VE': Icons.museum_outlined,
+    'EX': Icons.local_activity_outlined,
+    'HS': Icons.account_balance_outlined,
+    'NA': Icons.park_outlined,
+    'LS': Icons.directions_bike_outlined,
+    'AC': Icons.hotel_outlined,
+  };
+
+  Widget _placeholder() {
+    final color = categoryColor(p.category);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(_radius),
+      ),
+      child: Icon(_icons[p.category] ?? Icons.place_outlined,
+          color: color, size: size * 0.4),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (p.image.isEmpty) return _placeholder();
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(_radius),
+      child: Image.network(
+        p.image,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        // visitkorea 이미지가 종종 404 로 사라진다. 폴백이 없으면 카드가 깨진다.
+        errorBuilder: (_, __, ___) => _placeholder(),
+      ),
+    );
+  }
+}
+
+/// POI 상세 시트. 설명이 평균 600자라 카드에 넣을 수 없어 여기서만 펼친다.
+/// 결측 필드는 줄을 통째로 숨긴다 — 빈 라벨을 남기면 데이터가 없는 건지
+/// 앱이 못 읽은 건지 알 수 없다.
+void _showTourPoiSheet(BuildContext context, TourPoi p, LatLng? from) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: kCard,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) => DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, controller) =>
+          _TourPoiSheet(p, from: from, controller: controller),
+    ),
+  );
+}
+
+class _TourPoiSheet extends StatelessWidget {
+  final TourPoi p;
+  final LatLng? from;
+  final ScrollController controller;
+
+  const _TourPoiSheet(this.p, {required this.from, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = categoryColor(p.category);
+    final label = _kTourCategories
+        .firstWhere((c) => c.$1 == p.category, orElse: () => (null, 'Place'))
+        .$2;
+    return ListView(
+      controller: controller,
+      padding: EdgeInsets.zero,
+      children: [
+        if (p.image.isNotEmpty)
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Image.network(
+              p.image,
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.all(Insets.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _Pill(
+                      text: label,
+                      fg: color,
+                      bg: color.withValues(alpha: 0.12)),
+                  const SizedBox(width: Insets.sm),
+                  Text(p.distanceLabel,
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: kSubtext)),
+                ],
+              ),
+              const SizedBox(height: Insets.md),
+              Text(p.name,
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: kInk,
+                      height: 1.25)),
+              const SizedBox(height: Insets.xs),
+              Text(p.address,
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12.5, color: kSubtext, height: 1.4)),
+              if (p.overview.isNotEmpty) ...[
+                const SizedBox(height: Insets.lg),
+                Text(p.overview,
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5, color: kInk, height: 1.6)),
+              ],
+              const SizedBox(height: Insets.lg),
+              _InfoRow(Icons.schedule_rounded, p.hours),
+              _InfoRow(Icons.event_busy_rounded, p.closed),
+              _InfoRow(Icons.confirmation_number_outlined, p.fee),
+              _InfoRow(Icons.local_parking_rounded, p.parking),
+              const SizedBox(height: Insets.md),
+              Wrap(
+                spacing: Insets.sm,
+                runSpacing: Insets.sm,
+                children: [
+                  _MiniButton(
+                    icon: Icons.directions_walk_rounded,
+                    label: 'Directions',
+                    onTap: () => _launch(
+                        context,
+                        _routeTo(from, LatLng(p.lat, p.lng), p.name,
+                            KakaoRouteMode.walk),
+                        p.address),
+                  ),
+                  if (p.tel.isNotEmpty)
+                    _MiniButton(
+                      icon: Icons.call_rounded,
+                      label: 'Call',
+                      onTap: () => _launch(
+                          context, Uri(scheme: 'tel', path: p.tel), p.tel),
+                    ),
+                  if (p.homepage.isNotEmpty)
+                    _MiniButton(
+                      icon: Icons.language_rounded,
+                      label: 'Website',
+                      onTap: () =>
+                          _launch(context, Uri.parse(p.homepage), p.homepage),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 값이 있을 때만 보이는 정보 한 줄.
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  const _InfoRow(this.icon, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    if (value.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Insets.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: kSubtext),
+          const SizedBox(width: Insets.sm),
+          Expanded(
+            child: Text(value,
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12.5, color: kInk, height: 1.45)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 칩 순서. null 은 'All'. 백엔드가 SP/TM/MO/DS/DF/SW 를 그대로 받는다.
+/// 개수가 많은 것부터 둔다 — 첫 칩부터 빈 화면이면 필터가 고장 난 것처럼 보인다.
+const _kShoppingCategories = <(String?, String)>[
+  (null, 'All'),
+  ('SP', 'Shops'),
+  ('TM', 'Markets'),
+  ('MO', 'Malls'),
+  ('DS', 'Dept stores'),
+  ('DF', 'Duty free'),
+  ('SW', 'Supermarkets'),
+];
+
+/// 주변 쇼핑 POI. [_ExploreView] 와 같은 골격이고 데이터 출처만 다르다
+/// (한국관광공사 대신 서울관광재단). 반경으로 자르지 않는 이유도 같다.
+///
+/// 면세점(DF) 5건, 대형마트(SW) 3건처럼 얇은 칩이 있다. 서울 전역에서 그만큼
+/// 뿐이라 몇 km 떨어진 결과가 나오는데, 거리 표기가 정직하므로 감춰지지 않는다.
+class _ShoppingView extends StatefulWidget {
+  final LatLng at;
+  const _ShoppingView(this.at);
+
+  @override
+  State<_ShoppingView> createState() => _ShoppingViewState();
+}
+
+class _ShoppingViewState extends State<_ShoppingView> {
+  String? _category;
+  List<ShoppingPoi>? _pois;
+  bool _failed = false;
+
+  /// [_ExploreViewState] 와 같은 세대 카운터. 칩을 연타하면 먼저 보낸 요청이
+  /// 나중에 도착할 수 있어, 최신 요청의 응답만 반영한다.
+  int _gen = 0;
+
+  final _scrollCtrl = ScrollController();
+  List<GlobalKey> _cardKeys = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load(null);
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  void _revealCard(int i) {
+    if (i >= _cardKeys.length) return;
+    final ctx = _cardKeys[i].currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(ctx,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        alignment: 0.1);
+  }
+
+  void _load(String? category) {
+    final gen = ++_gen;
+    setState(() {
+      _category = category;
+      _pois = null;
+      _failed = false;
+    });
+    LiveHelpService.fetchShoppingPois(widget.at, category: category).then((v) {
+      if (mounted && gen == _gen) {
+        setState(() {
+          _pois = v;
+          _cardKeys = List.generate(v.length, (_) => GlobalKey());
+        });
+      }
+    }).catchError((_) {
+      if (mounted && gen == _gen) setState(() => _failed = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pois = _pois;
+    return Column(
+      children: [
+        SizedBox(
+          height: 56,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: Insets.lg),
+            children: [
+              for (final (code, label) in _kShoppingCategories)
+                Padding(
+                  padding: const EdgeInsets.only(right: Insets.sm),
+                  child: _TourChip(
+                    label: label,
+                    accent: code == null ? kMint : shoppingColor(code),
+                    selected: _category == code,
+                    onTap: () {
+                      if (_category == code) return;
+                      _load(code);
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (pois != null && pois.isNotEmpty)
+          _NearbyMap(
+            me: widget.at,
+            pins: [
+              for (final p in pois)
+                (
+                  at: LatLng(p.lat, p.lng),
+                  color: shoppingColor(p.category),
+                  fg: Colors.white,
+                ),
+            ],
+            onMarkerTap: _revealCard,
+          ),
+        Expanded(
+          child: _failed
+              ? Center(
+                  child: Text("Couldn't load shops right now.",
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13, color: kSubtext)),
+                )
+              : pois == null
+                  ? const Center(child: CircularProgressIndicator(color: kMint))
+                  : pois.isEmpty
+                      ? Center(
+                          child: Text('Nothing in this category nearby.',
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 13, color: kSubtext)),
+                        )
+                      : ListView.separated(
+                          controller: _scrollCtrl,
+                          padding: const EdgeInsets.fromLTRB(
+                              Insets.lg, Insets.md, Insets.lg, Insets.xl),
+                          itemCount: pois.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: Insets.md),
+                          itemBuilder: (_, i) => _ShoppingCard(
+                            pois[i],
+                            key: i < _cardKeys.length ? _cardKeys[i] : null,
+                            index: i + 1,
+                            from: widget.at,
+                          ),
+                        ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ShoppingCard extends StatelessWidget {
+  final ShoppingPoi p;
+  final LatLng? from;
+  final int index;
+
+  const _ShoppingCard(this.p, {super.key, required this.index, this.from});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = shoppingColor(p.category);
+    return PressableScale(
+      onTap: () => _showShoppingSheet(context, p, from),
+      child: Container(
+        padding: const EdgeInsets.all(Insets.md),
+        decoration: BoxDecoration(
+          color: kCard,
+          border: Border.all(color: kCardBorder),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              margin: const EdgeInsets.only(right: Insets.sm),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              alignment: Alignment.center,
+              child: Text('$index',
+                  style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white)),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(p.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: kInk)),
+                  const SizedBox(height: 2),
+                  Text(
+                      '${p.distanceLabel} · ${kShoppingNames[p.category] ?? ""}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: color)),
+                  if (p.summary.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(p.summary,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12, height: 1.35, color: kSubtext)),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: Insets.sm),
+            _ShoppingThumb(p, size: 56),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ShoppingThumb extends StatelessWidget {
+  final ShoppingPoi p;
+  final double size;
+
+  const _ShoppingThumb(this.p, {required this.size});
+
+  static const _icons = <String, IconData>{
+    'SP': Icons.storefront_outlined,
+    'TM': Icons.storefront_rounded,
+    'MO': Icons.local_mall_outlined,
+    'DS': Icons.apartment_rounded,
+    'DF': Icons.flight_takeoff_rounded,
+    'SW': Icons.shopping_cart_outlined,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final color = shoppingColor(p.category);
+    final fallback = Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(_icons[p.category] ?? Icons.storefront_outlined,
+          size: size * 0.42, color: color),
+    );
+    if (p.image.isEmpty) return fallback;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Image.network(p.image,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => fallback),
+    );
+  }
+}
+
+void _showShoppingSheet(BuildContext context, ShoppingPoi p, LatLng? from) {
+  final color = shoppingColor(p.category);
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: kCard,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) => DraggableScrollableSheet(
+      initialChildSize: 0.65,
+      minChildSize: 0.35,
+      maxChildSize: 0.92,
+      expand: false,
+      // _TourPoiSheet 과 같은 구성이다 — 사진이 시트 맨 위를 꽉 채우고 위쪽
+      // 모서리만 둥글다. 그래서 ListView 는 padding 을 0 으로 두고 본문만
+      // 따로 감싼다.
+      builder: (_, controller) => ListView(
+        controller: controller,
+        padding: EdgeInsets.zero,
+        children: [
+          if (p.image.isNotEmpty)
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              child: Image.network(
+                p.image,
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                Insets.lg, Insets.lg, Insets.lg, Insets.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(kShoppingNames[p.category] ?? '',
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w800,
+                        color: color)),
+                const SizedBox(height: 2),
+                Text(p.title,
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: kInk)),
+                const SizedBox(height: 4),
+                Text('${p.distanceLabel} · ${p.address}',
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12.5, color: kSubtext)),
+                const SizedBox(height: Insets.md),
+                Wrap(
+                  spacing: Insets.sm,
+                  runSpacing: Insets.sm,
+                  children: [
+                    _MiniButton(
+                      icon: Icons.directions_walk_rounded,
+                      label: 'Directions',
+                      onTap: () => _launch(
+                          context,
+                          _routeTo(from, LatLng(p.lat, p.lng), p.title,
+                              KakaoRouteMode.walk),
+                          p.address),
+                    ),
+                    if (p.tel.isNotEmpty)
+                      _MiniButton(
+                        icon: Icons.call_rounded,
+                        label: 'Call',
+                        onTap: () => _launch(
+                            context, Uri(scheme: 'tel', path: p.tel), p.tel),
+                      ),
+                    if (p.homepage.isNotEmpty)
+                      _MiniButton(
+                        icon: Icons.language_rounded,
+                        label: 'Website',
+                        onTap: () =>
+                            _launch(context, Uri.parse(p.homepage), p.homepage),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: Insets.lg),
+                // _InfoRow 는 값이 비면 스스로 사라진다. 영업시간 285/310,
+                // 지하철 308/310 이라 결측이 흔하다.
+                _InfoRow(Icons.schedule_rounded, p.hours),
+                _InfoRow(Icons.subway_rounded, p.subway),
+                if (p.overview.isNotEmpty) ...[
+                  const SizedBox(height: Insets.md),
+                  Text(p.overview,
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13, height: 1.55, color: kInk)),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

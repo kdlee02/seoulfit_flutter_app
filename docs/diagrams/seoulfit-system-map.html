@@ -1,0 +1,1436 @@
+<title>SeoulFit System Map</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  /* ── Tokens ─────────────────────────────────────────────────────────────
+     Page palette is SeoulFit's own, from lib/theme/app_theme.dart:
+     kCanvas #F9F8F6 · kInk #1F2933 · kSubtext #7B8597 · kCardBorder #E8E6E1
+     kMint #4FD1C5 · kWarningBorder #F59E0B.  Dark values are derived by
+     rotating those same hues down, not by inverting.                       */
+  :root {
+    --paper:      #f9f8f6;
+    --surface:    #ffffff;
+    --surface-2:  #f3f2ef;
+    --ink:        #1f2933;
+    --muted:      #7b8597;
+    --rule:       #e8e6e1;
+    --rule-firm:  #d8d5cf;
+    --accent:     #4fd1c5;
+    --accent-ink: #10756d;
+    --accent-wash:#e8faf7;
+    --flag:       #b26a05;
+    --shadow:     0 1px 2px rgba(31,41,51,.05), 0 8px 24px -16px rgba(31,41,51,.28);
+    --dg-grid: #e2e8f0;
+    --dg-text: #0f172a;
+    --dg-text-muted: #64748b;
+    --dg-text-dim: #94a3b8;
+    --dg-lane-fill: rgba(248, 250, 252, 0.65);
+    --dg-lane-stroke: #cbd5e1;
+    --dg-arrow: #94a3b8;
+    --dg-arrow-emphasis: #059669;
+    --dg-mask: #ffffff;
+    --dg-frontend-fill: rgba(34, 211, 238, 0.15);
+    --dg-frontend-stroke: #0891b2;
+    --dg-backend-fill: rgba(52, 211, 153, 0.18);
+    --dg-backend-stroke: #059669;
+    --dg-database-fill: rgba(167, 139, 250, 0.2);
+    --dg-database-stroke: #7c3aed;
+    --dg-cloud-fill: rgba(251, 191, 36, 0.18);
+    --dg-cloud-stroke: #d97706;
+    --dg-security-fill: rgba(251, 113, 133, 0.15);
+    --dg-security-stroke: #e11d48;
+    --dg-messagebus-stroke: #ea580c;
+    --dg-external-fill: rgba(148, 163, 184, 0.18);
+    --dg-external-stroke: #64748b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #12171c;
+      --surface:    #1a2027;
+      --surface-2:  #212932;
+      --ink:        #e7ebef;
+      --muted:      #94a0ae;
+      --rule:       #2a323b;
+      --rule-firm:  #3a444f;
+      --accent:     #4fd1c5;
+      --accent-ink: #6fddd2;
+      --accent-wash:#15302e;
+      --flag:       #f0b64a;
+      --shadow:     0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+    --dg-grid: #1e293b;
+    --dg-text: #ffffff;
+    --dg-text-muted: #94a3b8;
+    --dg-text-dim: #475569;
+    --dg-lane-fill: rgba(15, 23, 42, 0.22);
+    --dg-lane-stroke: #334155;
+    --dg-arrow: #64748b;
+    --dg-arrow-emphasis: #34d399;
+    --dg-mask: #0f172a;
+    --dg-frontend-fill: rgba(8, 51, 68, 0.4);
+    --dg-frontend-stroke: #22d3ee;
+    --dg-backend-fill: rgba(6, 78, 59, 0.4);
+    --dg-backend-stroke: #34d399;
+    --dg-database-fill: rgba(76, 29, 149, 0.4);
+    --dg-database-stroke: #a78bfa;
+    --dg-cloud-fill: rgba(120, 53, 15, 0.3);
+    --dg-cloud-stroke: #fbbf24;
+    --dg-security-fill: rgba(136, 19, 55, 0.4);
+    --dg-security-stroke: #fb7185;
+    --dg-messagebus-stroke: #fb923c;
+    --dg-external-fill: rgba(30, 41, 59, 0.5);
+    --dg-external-stroke: #94a3b8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #12171c;
+    --surface:    #1a2027;
+    --surface-2:  #212932;
+    --ink:        #e7ebef;
+    --muted:      #94a0ae;
+    --rule:       #2a323b;
+    --rule-firm:  #3a444f;
+    --accent:     #4fd1c5;
+    --accent-ink: #6fddd2;
+    --accent-wash:#15302e;
+    --flag:       #f0b64a;
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+    --dg-grid: #1e293b;
+    --dg-text: #ffffff;
+    --dg-text-muted: #94a3b8;
+    --dg-text-dim: #475569;
+    --dg-lane-fill: rgba(15, 23, 42, 0.22);
+    --dg-lane-stroke: #334155;
+    --dg-arrow: #64748b;
+    --dg-arrow-emphasis: #34d399;
+    --dg-mask: #0f172a;
+    --dg-frontend-fill: rgba(8, 51, 68, 0.4);
+    --dg-frontend-stroke: #22d3ee;
+    --dg-backend-fill: rgba(6, 78, 59, 0.4);
+    --dg-backend-stroke: #34d399;
+    --dg-database-fill: rgba(76, 29, 149, 0.4);
+    --dg-database-stroke: #a78bfa;
+    --dg-cloud-fill: rgba(120, 53, 15, 0.3);
+    --dg-cloud-stroke: #fbbf24;
+    --dg-security-fill: rgba(136, 19, 55, 0.4);
+    --dg-security-stroke: #fb7185;
+    --dg-messagebus-stroke: #fb923c;
+    --dg-external-fill: rgba(30, 41, 59, 0.5);
+    --dg-external-stroke: #94a3b8;
+  }
+
+  /* ── Base ─────────────────────────────────────────────────────────────── */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 28px 96px; }
+  .col  { max-width: 66ch; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+  p { margin: 0; }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent-ink); outline-offset: 3px; border-radius: 3px;
+  }
+  code, .mono {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-ligatures: none;
+  }
+  code {
+    font-size: .86em;
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: .08em .34em;
+  }
+
+  /* ── Masthead ─────────────────────────────────────────────────────────── */
+  header.top {
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+  }
+  .top-inner {
+    max-width: 1160px; margin: 0 auto; padding: 52px 28px 40px;
+    display: grid; gap: 22px;
+  }
+  .eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11.5px; font-weight: 500;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before {
+    content: ""; width: 22px; height: 2px; background: var(--accent); flex: none;
+  }
+  h1 {
+    font-size: clamp(34px, 5vw, 54px);
+    font-weight: 800; letter-spacing: -.028em; line-height: 1.04;
+    max-width: 17ch;
+  }
+  .standfirst { font-size: 18px; color: var(--muted); max-width: 60ch; }
+  .standfirst strong { color: var(--ink); font-weight: 600; }
+  .facts {
+    display: flex; flex-wrap: wrap; gap: 0;
+    border: 1px solid var(--rule); border-radius: 8px; overflow: hidden;
+    background: var(--surface-2); margin-top: 6px;
+  }
+  .fact { padding: 12px 20px; border-right: 1px solid var(--rule); flex: 1 1 auto; min-width: 150px; }
+  .fact:last-child { border-right: 0; }
+  .fact dt {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 3px;
+  }
+  .fact dd {
+    margin: 0; font-size: 15px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Sections ─────────────────────────────────────────────────────────── */
+  section { padding-top: 64px; }
+  .sec-head { display: grid; gap: 14px; margin-bottom: 30px; }
+  h2 { font-size: clamp(24px, 3vw, 32px); font-weight: 800; letter-spacing: -.022em; line-height: 1.14; max-width: 22ch; }
+  .lede { color: var(--muted); font-size: 17px; max-width: 64ch; }
+
+  /* ── Diagram frame ────────────────────────────────────────────────────── */
+  .dg-frame {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 22px;
+    margin: 0 0 14px;
+  }
+  .dg { display: block; min-width: 900px; }
+  .dg svg { display: block; width: 100%; height: auto; }
+  .frame-note {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11.5px; color: var(--muted); letter-spacing: .02em;
+    display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 44px;
+  }
+
+  /* ── Stage list (ordered — mirrors the diagram's four bands) ──────────── */
+  .stages { display: grid; gap: 0; border-top: 1px solid var(--rule); max-width: 78ch; }
+  .stage {
+    display: grid; grid-template-columns: 62px 1fr; gap: 0 22px;
+    padding: 22px 0; border-bottom: 1px solid var(--rule);
+  }
+  .stage-n {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 13px; font-weight: 700; color: var(--accent-ink);
+    font-variant-numeric: tabular-nums; padding-top: 2px;
+  }
+  .stage h3 { font-size: 17px; font-weight: 700; letter-spacing: -.012em; margin-bottom: 6px; }
+  .stage p { color: var(--muted); font-size: 15.5px; }
+  .stage .where {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11.5px; color: var(--muted); margin-top: 8px;
+  }
+  .stage .where b { color: var(--ink); font-weight: 500; }
+
+  /* ── Legend (taxonomy — deliberately unnumbered) ──────────────────────── */
+  .legend {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px; background: var(--rule);
+    border: 1px solid var(--rule); border-radius: 8px; overflow: hidden;
+    max-width: 78ch;
+  }
+  .leg { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; }
+  .leg-key { display: flex; align-items: center; gap: 8px; }
+  .swatch { width: 13px; height: 13px; border-radius: 3px; border: 1.5px solid; flex: none; }
+  .leg-name {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  }
+  .leg p { font-size: 14.5px; line-height: 1.5; }
+  .leg p b { font-weight: 600; }
+
+  /* ── Callout ──────────────────────────────────────────────────────────── */
+  .notes { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); max-width: 78ch; }
+  .note {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 18px 20px; display: grid; gap: 8px;
+  }
+  .note h4 {
+    margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent-ink);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+  }
+  .note ul { margin: 0; padding-left: 17px; display: grid; gap: 7px; }
+  .note li { font-size: 14.5px; line-height: 1.5; color: var(--muted); }
+  .note li b { color: var(--ink); font-weight: 600; }
+
+  .caveat {
+    margin-top: 40px; max-width: 78ch;
+    border-left: 2px solid var(--flag);
+    padding: 4px 0 4px 18px;
+    color: var(--muted); font-size: 15px;
+  }
+  .caveat b { color: var(--ink); font-weight: 600; }
+
+  footer {
+    margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--rule);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11.5px; color: var(--muted); letter-spacing: .02em;
+    display: flex; flex-wrap: wrap; gap: 6px 18px;
+  }
+
+  @media (max-width: 640px) {
+    .top-inner { padding: 36px 20px 30px; }
+    .wrap { padding: 0 20px 72px; }
+    .stage { grid-template-columns: 44px 1fr; gap: 0 14px; }
+    .legend { grid-template-columns: 1fr; }
+    .dg-frame { padding: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+
+  /* ── Diagram styles, lifted from the archify artifacts and namespaced ─── */
+  .dg .c-grid { stroke: var(--dg-grid); fill: none; }
+  .dg .c-mask { fill: var(--dg-mask); stroke: none; }
+  .dg .c-frontend { fill: var(--dg-frontend-fill); stroke: var(--dg-frontend-stroke); }
+  .dg .c-backend { fill: var(--dg-backend-fill); stroke: var(--dg-backend-stroke); }
+  .dg .c-database { fill: var(--dg-database-fill); stroke: var(--dg-database-stroke); }
+  .dg .c-cloud { fill: var(--dg-cloud-fill); stroke: var(--dg-cloud-stroke); }
+  .dg .c-security { fill: var(--dg-security-fill); stroke: var(--dg-security-stroke); }
+  .dg .c-external { fill: var(--dg-external-fill); stroke: var(--dg-external-stroke); }
+  .dg .t-primary { fill: var(--dg-text); }
+  .dg .t-muted { fill: var(--dg-text-muted); }
+  .dg .t-dim { fill: var(--dg-text-dim); }
+  .dg .t-frontend { fill: var(--dg-frontend-stroke); }
+  .dg .t-backend { fill: var(--dg-backend-stroke); }
+  .dg .t-database { fill: var(--dg-database-stroke); }
+  .dg .t-cloud { fill: var(--dg-cloud-stroke); }
+  .dg .t-security { fill: var(--dg-security-stroke); }
+  .dg .t-messagebus { fill: var(--dg-messagebus-stroke); }
+  .dg svg .semantic-sigil { fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: 0.76; pointer-events: none; }
+  .dg svg .semantic-sigil > * { vector-effect: non-scaling-stroke; }
+  .dg svg .semantic-sigil .sigil-fill { fill: currentColor; stroke: none; }
+  .dg svg .s-frontend { color: var(--dg-frontend-stroke); }
+  .dg svg .s-backend { color: var(--dg-backend-stroke); }
+  .dg svg .s-database { color: var(--dg-database-stroke); }
+  .dg svg .s-cloud { color: var(--dg-cloud-stroke); }
+  .dg svg .s-security { color: var(--dg-security-stroke); }
+  .dg svg .s-external { color: var(--dg-external-stroke); }
+  .dg .a-default { stroke: var(--dg-arrow); fill: none; }
+  .dg .a-emphasis { stroke: var(--dg-arrow-emphasis); fill: none; }
+  .dg .a-security { stroke: var(--dg-security-stroke); fill: none; stroke-dasharray: 5,5; }
+  .dg .a-dashed { stroke: var(--dg-database-stroke); fill: none; stroke-dasharray: 4,4; }
+  .dg .m-default { fill: var(--dg-arrow); }
+  .dg .m-emphasis { fill: var(--dg-arrow-emphasis); }
+  .dg .m-security { fill: var(--dg-security-stroke); }
+  .dg .m-dashed { fill: var(--dg-database-stroke); }
+  .dg .c-security-group { fill: transparent; stroke: var(--dg-security-stroke); stroke-dasharray: 4,4; }
+  .dg .c-region { fill: rgba(251, 191, 36, 0.05); stroke: var(--dg-cloud-stroke); stroke-dasharray: 8,4; }
+  .dg .c-lane { fill: var(--dg-lane-fill); stroke: var(--dg-lane-stroke); stroke-dasharray: 6,6; }
+
+  /* archify's own default detail level is "read", which holds the 7px fine
+     annotations back. Reproduce that here: they stay in the DOM for assistive
+     tech, but at page scale they would paint as unreadable smudges over the
+     arrows. Their content is written out as prose in the stage list instead. */
+  .dg svg [data-detail="fine"] { opacity: 0; pointer-events: none; }
+
+  /* ── Sub-headings inside a section ────────────────────────────────────── */
+  h3.sub {
+    font-size: 19px; font-weight: 800; letter-spacing: -.015em; line-height: 1.25;
+    margin: 44px 0 14px; max-width: 30ch;
+  }
+  h3.sub::before {
+    content: ""; display: block; width: 26px; height: 2px;
+    background: var(--accent); margin-bottom: 12px;
+  }
+  .body-col { max-width: 72ch; color: var(--muted); font-size: 15.5px; margin-bottom: 18px; }
+  .body-col.small { font-size: 14.5px; margin-top: 18px; }
+
+  /* ── Spec list: mono term, prose definition ───────────────────────────── */
+  .spec { margin: 0; max-width: 88ch; border-top: 1px solid var(--rule); }
+  .spec .row {
+    display: grid; grid-template-columns: 190px 1fr; gap: 0 26px;
+    padding: 15px 0; border-bottom: 1px solid var(--rule);
+  }
+  .spec dt {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px; font-weight: 500; color: var(--ink);
+    line-height: 1.5; padding-top: 3px; word-break: break-word;
+  }
+  .spec dd { margin: 0; font-size: 15px; line-height: 1.6; color: var(--muted); }
+  .spec dd code { color: var(--ink); }
+
+  /* ── Validation passes: ordered, because they run in order ────────────── */
+  .passes { display: grid; gap: 0; max-width: 88ch; border-top: 1px solid var(--rule); }
+  .pass {
+    display: grid; grid-template-columns: 44px 1fr; gap: 0 22px;
+    padding: 15px 0; border-bottom: 1px solid var(--rule); align-items: start;
+  }
+  .pass .pn {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px; font-weight: 700; color: var(--accent-ink);
+    font-variant-numeric: tabular-nums;
+    border: 1px solid var(--rule-firm); border-radius: 5px;
+    display: grid; place-items: center; width: 26px; height: 26px;
+  }
+  .pass p { font-size: 15px; line-height: 1.6; color: var(--muted); }
+  .pass p b { color: var(--ink); font-weight: 600; }
+
+  /* ── Score table ──────────────────────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; max-width: 88ch; }
+  table {
+    border-collapse: collapse; width: 100%; min-width: 560px;
+    font-size: 15px; text-align: left;
+  }
+  thead th {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px; font-weight: 500; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--muted); padding: 0 16px 10px 0; border-bottom: 1px solid var(--rule-firm);
+    vertical-align: bottom;
+  }
+  tbody td {
+    padding: 14px 16px 14px 0; border-bottom: 1px solid var(--rule);
+    color: var(--muted); line-height: 1.55; vertical-align: top;
+  }
+  tbody td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 26px !important; }
+  tbody td.num { color: var(--accent-ink); font-weight: 700;
+    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 14px; }
+
+  @media (max-width: 640px) {
+    .spec .row { grid-template-columns: 1fr; gap: 6px; }
+    .pass { grid-template-columns: 34px 1fr; gap: 0 14px; }
+  }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <p class="eyebrow">SeoulFit · backend</p>
+    <h1>How a chat message becomes an itinerary</h1>
+    <p class="standfirst">
+      SeoulFit takes a free-text trip request and returns a day-by-day Seoul itinerary that has been
+      retrieved from curated courses, drafted by Gemini, repaired deterministically, and then
+      <strong>scored by a critic before it ships</strong>. Three views of that system, with the
+      thresholds and function names it actually runs on.
+    </p>
+    <dl class="facts">
+      <div class="fact"><dt>Orchestration</dt><dd>LangGraph StateGraph</dd></div>
+      <div class="fact"><dt>Chunk unit</dt><dd>One whole course</dd></div>
+      <div class="fact"><dt>Embeddings</dt><dd>gemini-embedding-001</dd></div>
+      <div class="fact"><dt>Breadth</dt><dd>k = days + 1, 2–6</dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section id="pipeline">
+    <div class="sec-head">
+      <p class="eyebrow">View one · the request path</p>
+      <h2>The pipeline, input to itinerary</h2>
+      <p class="lede">
+        One <code>POST /chat</code> at a time. The intake turn repeats until the traveller types
+        <em>confirm</em>; everything after that runs in a single pass and lands back in the same
+        checkpointed state the next turn will read.
+      </p>
+    </div>
+
+    <div class="dg-frame">
+      <div class="dg"><svg viewBox="0 0 1080 615" role="img" lang="en"  data-preset="classic" data-quality-profile="showcase">
+        <title id="archify-diagram-title">SeoulFit Itinerary Agent — Request to Itinerary</title>
+        <desc id="archify-diagram-description">A sequence diagram generated by Archify.</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Time Segments -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="0" x="48" y="152" width="984" height="154" rx="10" class="c-lane" stroke-width="1"/>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="1" x="48" y="312" width="984" height="64" rx="10" class="c-lane" stroke-width="1"/>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="2" x="48" y="382" width="984" height="64" rx="10" class="c-lane" stroke-width="1"/>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="3" x="48" y="452" width="984" height="94" rx="10" class="c-lane" stroke-width="1"/>
+
+        <!-- Lifelines -->
+        <path d="M 118.5 142 L 118.5 550" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 262.66666666666663 142 L 262.66666666666663 550" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 406.8333333333333 142 L 406.8333333333333 550" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 551 142 L 551 550" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 695.1666666666666 142 L 695.1666666666666 550" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 839.3333333333333 142 L 839.3333333333333 550" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 983.5 142 L 983.5 550" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+
+        <!-- Activations -->
+        <rect x="257.66666666666663" y="182" width="10" height="350" rx="3" class="c-mask"/>
+        <rect x="257.66666666666663" y="182" width="10" height="350" rx="3" class="c-backend" stroke-width="1"/>
+        <rect x="401.8333333333333" y="216" width="10" height="286" rx="3" class="c-mask"/>
+        <rect x="401.8333333333333" y="216" width="10" height="286" rx="3" class="c-backend" stroke-width="1"/>
+        <rect x="546" y="249" width="10" height="10" rx="3" class="c-mask"/>
+        <rect x="546" y="249" width="10" height="10" rx="3" class="c-cloud" stroke-width="1"/>
+        <rect x="546" y="391" width="10" height="42" rx="3" class="c-mask"/>
+        <rect x="546" y="391" width="10" height="42" rx="3" class="c-cloud" stroke-width="1"/>
+        <rect x="690.1666666666666" y="321" width="10" height="10" rx="3" class="c-mask"/>
+        <rect x="690.1666666666666" y="321" width="10" height="10" rx="3" class="c-database" stroke-width="1"/>
+        <rect x="834.3333333333333" y="353" width="10" height="10" rx="3" class="c-mask"/>
+        <rect x="834.3333333333333" y="353" width="10" height="10" rx="3" class="c-external" stroke-width="1"/>
+        <rect x="978.5" y="461" width="10" height="42" rx="3" class="c-mask"/>
+        <rect x="978.5" y="461" width="10" height="42" rx="3" class="c-backend" stroke-width="1"/>
+
+        <!-- Messages -->
+        <g data-edge-from="app" data-edge-to="api" data-edge-label="POST /chat {thread_id, message}" data-edge-key="0" data-edge-id="chat-post">
+          <path data-composition-edge-from="app" data-composition-edge-to="api" data-composition-edge-id="chat-post" data-composition-points="125.5,186;255.66666666666663,186" d="M 125.5 186 L 255.66666666666663 186" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-detail="context">
+          <rect x="103.9833333333333" y="166" width="173.20000000000002" height="16" rx="3" class="c-mask"/>
+          <text x="190.58333333333331" y="176" class="t-backend" font-size="9" text-anchor="middle">POST /chat {thread_id, message}</text>
+        </g>
+        <text data-detail="fine" x="137.5" y="204" class="t-dim" font-size="7">A NeMo self-check input rail screens the message first and fails open on any error.</text>
+        </g>
+
+        <g data-edge-from="api" data-edge-to="agent" data-edge-label="invoke(thread_id), checkpointed state" data-edge-key="1" data-edge-id="graph-invoke">
+          <path data-composition-edge-from="api" data-composition-edge-to="agent" data-composition-edge-id="graph-invoke" data-composition-points="269.66666666666663,220;399.8333333333333,220" d="M 269.66666666666663 220 L 399.8333333333333 220" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-detail="context">
+          <rect x="232.55" y="200" width="204.4" height="16" rx="3" class="c-mask"/>
+          <text x="334.75" y="210" class="t-backend" font-size="9" text-anchor="middle">invoke(thread_id), checkpointed state</text>
+        </g>
+        </g>
+
+        <g data-edge-from="agent" data-edge-to="gemini" data-edge-label="extract slots + intent — one JSON retry" data-edge-key="2" data-edge-id="slot-extract">
+          <path data-composition-edge-from="agent" data-composition-edge-to="gemini" data-composition-edge-id="slot-extract" data-composition-points="413.8333333333333,254;544,254" d="M 413.8333333333333 254 L 544 254" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="371.51666666666665" y="234" width="214.8" height="16" rx="3" class="c-mask"/>
+          <text x="478.91666666666663" y="244" class="t-backend" font-size="9" text-anchor="middle">extract slots + intent — one JSON retry</text>
+        </g>
+        </g>
+
+        <g data-edge-from="agent" data-edge-to="app" data-edge-label="trip summary, await &#39;confirm&#39; — turn repeats" data-edge-key="3" data-edge-id="confirm-ask">
+          <path data-composition-edge-from="agent" data-composition-edge-to="app" data-composition-edge-id="confirm-ask" data-composition-points="399.8333333333333,288;125.5,288" d="M 399.8333333333333 288 L 125.5 288" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <g data-detail="context">
+          <rect x="142.26666666666662" y="268" width="240.8" height="16" rx="3" class="c-mask"/>
+          <text x="262.66666666666663" y="278" class="t-messagebus" font-size="9" text-anchor="middle">trip summary, await &#39;confirm&#39; — turn repeats</text>
+        </g>
+        </g>
+
+        <g data-edge-from="agent" data-edge-to="faiss" data-edge-label="per-segment search, top-k anchors back" data-edge-key="4" data-edge-id="segment-query">
+          <path data-composition-edge-from="agent" data-composition-edge-to="faiss" data-composition-edge-id="segment-query" data-composition-points="413.8333333333333,326;688.1666666666666,326" d="M 413.8333333333333 326 L 688.1666666666666 326" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-detail="context">
+          <rect x="446.2" y="306" width="209.6" height="16" rx="3" class="c-mask"/>
+          <text x="551" y="316" class="t-backend" font-size="9" text-anchor="middle">per-segment search, top-k anchors back</text>
+        </g>
+        <text data-detail="fine" x="425.8333333333333" y="344" class="t-dim" font-size="7">parse_day_segments splits a multi-area trip first; rerank_courses_by_area then demotes off-neighborhood courses.</text>
+        </g>
+
+        <g data-edge-from="agent" data-edge-to="places" data-edge-label="gap fill: cafe, food, K-POP, shopping" data-edge-key="5" data-edge-id="places-fetch">
+          <path data-composition-edge-from="agent" data-composition-edge-to="places" data-composition-edge-id="places-fetch" data-composition-points="413.8333333333333,358;832.3333333333333,358" d="M 413.8333333333333 358 L 832.3333333333333 358" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="520.8833333333332" y="338" width="204.4" height="16" rx="3" class="c-mask"/>
+          <text x="623.0833333333333" y="348" class="t-backend" font-size="9" text-anchor="middle">gap fill: cafe, food, K-POP, shopping</text>
+        </g>
+        </g>
+
+        <g data-edge-from="agent" data-edge-to="gemini" data-edge-label="ItineraryPlanner prompt: anchors + supplements" data-edge-key="6" data-edge-id="plan-prompt">
+          <path data-composition-edge-from="agent" data-composition-edge-to="gemini" data-composition-edge-id="plan-prompt" data-composition-points="413.8333333333333,396;544,396" d="M 413.8333333333333 396 L 544 396" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-detail="context">
+          <rect x="353.3166666666666" y="376" width="251.20000000000002" height="16" rx="3" class="c-mask"/>
+          <text x="478.91666666666663" y="386" class="t-backend" font-size="9" text-anchor="middle">ItineraryPlanner prompt: anchors + supplements</text>
+        </g>
+        </g>
+
+        <g data-edge-from="gemini" data-edge-to="agent" data-edge-label="itinerary JSON, then validate and repair" data-edge-key="7" data-edge-id="plan-json">
+          <path data-composition-edge-from="gemini" data-composition-edge-to="agent" data-composition-edge-id="plan-json" data-composition-points="544,428;413.8333333333333,428" d="M 544 428 L 413.8333333333333 428" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="368.91666666666663" y="408" width="220" height="16" rx="3" class="c-mask"/>
+          <text x="478.91666666666663" y="418" class="t-muted" font-size="9" text-anchor="middle">itinerary JSON, then validate and repair</text>
+        </g>
+        <text data-detail="fine" x="425.8333333333333" y="446" class="t-dim" font-size="7">Fence and comma repair, FixJSON fallback, then a deterministic pass against the candidate pool.</text>
+        </g>
+
+        <g data-edge-from="agent" data-edge-to="critic" data-edge-label="score, patch, re-score" data-edge-key="8" data-edge-id="critic-hand">
+          <path data-composition-edge-from="agent" data-composition-edge-to="critic" data-composition-edge-id="critic-hand" data-composition-points="413.8333333333333,466;976.5,466" d="M 413.8333333333333 466 L 976.5 466" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-detail="context">
+          <rect x="631.9666666666666" y="446" width="126.4" height="16" rx="3" class="c-mask"/>
+          <text x="695.1666666666666" y="456" class="t-backend" font-size="9" text-anchor="middle">score, patch, re-score</text>
+        </g>
+        <text data-detail="fine" x="425.8333333333333" y="484" class="t-dim" font-size="7">Coverage and feasibility weigh 0.35 each; duplicates and foreigner friction 0.15 each.</text>
+        </g>
+
+        <g data-edge-from="critic" data-edge-to="api" data-edge-label="repaired itinerary + before/after report" data-edge-key="9" data-edge-id="critic-back">
+          <path data-composition-edge-from="critic" data-composition-edge-to="api" data-composition-edge-id="critic-back" data-composition-points="976.5,498;269.66666666666663,498" d="M 976.5 498 L 269.66666666666663 498" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="513.0833333333333" y="478" width="220" height="16" rx="3" class="c-mask"/>
+          <text x="623.0833333333333" y="488" class="t-muted" font-size="9" text-anchor="middle">repaired itinerary + before/after report</text>
+        </g>
+        </g>
+
+        <g data-edge-from="api" data-edge-to="app" data-edge-label="200 StateResponse with itinerary" data-edge-key="10" data-edge-id="response">
+          <path data-composition-edge-from="api" data-composition-edge-to="app" data-composition-edge-id="response" data-composition-points="255.66666666666663,528;125.5,528" d="M 255.66666666666663 528 L 125.5 528" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="101.38333333333331" y="508" width="178.4" height="16" rx="3" class="c-mask"/>
+          <text x="190.58333333333331" y="518" class="t-muted" font-size="9" text-anchor="middle">200 StateResponse with itinerary</text>
+        </g>
+        </g>
+
+        <!-- Segment Labels -->
+        <g data-graph-role="segment-label" data-segment-id="0">
+          <rect x="56" y="130" width="71.2" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="143" class="t-dim" font-size="9" font-weight="600">Slot intake</text>
+        </g>
+        <g data-graph-role="segment-label" data-segment-id="1">
+          <rect x="56" y="246" width="112.8" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="259" class="t-dim" font-size="9" font-weight="600">Segmented retrieval</text>
+        </g>
+        <g data-graph-role="segment-label" data-segment-id="2">
+          <rect x="56" y="360" width="92" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="373" class="t-dim" font-size="9" font-weight="600">Plan generation</text>
+        </g>
+        <g data-graph-role="segment-label" data-segment-id="3">
+          <rect x="56" y="430" width="112.8" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="443" class="t-dim" font-size="9" font-weight="600">Critique and return</text>
+        </g>
+
+        <!-- Participants -->
+        <g id="node-app" data-node-id="app" data-node-label="Flutter App" tabindex="0" role="button" aria-label="Focus Flutter App, api_service.dart, Sequence participant" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="api_service.dart" data-node-context="Sequence participant">
+          <title>Flutter App · api_service.dart · Sequence participant</title>
+          <rect x="62" y="72" width="113" height="54" rx="6" class="c-mask"/>
+          <rect x="62" y="72" width="113" height="54" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(68 78) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="118.5" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Flutter App</text>
+          <text data-detail="context" x="118.5" y="111" class="t-muted" font-size="7" text-anchor="middle">api_service.dart</text>
+        </g>
+
+        <g id="node-api" data-node-id="api" data-node-label="FastAPI" tabindex="0" role="button" aria-label="Focus FastAPI, POST /chat, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-sublabel="POST /chat" data-node-context="Sequence participant">
+          <title>FastAPI · POST /chat · Sequence participant</title>
+          <rect x="206.16666666666663" y="72" width="113" height="54" rx="6" class="c-mask"/>
+          <rect x="206.16666666666663" y="72" width="113" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(212.16666666666663 78) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="262.66666666666663" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">FastAPI</text>
+          <text data-detail="context" x="262.66666666666663" y="111" class="t-muted" font-size="7" text-anchor="middle">POST /chat</text>
+        </g>
+
+        <g id="node-agent" data-node-id="agent" data-node-label="LangGraph" tabindex="0" role="button" aria-label="Focus LangGraph, TravelState, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-sublabel="TravelState" data-node-context="Sequence participant">
+          <title>LangGraph · TravelState · Sequence participant</title>
+          <rect x="350.3333333333333" y="72" width="113" height="54" rx="6" class="c-mask"/>
+          <rect x="350.3333333333333" y="72" width="113" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(356.3333333333333 78) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="406.8333333333333" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">LangGraph</text>
+          <text data-detail="context" x="406.8333333333333" y="111" class="t-muted" font-size="7" text-anchor="middle">TravelState</text>
+        </g>
+
+        <g id="node-gemini" data-node-id="gemini" data-node-label="Gemini Flash" tabindex="0" role="button" aria-label="Focus Gemini Flash, JSON mode, Sequence participant" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="JSON mode" data-node-context="Sequence participant">
+          <title>Gemini Flash · JSON mode · Sequence participant</title>
+          <rect x="494.5" y="72" width="113" height="54" rx="6" class="c-mask"/>
+          <rect x="494.5" y="72" width="113" height="54" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(500.5 78) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="551" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Gemini Flash</text>
+          <text data-detail="context" x="551" y="111" class="t-muted" font-size="7" text-anchor="middle">JSON mode</text>
+        </g>
+
+        <g id="node-faiss" data-node-id="faiss" data-node-label="FAISS Index A" tabindex="0" role="button" aria-label="Focus FAISS Index A, course_data_v4, Sequence participant" aria-pressed="false" data-node-kind="database" data-node-sublabel="course_data_v4" data-node-context="Sequence participant">
+          <title>FAISS Index A · course_data_v4 · Sequence participant</title>
+          <rect x="638.6666666666666" y="72" width="113" height="54" rx="6" class="c-mask"/>
+          <rect x="638.6666666666666" y="72" width="113" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(644.6666666666666 78) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="695.1666666666666" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">FAISS Index A</text>
+          <text data-detail="context" x="695.1666666666666" y="111" class="t-muted" font-size="7" text-anchor="middle">course_data_v4</text>
+        </g>
+
+        <g id="node-places" data-node-id="places" data-node-label="Google Places" tabindex="0" role="button" aria-label="Focus Google Places, gap fill, Sequence participant" aria-pressed="false" data-node-kind="external" data-node-sublabel="gap fill" data-node-context="Sequence participant">
+          <title>Google Places · gap fill · Sequence participant</title>
+          <rect x="782.8333333333333" y="72" width="113" height="54" rx="6" class="c-mask"/>
+          <rect x="782.8333333333333" y="72" width="113" height="54" rx="6" class="c-external" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(788.8333333333333 78) scale(0.6875)">
+            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
+            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="839.3333333333333" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Google Places</text>
+          <text data-detail="context" x="839.3333333333333" y="111" class="t-muted" font-size="7" text-anchor="middle">gap fill</text>
+        </g>
+
+        <g id="node-critic" data-node-id="critic" data-node-label="Critic/Repair" tabindex="0" role="button" aria-label="Focus Critic/Repair, score and patch, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-sublabel="score and patch" data-node-context="Sequence participant">
+          <title>Critic/Repair · score and patch · Sequence participant</title>
+          <rect x="927" y="72" width="113" height="54" rx="6" class="c-mask"/>
+          <rect x="927" y="72" width="113" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(933 78) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="983.5" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Critic/Repair</text>
+          <text data-detail="context" x="983.5" y="111" class="t-muted" font-size="7" text-anchor="middle">score and patch</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="">
+          <text x="40" y="541" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="561" data-legend-width="78">
+            <path d="M 40 558 L 74 558" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="561" class="t-muted" font-size="10" font-weight="500">request</text>
+          </g>
+          <g data-legend-semantic-kind="return" data-legend-x="140" data-legend-baseline="561" data-legend-width="73">
+            <path d="M 140 558 L 174 558" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+            <text x="183" y="561" class="t-muted" font-size="10" font-weight="500">return</text>
+          </g>
+          <g data-legend-semantic-kind="dashed" data-legend-x="235" data-legend-baseline="561" data-legend-width="98">
+            <path d="M 235 558 L 269 558" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+            <text x="278" y="561" class="t-muted" font-size="10" font-weight="500">async trace</text>
+          </g>
+          <g data-legend-semantic-kind="default" data-legend-x="355" data-legend-baseline="561" data-legend-width="118">
+            <path d="M 355 558 L 389 558" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="398" y="561" class="t-muted" font-size="10" font-weight="500">default message</text>
+          </g>
+        </g>
+      </svg></div>
+    </div>
+    <p class="frame-note"><span>Scroll the frame sideways on a narrow screen</span></p>
+
+    <div class="stages">
+      <div class="stage">
+        <div class="stage-n">01</div>
+        <div>
+          <h3>Slot intake</h3>
+          <p>
+            A NeMo self-check rail screens the message and fails open on any error. Gemini then pulls
+            six slots out of free text — dates, interests, restrictions, companion, pace, area — in JSON
+            mode. A reply that will not parse is fed back to the model once, quoted verbatim, with an
+            instruction to return valid JSON; a second failure yields an empty object rather than an
+            apology. The agent summarises and waits, and this turn repeats until the traveller confirms.
+          </p>
+          <p class="where"><b>graph.py</b> collect · confirm · handle_confirm &nbsp;·&nbsp; <b>guardrail_gate.py</b> is_blocked</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-n">02</div>
+        <div>
+          <h3>Segmented retrieval</h3>
+          <p>
+            The trip is cut into per-area, per-purpose day segments before anything is searched, so
+            “two days Hongdae plus one day historical” never collapses into one blended query. Each
+            segment runs its own vector search, over-fetches three times what it needs, and then pushes
+            courses whose stops sit outside the requested neighbourhood below the ones that don't.
+            <a href="#retrieval">The method, in full →</a>
+          </p>
+          <p class="where"><b>rag.py</b> parse_day_segments · retrieve_for_segments · rerank_courses_by_area</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-n">03</div>
+        <div>
+          <h3>Plan generation</h3>
+          <p>
+            Google Places fills the gaps the curated courses leave — cafés, meals, K-POP, shopping —
+            per requested area. Anchors and supplements go into the planner prompt together. What comes
+            back is parsed through a three-step ladder, then checked against the candidate pool by six
+            deterministic passes that the model never sees. <a href="#generation">The passes →</a>
+          </p>
+          <p class="where"><b>planner.py</b> plan_node · _parse_itinerary_json · _validate_and_repair_itinerary</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="stage-n">04</div>
+        <div>
+          <h3>Critique and return</h3>
+          <p>
+            The critic scores four things, the repairer patches what it can, and the critic scores again.
+            Both reports travel with the itinerary, so a reader can see what was wrong before it was
+            fixed. Day routes are re-ordered and transit legs computed last.
+            <a href="#generation">The scoring →</a>
+          </p>
+          <p class="where"><b>critic_repair.py</b> CriticAgent · RepairAgent · reorder_supplements</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="retrieval">
+    <div class="sec-head">
+      <p class="eyebrow">View two · retrieval and grounding</p>
+      <h2>What the RAG half actually does</h2>
+      <p class="lede">
+        Two lanes meet at the index. The lower lane is built once, offline; the upper lane runs on
+        every confirmed trip. Nothing in the corpus is split below the level of a single curated course.
+      </p>
+    </div>
+
+    <div class="dg-frame">
+      <div class="dg"><svg viewBox="0 0 1080 500" role="img" lang="en"  data-preset="classic" data-quality-profile="showcase">
+        <title id="archify-diagram-title">SeoulFit Retrieval and Grounding</title>
+        <desc id="archify-diagram-description">A data-flow diagram generated by Archify.</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Data Stages -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="0" x="16" y="46" width="168" height="380" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="100" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">01 / Inputs</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="1" x="231" y="46" width="168" height="380" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="315" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">02 / Prepare</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="2" x="446" y="46" width="168" height="380" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="530" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">03 / Index and query</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="3" x="661" y="46" width="168" height="380" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="745" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">04 / Search</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="4" x="876" y="46" width="168" height="380" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="960" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">05 / Anchors</text>
+
+        <!-- Flow paths -->
+        <path data-edge-from="slots" data-edge-to="segments" data-edge-label="region, category, dates" data-edge-key="0" data-edge-id="slots-segments" data-composition-points="156,157;259,157" d="M 156 157 L 259 157" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="segments" data-edge-to="query" data-edge-label="per-segment area + hint" data-edge-key="1" data-edge-id="segments-query" data-composition-points="371,157;474,157" d="M 371 157 L 474 157" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="query" data-edge-to="search" data-edge-label="query string" data-edge-key="2" data-edge-id="query-search" data-composition-points="586,157;689,157" d="M 586 157 L 689 157" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="courses" data-edge-to="doc" data-edge-label="one record per course" data-edge-key="3" data-edge-id="courses-doc" data-composition-points="156,385;259,385" d="M 156 385 L 259 385" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="doc" data-edge-to="embed" data-edge-label="flattened page_content" data-edge-key="4" data-edge-id="doc-embed" data-composition-points="371,385;474,385" d="M 371 385 L 474 385" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="embed" data-edge-to="faiss" data-edge-label="one vector per course" data-edge-key="5" data-edge-id="embed-faiss" data-composition-points="586,385;689,385" d="M 586 385 L 689 385" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="faiss" data-edge-to="search" data-edge-label="nearest neighbours" data-edge-key="6" data-edge-id="faiss-search" data-composition-points="745,356;745,186" d="M 745 356 L 745 186" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="search" data-edge-to="rerank" data-edge-label="deduped by course_id" data-edge-key="7" data-edge-id="search-rerank" data-composition-points="801,157;904,157" d="M 801 157 L 904 157" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="rerank" data-edge-to="anchors" data-edge-label="in-area courses first" data-edge-key="8" data-edge-id="rerank-anchors" data-composition-points="960,186;960,356" d="M 960 186 L 960 356" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+
+        <!-- Nodes -->
+        <g id="node-slots" data-node-id="slots" data-node-label="Confirmed slots" tabindex="0" role="button" aria-label="Focus Confirmed slots, dates, areas, purpose, 01 / Inputs" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="dates, areas, purpose" data-node-tag="per thread" data-node-context="01 / Inputs">
+          <title>Confirmed slots · dates, areas, purpose · 01 / Inputs · per thread</title>
+          <rect x="44" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="44" y="128" width="112" height="58" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(50 134) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="100" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Confirmed slots</text>
+          <text data-detail="context" x="100" y="165" class="t-muted" font-size="7" text-anchor="middle">dates, areas, purpose</text>
+        <text data-detail="fine" x="100" y="175" class="t-frontend" font-size="7" text-anchor="middle">per thread</text>
+        </g>
+
+        <g id="node-courses" data-node-id="courses" data-node-label="Course corpus" tabindex="0" role="button" aria-label="Focus Course corpus, course_data_v4.json, 01 / Inputs" aria-pressed="false" data-node-kind="database" data-node-sublabel="course_data_v4.json" data-node-tag="curated" data-node-context="01 / Inputs">
+          <title>Course corpus · course_data_v4.json · 01 / Inputs · curated</title>
+          <rect x="44" y="356" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="44" y="356" width="112" height="58" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(50 362) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="100" y="377" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Course corpus</text>
+          <text data-detail="context" x="100" y="393" class="t-muted" font-size="7" text-anchor="middle">course_data_v4.json</text>
+        <text data-detail="fine" x="100" y="403" class="t-database" font-size="7" text-anchor="middle">curated</text>
+        </g>
+
+        <g id="node-segments" data-node-id="segments" data-node-label="Day segments" tabindex="0" role="button" aria-label="Focus Day segments, parse_day_segments, 02 / Prepare" aria-pressed="false" data-node-kind="backend" data-node-sublabel="parse_day_segments" data-node-tag="days split by area" data-node-context="02 / Prepare">
+          <title>Day segments · parse_day_segments · 02 / Prepare · days split by area</title>
+          <rect x="259" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="259" y="128" width="112" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(265 134) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="315" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Day segments</text>
+          <text data-detail="context" x="315" y="165" class="t-muted" font-size="7" text-anchor="middle">parse_day_segments</text>
+        <text data-detail="fine" x="315" y="175" class="t-backend" font-size="7" text-anchor="middle">days split by area</text>
+        </g>
+
+        <g id="node-doc" data-node-id="doc" data-node-label="One doc a course" tabindex="0" role="button" aria-label="Focus One doc a course, _course_to_document, 02 / Prepare" aria-pressed="false" data-node-kind="backend" data-node-sublabel="_course_to_document" data-node-tag="no sub-chunking" data-node-context="02 / Prepare">
+          <title>One doc a course · _course_to_document · 02 / Prepare · no sub-chunking</title>
+          <rect x="259" y="356" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="259" y="356" width="112" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(265 362) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="315" y="377" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">One doc a course</text>
+          <text data-detail="context" x="315" y="393" class="t-muted" font-size="7" text-anchor="middle">_course_to_document</text>
+        <text data-detail="fine" x="315" y="403" class="t-backend" font-size="7" text-anchor="middle">no sub-chunking</text>
+        </g>
+
+        <g id="node-embed" data-node-id="embed" data-node-label="Embeddings" tabindex="0" role="button" aria-label="Focus Embeddings, gemini-embedding-001, 03 / Index and query" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="gemini-embedding-001" data-node-tag="batches of 50" data-node-context="03 / Index and query">
+          <title>Embeddings · gemini-embedding-001 · 03 / Index and query · batches of 50</title>
+          <rect x="474" y="356" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="474" y="356" width="112" height="58" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(480 362) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="530" y="377" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Embeddings</text>
+          <text data-detail="context" x="530" y="393" class="t-muted" font-size="7" text-anchor="middle">gemini-embedding-001</text>
+        <text data-detail="fine" x="530" y="403" class="t-cloud" font-size="7" text-anchor="middle">batches of 50</text>
+        </g>
+
+        <g id="node-query" data-node-id="query" data-node-label="Segment query" tabindex="0" role="button" aria-label="Focus Segment query, area + purpose hint, 03 / Index and query" aria-pressed="false" data-node-kind="backend" data-node-sublabel="area + purpose hint" data-node-tag="one per segment" data-node-context="03 / Index and query">
+          <title>Segment query · area + purpose hint · 03 / Index and query · one per segment</title>
+          <rect x="474" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="474" y="128" width="112" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(480 134) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="530" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Segment query</text>
+          <text data-detail="context" x="530" y="165" class="t-muted" font-size="7" text-anchor="middle">area + purpose hint</text>
+        <text data-detail="fine" x="530" y="175" class="t-backend" font-size="7" text-anchor="middle">one per segment</text>
+        </g>
+
+        <g id="node-faiss" data-node-id="faiss" data-node-label="FAISS Index A" tabindex="0" role="button" aria-label="Focus FAISS Index A, index.faiss + pkl, 04 / Search" aria-pressed="false" data-node-kind="database" data-node-sublabel="index.faiss + pkl" data-node-tag="cached singleton" data-node-context="04 / Search">
+          <title>FAISS Index A · index.faiss + pkl · 04 / Search · cached singleton</title>
+          <rect x="689" y="356" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="689" y="356" width="112" height="58" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(695 362) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="745" y="377" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">FAISS Index A</text>
+          <text data-detail="context" x="745" y="393" class="t-muted" font-size="7" text-anchor="middle">index.faiss + pkl</text>
+        <text data-detail="fine" x="745" y="403" class="t-database" font-size="7" text-anchor="middle">cached singleton</text>
+        </g>
+
+        <g id="node-search" data-node-id="search" data-node-label="Similarity search" tabindex="0" role="button" aria-label="Focus Similarity search, over-fetch k x 3, 04 / Search" aria-pressed="false" data-node-kind="backend" data-node-sublabel="over-fetch k x 3" data-node-tag="k = days + 1" data-node-context="04 / Search">
+          <title>Similarity search · over-fetch k x 3 · 04 / Search · k = days + 1</title>
+          <rect x="689" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="689" y="128" width="112" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(695 134) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="745" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Similarity search</text>
+          <text data-detail="context" x="745" y="165" class="t-muted" font-size="7" text-anchor="middle">over-fetch k x 3</text>
+        <text data-detail="fine" x="745" y="175" class="t-backend" font-size="7" text-anchor="middle">k = days + 1</text>
+        </g>
+
+        <g id="node-rerank" data-node-id="rerank" data-node-label="Area re-rank" tabindex="0" role="button" aria-label="Focus Area re-rank, rerank_courses_by_area, 05 / Anchors" aria-pressed="false" data-node-kind="backend" data-node-sublabel="rerank_courses_by_area" data-node-tag="stable partition" data-node-context="05 / Anchors">
+          <title>Area re-rank · rerank_courses_by_area · 05 / Anchors · stable partition</title>
+          <rect x="904" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="904" y="128" width="112" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(910 134) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="960" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Area re-rank</text>
+          <text data-detail="context" x="960" y="165" class="t-muted" font-size="7" text-anchor="middle">rerank_courses_by_area</text>
+        <text data-detail="fine" x="960" y="175" class="t-backend" font-size="7" text-anchor="middle">stable partition</text>
+        </g>
+
+        <g id="node-anchors" data-node-id="anchors" data-node-label="Anchor courses" tabindex="0" role="button" aria-label="Focus Anchor courses, top k per segment, 05 / Anchors" aria-pressed="false" data-node-kind="backend" data-node-sublabel="top k per segment" data-node-tag="to the planner" data-node-context="05 / Anchors">
+          <title>Anchor courses · top k per segment · 05 / Anchors · to the planner</title>
+          <rect x="904" y="356" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="904" y="356" width="112" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(910 362) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="960" y="377" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Anchor courses</text>
+          <text data-detail="context" x="960" y="393" class="t-muted" font-size="7" text-anchor="middle">top k per segment</text>
+        <text data-detail="fine" x="960" y="403" class="t-backend" font-size="7" text-anchor="middle">to the planner</text>
+        </g>
+
+        <!-- Flow labels -->
+        <g data-detail="context" data-edge-from="slots" data-edge-to="segments" data-edge-label="region, category, dates" data-edge-key="0" data-edge-id="slots-segments">
+          <rect x="145.15" y="200" width="124.7" height="27" rx="4" class="c-mask"/>
+          <text x="207.5" y="211" class="t-backend" font-size="8" text-anchor="middle">region, category, dates</text>
+        <text data-detail="fine" x="207.5" y="222" class="t-dim" font-size="7" text-anchor="middle">confirmed state</text>
+        </g>
+        <g data-detail="context" data-edge-from="segments" data-edge-to="query" data-edge-label="per-segment area + hint" data-edge-key="1" data-edge-id="segments-query">
+          <rect x="360.15" y="200" width="124.7" height="27" rx="4" class="c-mask"/>
+          <text x="422.5" y="211" class="t-backend" font-size="8" text-anchor="middle">per-segment area + hint</text>
+        <text data-detail="fine" x="422.5" y="222" class="t-dim" font-size="7" text-anchor="middle">no blended query</text>
+        </g>
+        <g data-detail="context" data-edge-from="query" data-edge-to="search" data-edge-label="query string" data-edge-key="2" data-edge-id="query-search">
+          <rect x="592.3" y="200" width="90.4" height="27" rx="4" class="c-mask"/>
+          <text x="637.5" y="211" class="t-backend" font-size="8" text-anchor="middle">query string</text>
+        <text data-detail="fine" x="637.5" y="222" class="t-dim" font-size="7" text-anchor="middle">natural language</text>
+        </g>
+        <g data-detail="context" data-edge-from="courses" data-edge-to="doc" data-edge-label="one record per course" data-edge-key="3" data-edge-id="courses-doc">
+          <rect x="150.05" y="306" width="114.9" height="27" rx="4" class="c-mask"/>
+          <text x="207.5" y="317" class="t-muted" font-size="8" text-anchor="middle">one record per course</text>
+        <text data-detail="fine" x="207.5" y="328" class="t-dim" font-size="7" text-anchor="middle">the chunk unit</text>
+        </g>
+        <g data-detail="context" data-edge-from="doc" data-edge-to="embed" data-edge-label="flattened page_content" data-edge-key="4" data-edge-id="doc-embed">
+          <rect x="362.6" y="306" width="119.8" height="27" rx="4" class="c-mask"/>
+          <text x="422.5" y="317" class="t-muted" font-size="8" text-anchor="middle">flattened page_content</text>
+        <text data-detail="fine" x="422.5" y="328" class="t-dim" font-size="7" text-anchor="middle">title, themes, POIs</text>
+        </g>
+        <g data-detail="context" data-edge-from="embed" data-edge-to="faiss" data-edge-label="one vector per course" data-edge-key="5" data-edge-id="embed-faiss">
+          <rect x="580.05" y="306" width="114.9" height="27" rx="4" class="c-mask"/>
+          <text x="637.5" y="317" class="t-backend" font-size="8" text-anchor="middle">one vector per course</text>
+        <text data-detail="fine" x="637.5" y="328" class="t-dim" font-size="7" text-anchor="middle">offline build</text>
+        </g>
+        <g data-detail="context" data-edge-from="faiss" data-edge-to="search" data-edge-label="nearest neighbours" data-edge-key="6" data-edge-id="faiss-search">
+          <rect x="694.9" y="260" width="100.2" height="27" rx="4" class="c-mask"/>
+          <text x="745" y="271" class="t-backend" font-size="8" text-anchor="middle">nearest neighbours</text>
+        <text data-detail="fine" x="745" y="282" class="t-dim" font-size="7" text-anchor="middle">k x 3 docs</text>
+        </g>
+        <g data-detail="context" data-edge-from="search" data-edge-to="rerank" data-edge-label="deduped by course_id" data-edge-key="7" data-edge-id="search-rerank">
+          <rect x="797.5" y="200" width="110" height="27" rx="4" class="c-mask"/>
+          <text x="852.5" y="211" class="t-muted" font-size="8" text-anchor="middle">deduped by course_id</text>
+        <text data-detail="fine" x="852.5" y="222" class="t-dim" font-size="7" text-anchor="middle">vector rank kept</text>
+        </g>
+        <g data-detail="context" data-edge-from="rerank" data-edge-to="anchors" data-edge-label="in-area courses first" data-edge-key="8" data-edge-id="rerank-anchors">
+          <rect x="902.55" y="260" width="114.9" height="27" rx="4" class="c-mask"/>
+          <text x="960" y="271" class="t-backend" font-size="8" text-anchor="middle">in-area courses first</text>
+        <text data-detail="fine" x="960" y="282" class="t-dim" font-size="7" text-anchor="middle">top k</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="444" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="464" data-legend-width="103">
+            <path d="M 40 461 L 74 461" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="464" class="t-muted" font-size="10" font-weight="500">primary data</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="data store" data-legend-x="165" data-legend-baseline="464" data-legend-width="93">
+            <rect x="165" y="456" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="187" y="464" class="t-muted" font-size="10" font-weight="500">data store</text>
+          </g>
+          <g data-legend-semantic-kind="default" data-legend-x="280" data-legend-baseline="464" data-legend-width="88">
+            <path d="M 280 461 L 314 461" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="323" y="464" class="t-muted" font-size="10" font-weight="500">data flow</text>
+          </g>
+        </g>
+      </svg></div>
+    </div>
+    <p class="frame-note"><span>Lower lane: offline index build</span><span>·</span><span>Upper lane: per-request retrieval</span></p>
+
+    <h3 class="sub">Chunking</h3>
+    <p class="body-col">
+      There is no token-window splitter and no overlap. The retrieval unit is one editorially curated
+      Seoul course, and it is never cut smaller.
+    </p>
+    <dl class="spec">
+      <div class="row"><dt>_course_to_text</dt><dd>Flattens a course into one searchable string: <code>Title</code>, <code>Source</code>, <code>Themes</code>, then one line per stop as <code>- (type) name — address</code>. That string, whole, is the embedded <code>page_content</code>.</dd></div>
+      <div class="row"><dt>_course_to_document</dt><dd>Wraps it as a LangChain <code>Document</code> and attaches <code>course_id</code>, <code>source</code>, <code>source_url</code>, <code>course_title</code>, <code>themes</code>, <code>poi_count</code>, <code>total_estimated_minutes</code> — and the entire raw course dict.</dd></div>
+      <div class="row"><dt>Why it matters</dt><dd>Because the whole record rides in the metadata, a hit returns the full structured course with its stop sequence and coordinates, not a text snippet the planner would have to re-parse.</dd></div>
+    </dl>
+
+    <h3 class="sub">Building the index</h3>
+    <dl class="spec">
+      <div class="row"><dt>Model</dt><dd><code>gemini-embedding-001</code> through <code>GoogleGenerativeAIEmbeddings</code>.</dd></div>
+      <div class="row"><dt>Batching</dt><dd>50 documents per call, then <code>sleep(60)</code> before the next batch — sized for the free-tier rate limit, not for throughput.</dd></div>
+      <div class="row"><dt>Backoff</dt><dd>Up to 5 attempts. On a 429 the server's own <code>retry_delay</code> is parsed out of the error text and slept for, plus one second; if it isn't there, 60 seconds. Anything that isn't a quota error re-raises immediately.</dd></div>
+      <div class="row"><dt>Persistence</dt><dd><code>FAISS.from_embeddings</code> then <code>save_local</code> → <code>vectorstore/index.faiss</code> and <code>index.pkl</code>. Reloaded with <code>allow_dangerous_deserialization=True</code> and held as a module singleton keyed on the API key, so it is read from disk once per process.</dd></div>
+    </dl>
+
+    <h3 class="sub">Turning a trip into queries</h3>
+    <dl class="spec">
+      <div class="row"><dt>Day count</dt><dd>Tried in order: <code>N week</code> × 7 → <code>N days</code> or <code>N일</code> → <code>N nights</code> or <code>N박</code> → an inclusive date-range span → a lone calendar date, which is one day → a bare number, but only if it falls between 1 and 30. The order is what stops “June 23” from becoming a 23-day trip.</dd></div>
+      <div class="row"><dt>Date ranges</dt><dd>ISO pairs are matched before any dash-splitting, so <code>2026-06-23</code> is never torn into 2026 and 23. Month-name and bare day ranges fall through to <code>dateutil</code>, which carries the start month onto a bare end day; a negative span is read as crossing into the next month. Spans outside 1–60 days are rejected.</dd></div>
+      <div class="row"><dt>Areas</dt><dd><code>extract_requested_areas</code> reads both the location and the purpose text, so an area named only in “K-pop spots in Hongdae” is still found.</dd></div>
+      <div class="row"><dt>Purpose per area</dt><dd><code>_split_purpose_by_area</code> splits the purpose on <em>and</em>, <em>then</em>, commas and semicolons, then attaches each clause to the area whose alias appears inside it. An area no clause mentions inherits the whole purpose string.</dd></div>
+      <div class="row"><dt>Day allocation</dt><dd>Days are dealt out evenly across areas, and the last area absorbs the remainder, so every day belongs to exactly one segment.</dd></div>
+    </dl>
+
+    <h3 class="sub">Breadth, and the re-rank</h3>
+    <dl class="spec">
+      <div class="row"><dt>k per segment</dt><dd><code>max(2, min(6, days + 1))</code>. A five-day area asks for six anchor courses; a one-day area asks for two. A fixed k starved long segments into heavy Google padding and over-fetched short ones.</dd></div>
+      <div class="row"><dt>Query string</dt><dd><code>"{area label} {purpose hint} Seoul travel itinerary"</code>, built fresh per segment.</dd></div>
+      <div class="row"><dt>Over-fetch</dt><dd><code>similarity_search(query, k = k × 3)</code>. The extra two thirds exist purely so the re-rank has something to demote.</dd></div>
+      <div class="row"><dt>Dedupe</dt><dd>Candidates are collapsed on <code>course_id</code> with vector rank preserved, both within a segment and again across segments when the flat <code>retrieved_courses</code> list is assembled.</dd></div>
+      <div class="row"><dt>Re-rank</dt><dd>A stable partition, not a re-score: courses with at least one stop in the requested area sort ahead of those without, and vector order survives inside each group. A strong theme word like “K-pop” can otherwise float an off-neighbourhood course to the top.</dd></div>
+      <div class="row"><dt>Area matching</dt><dd>An exact name match, or one of the walkably adjacent sets — Hongdae with Hapjeong, Mangwon, Yeonnam and Mapo; Seongsu with Wangsimni; Gangnam with Sinsa and Garosu-gil; Jongno with Insadong and Myeongdong. With no name to go on, the nearest area centre within 3.2 km wins.</dd></div>
+    </dl>
+
+    <h3 class="sub">Filling the gaps with Google Places</h3>
+    <p class="body-col">
+      Curated courses carry sights, not meals. The supplement runs per requested area and is
+      deliberately conditional — most branches only fire if the traveller's stated purpose asks for them.
+    </p>
+    <dl class="spec">
+      <div class="row"><dt>Restaurants</dt><dd>Always. Nearby Search, <code>type=restaurant</code>, 1800 m, rating ≥ 4.0, at most 5. Under three hits, a Text Search for <code>"popular restaurants in {area} Seoul"</code> at 2500 m tops it up.</dd></div>
+      <div class="row"><dt>Cafés</dt><dd>Only when the purpose mentions cafe, coffee, relax or 카페. 1800 m, rating ≥ 4.1 — a notch above the restaurant bar.</dd></div>
+      <div class="row"><dt>K-POP</dt><dd>Only on kpop, k-pop, bts, blackpink, idol or 아이돌.</dd></div>
+      <div class="row"><dt>Shopping</dt><dd>Only on shopping, shop, fashion or 쇼핑. <code>type=shopping_mall</code>, 2200 m, at most 3.</dd></div>
+      <div class="row"><dt>Long tail</dt><dd>Anything else — K-beauty, art, nature, nightlife — gets one Text Search for the purpose itself. Because Text Search treats radius as a bias rather than a filter, every hit's true area is re-derived from its coordinates and dropped unless it lands in or beside the requested area. Without that, an off-neighbourhood result would inflate the coverage score.</dd></div>
+      <div class="row"><dt>Stay times</dt><dd>Stamped by type, since Places doesn't supply them: café 45 minutes, restaurant 60, shopping mall 75, everything else 60.</dd></div>
+      <div class="row"><dt>Dedupe</dt><dd>Normalised name plus latitude and longitude rounded to four decimals — roughly 11 metres — so the same place found by two searches collapses into one.</dd></div>
+    </dl>
+  </section>
+
+  <section id="generation">
+    <div class="sec-head">
+      <p class="eyebrow">View three · after the model replies</p>
+      <h2>Parsing, repair and scoring</h2>
+      <p class="lede">
+        Everything between Gemini's reply and the itinerary the app receives is deterministic. The
+        model gets one chance to fix its own JSON and no say at all in what happens next.
+      </p>
+    </div>
+
+    <h3 class="sub">Getting to valid JSON</h3>
+    <dl class="spec">
+      <div class="row"><dt>1 · Isolate</dt><dd>Strip markdown fences, then keep everything between the first <code>{</code> and the last <code>}</code>. Parse.</dd></div>
+      <div class="row"><dt>2 · Repair</dt><dd>Normalise smart quotes to straight ones, drop trailing commas before <code>}</code> or <code>]</code>. Parse again.</dd></div>
+      <div class="row"><dt>3 · Ask the model</dt><dd>Only now: hand the first 8000 characters back with the parser's error and ask for the corrected object. If that fails too, the raw reply is written to <code>planner_last_failed.txt</code> and the error propagates.</dd></div>
+    </dl>
+
+    <h3 class="sub">The six validation passes</h3>
+    <p class="body-col">
+      These run against the candidate pool — the retrieved courses plus the Google supplement — and
+      are the reason a hallucinated stop cannot reach the app.
+    </p>
+    <div class="passes">
+      <div class="pass"><span class="pn">0</span><p><b>Pad and cap the days.</b> Missing day numbers are added as empty days. If the planner over-produced — 22 days for a two-day trip is a real case — the extras are cut and their stops folded back round-robin into the days that remain, then renumbered contiguously. Nothing is dropped.</p></div>
+      <div class="pass"><span class="pn">1</span><p><b>Delete hallucinations.</b> Any stop whose normalised name is absent from the pool is removed and logged. Survivors are rewritten from the canonical record, keeping only the model's <code>notes</code>.</p></div>
+      <div class="pass"><span class="pn">2</span><p><b>Force area coverage.</b> Every requested area must appear at least twice. Short areas get candidates inserted into the day that maps to them.</p></div>
+      <div class="pass"><span class="pn">3</span><p><b>Guarantee a meal.</b> A day with no restaurant or café gets one inserted at position <code>min(2, len)</code> — around midday rather than tacked onto the end.</p></div>
+      <div class="pass"><span class="pn">4</span><p><b>Fill thin days.</b> Days are topped up to five stops from the same area, then from anywhere that doesn't belong to a different requested area.</p></div>
+      <div class="pass"><span class="pn">5</span><p><b>Name the day.</b> A theme still reading as a bare <code>Day N</code> is replaced with a generated one. Titles the model wrote are never overwritten.</p></div>
+      <div class="pass"><span class="pn">6</span><p><b>Attach transit.</b> Haversine distance between consecutive stops, walking at 4 km/h, driving at 30 km/h, plus a Kakao Map deep link per leg.</p></div>
+    </div>
+
+    <h3 class="sub">How the critic scores</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Component</th><th class="num">Weight</th><th>Computed as</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Day feasibility</td><td class="num">0.35</td>
+            <td>1 − penalties ÷ days. Per day: −0.35 under five stops, −0.25 with no meal, −0.20 when the two furthest stops are more than 8 km apart.</td>
+          </tr>
+          <tr>
+            <td>Area coverage</td><td class="num">0.35</td>
+            <td>Areas holding at least two stops, divided by areas asked for.</td>
+          </tr>
+          <tr>
+            <td>Duplicates</td><td class="num">0.15</td>
+            <td>0.85 if any stop repeats across the trip, otherwise 1.00.</td>
+          </tr>
+          <tr>
+            <td>Foreigner readiness</td><td class="num">0.15</td>
+            <td>1 − ratio × 0.5, where a stop counts as risky with no English support, cash only, or cultural friction, and a low-confidence label adds 0.25. Flagged as an issue once the ratio reaches 0.4.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="body-col small">
+      The repairer then re-covers thin areas, inserts missing meals, tops up under-filled days and
+      strips duplicates, after which the critic runs again on the patched itinerary. Both scores and
+      the repair log ship inside <code>itinerary.critic_report</code>.
+    </p>
+  </section>
+
+  <section id="architecture">
+    <div class="sec-head">
+      <p class="eyebrow">View four · the parts</p>
+      <h2>The architecture behind that path</h2>
+      <p class="lede">
+        The same pipeline seen as components rather than as a sequence. Four of them sit inside one
+        LangGraph state machine; the rest are the surfaces and services around it.
+      </p>
+    </div>
+
+    <div class="dg-frame">
+      <div class="dg"><svg viewBox="0 0 1080 600" role="img" lang="en"  data-preset="classic" data-quality-profile="showcase">
+        <title id="archify-diagram-title">SeoulFit Backend Architecture</title>
+        <desc id="archify-diagram-description">An architecture diagram generated by Archify.</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Boundaries (behind everything) -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="LangGraph StateGraph — checkpointed per thread_id" x="410" y="130" width="260" height="460" rx="12" class="c-region" stroke-width="1"/>
+
+        <!-- Connection paths (before components for correct z-order) -->
+        <path data-edge-from="app" data-edge-to="api" data-edge-label="REST /chat, /events, /trip" data-edge-key="0" data-edge-id="app-api" data-composition-points="260,60;440,60" d="M 260 60 L 440 60" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="api" data-edge-to="rail" data-edge-label="check input" data-edge-key="1" data-edge-id="api-rail" data-composition-points="640,67;820,67" d="M 640 67 L 820 67" class="a-security" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="api" data-edge-to="side" data-edge-label="mounted routers" data-edge-key="2" data-edge-id="api-side" data-composition-points="440,74;350,74;350,187;260,187" d="M 440 74 L 358 74 Q 350 74 350 82 L 350 179 Q 350 187 342 187 L 260 187" class="a-dashed" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="api" data-edge-to="agent" data-edge-label="invoke(thread_id)" data-edge-key="3" data-edge-id="api-agent" data-composition-points="540,94;540,160" d="M 540 94 L 540 160" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="agent" data-edge-to="gemini" data-edge-label="slot + intent extraction" data-edge-key="4" data-edge-id="agent-gemini" data-composition-points="440,187;350,187;350,360;260,360" d="M 440 187 L 358 187 Q 350 187 350 195 L 350 352 Q 350 360 342 360 L 260 360" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="agent" data-edge-to="rag" data-edge-label="confirmed trip slots" data-edge-key="5" data-edge-id="agent-rag" data-composition-points="540,214;540,280" d="M 540 214 L 540 280" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="rag" data-edge-to="faiss" data-edge-label="per-segment search" data-edge-key="6" data-edge-id="rag-faiss" data-composition-points="640,307;820,307" d="M 640 307 L 820 307" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="rag" data-edge-to="planner" data-edge-label="top-k anchor courses" data-edge-key="7" data-edge-id="rag-planner" data-composition-points="540,334;540,400" d="M 540 334 L 540 400" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="planner" data-edge-to="gemini" data-edge-label="itinerary draft" data-edge-key="8" data-edge-id="planner-gemini" data-composition-points="440,427;350,427;350,374;260,374" d="M 440 427 L 358 427 Q 350 427 350 419 L 350 382 Q 350 374 342 374 L 260 374" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="planner" data-edge-to="places" data-edge-label="gap fill per area" data-edge-key="9" data-edge-id="planner-places" data-composition-points="640,427;820,427" d="M 640 427 L 820 427" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="planner" data-edge-to="critic" data-edge-label="draft itinerary" data-edge-key="10" data-edge-id="planner-critic" data-composition-points="540,454;540,516" d="M 540 454 L 540 516" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+
+        <!-- Components -->
+        <g id="node-app" data-node-id="app" data-node-label="Flutter App" tabindex="0" role="button" aria-label="Focus Flutter App, SeoulFit client, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="SeoulFit client" data-node-context="Architecture component">
+          <title>Flutter App · SeoulFit client · Architecture component</title>
+          <rect x="60" y="40" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="60" y="40" width="200" height="54" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(66 46) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="160" y="65" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Flutter App</text>
+        <text data-detail="context" x="160" y="81" class="t-muted" font-size="9" text-anchor="middle">SeoulFit client</text>
+        </g>
+
+        <g id="node-side" data-node-id="side" data-node-label="Lens + Live Help" tabindex="0" role="button" aria-label="Focus Lens + Live Help, lens.py, live_help.py, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="lens.py, live_help.py" data-node-tag="TourAPI, E-Gen, ODsay" data-node-context="Architecture component">
+          <title>Lens + Live Help · lens.py, live_help.py · Architecture component · TourAPI, E-Gen, ODsay</title>
+          <rect x="60" y="160" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="60" y="160" width="200" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(66 166) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="160" y="185" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Lens + Live Help</text>
+        <text data-detail="context" x="160" y="201" class="t-muted" font-size="9" text-anchor="middle">lens.py, live_help.py</text>
+        <text data-detail="fine" x="160" y="206" class="t-backend" font-size="7" text-anchor="middle">TourAPI, E-Gen, ODsay</text>
+        </g>
+
+        <g id="node-gemini" data-node-id="gemini" data-node-label="Gemini" tabindex="0" role="button" aria-label="Focus Gemini, 2.5 Flash, JSON mode, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="2.5 Flash, JSON mode" data-node-context="Architecture component">
+          <title>Gemini · 2.5 Flash, JSON mode · Architecture component</title>
+          <rect x="60" y="340" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="60" y="340" width="200" height="54" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(66 346) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="160" y="365" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Gemini</text>
+        <text data-detail="context" x="160" y="381" class="t-muted" font-size="9" text-anchor="middle">2.5 Flash, JSON mode</text>
+        </g>
+
+        <g id="node-api" data-node-id="api" data-node-label="FastAPI" tabindex="0" role="button" aria-label="Focus FastAPI, api.py, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="api.py" data-node-tag="SQLite check-ins" data-node-context="Architecture component">
+          <title>FastAPI · api.py · Architecture component · SQLite check-ins</title>
+          <rect x="440" y="40" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="440" y="40" width="200" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(446 46) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="540" y="65" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">FastAPI</text>
+        <text data-detail="context" x="540" y="81" class="t-muted" font-size="9" text-anchor="middle">api.py</text>
+        <text data-detail="fine" x="540" y="86" class="t-backend" font-size="7" text-anchor="middle">SQLite check-ins</text>
+        </g>
+
+        <g id="node-agent" data-node-id="agent" data-node-label="LangGraph" tabindex="0" role="button" aria-label="Focus LangGraph, graph.py, LangGraph StateGraph — checkpointed per thread_id" aria-pressed="false" data-node-kind="backend" data-node-sublabel="graph.py" data-node-tag="MemorySaver" data-node-context="LangGraph StateGraph — checkpointed per thread_id">
+          <title>LangGraph · graph.py · LangGraph StateGraph — checkpointed per thread_id · MemorySaver</title>
+          <rect x="440" y="160" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="440" y="160" width="200" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(446 166) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="540" y="185" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">LangGraph</text>
+        <text data-detail="context" x="540" y="201" class="t-muted" font-size="9" text-anchor="middle">graph.py</text>
+        <text data-detail="fine" x="540" y="206" class="t-backend" font-size="7" text-anchor="middle">MemorySaver</text>
+        </g>
+
+        <g id="node-rag" data-node-id="rag" data-node-label="Retrieval" tabindex="0" role="button" aria-label="Focus Retrieval, rag.py, LangGraph StateGraph — checkpointed per thread_id" aria-pressed="false" data-node-kind="backend" data-node-sublabel="rag.py" data-node-context="LangGraph StateGraph — checkpointed per thread_id">
+          <title>Retrieval · rag.py · LangGraph StateGraph — checkpointed per thread_id</title>
+          <rect x="440" y="280" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="440" y="280" width="200" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(446 286) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="540" y="305" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Retrieval</text>
+        <text data-detail="context" x="540" y="321" class="t-muted" font-size="9" text-anchor="middle">rag.py</text>
+        </g>
+
+        <g id="node-planner" data-node-id="planner" data-node-label="Planner" tabindex="0" role="button" aria-label="Focus Planner, planner.py, LangGraph StateGraph — checkpointed per thread_id" aria-pressed="false" data-node-kind="backend" data-node-sublabel="planner.py" data-node-context="LangGraph StateGraph — checkpointed per thread_id">
+          <title>Planner · planner.py · LangGraph StateGraph — checkpointed per thread_id</title>
+          <rect x="440" y="400" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="440" y="400" width="200" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(446 406) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="540" y="425" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Planner</text>
+        <text data-detail="context" x="540" y="441" class="t-muted" font-size="9" text-anchor="middle">planner.py</text>
+        </g>
+
+        <g id="node-critic" data-node-id="critic" data-node-label="Critic + Repair" tabindex="0" role="button" aria-label="Focus Critic + Repair, critic_repair.py, LangGraph StateGraph — checkpointed per thread_id" aria-pressed="false" data-node-kind="backend" data-node-sublabel="critic_repair.py" data-node-context="LangGraph StateGraph — checkpointed per thread_id">
+          <title>Critic + Repair · critic_repair.py · LangGraph StateGraph — checkpointed per thread_id</title>
+          <rect x="440" y="516" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="440" y="516" width="200" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(446 522) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="540" y="541" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Critic + Repair</text>
+        <text data-detail="context" x="540" y="557" class="t-muted" font-size="9" text-anchor="middle">critic_repair.py</text>
+        </g>
+
+        <g id="node-rail" data-node-id="rail" data-node-label="NeMo Rail" tabindex="0" role="button" aria-label="Focus NeMo Rail, guardrail_gate.py, Architecture component" aria-pressed="false" data-node-kind="security" data-node-sublabel="guardrail_gate.py" data-node-context="Architecture component">
+          <title>NeMo Rail · guardrail_gate.py · Architecture component</title>
+          <rect x="820" y="40" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="820" y="40" width="200" height="54" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(826 46) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="920" y="65" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">NeMo Rail</text>
+        <text data-detail="context" x="920" y="81" class="t-muted" font-size="9" text-anchor="middle">guardrail_gate.py</text>
+        </g>
+
+        <g id="node-faiss" data-node-id="faiss" data-node-label="FAISS Index A" tabindex="0" role="button" aria-label="Focus FAISS Index A, course_data_v4, Architecture component" aria-pressed="false" data-node-kind="database" data-node-sublabel="course_data_v4" data-node-context="Architecture component">
+          <title>FAISS Index A · course_data_v4 · Architecture component</title>
+          <rect x="820" y="280" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="820" y="280" width="200" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(826 286) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="920" y="305" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">FAISS Index A</text>
+        <text data-detail="context" x="920" y="321" class="t-muted" font-size="9" text-anchor="middle">course_data_v4</text>
+        </g>
+
+        <g id="node-places" data-node-id="places" data-node-label="Google Places" tabindex="0" role="button" aria-label="Focus Google Places, gap supplements, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="gap supplements" data-node-context="Architecture component">
+          <title>Google Places · gap supplements · Architecture component</title>
+          <rect x="820" y="400" width="200" height="54" rx="6" class="c-mask"/>
+          <rect x="820" y="400" width="200" height="54" rx="6" class="c-external" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(826 406) scale(0.6875)">
+            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
+            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="920" y="425" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Google Places</text>
+        <text data-detail="context" x="920" y="441" class="t-muted" font-size="9" text-anchor="middle">gap supplements</text>
+        </g>
+
+        <!-- Connection labels -->
+        <g data-detail="context" data-edge-from="app" data-edge-to="api" data-edge-label="REST /chat, /events, /trip" data-edge-key="0" data-edge-id="app-api">
+          <rect x="282.6" y="40" width="134.8" height="14" rx="3" class="c-mask"/>
+          <text x="350" y="50" class="t-backend" font-size="8" text-anchor="middle">REST /chat, /events, /trip</text>
+        </g>
+        <g data-detail="context" data-edge-from="api" data-edge-to="rail" data-edge-label="check input" data-edge-key="1" data-edge-id="api-rail">
+          <rect x="698.6" y="47" width="62.8" height="14" rx="3" class="c-mask"/>
+          <text x="730" y="57" class="t-security" font-size="8" text-anchor="middle">check input</text>
+        </g>
+        <g data-detail="context" data-edge-from="api" data-edge-to="side" data-edge-label="mounted routers" data-edge-key="2" data-edge-id="api-side">
+          <rect x="309" y="110.5" width="82" height="14" rx="3" class="c-mask"/>
+          <text x="350" y="120.5" class="t-messagebus" font-size="8" text-anchor="middle">mounted routers</text>
+        </g>
+        <g data-detail="context" data-edge-from="api" data-edge-to="agent" data-edge-label="invoke(thread_id)" data-edge-key="3" data-edge-id="api-agent">
+          <rect x="494.2" y="117" width="91.6" height="14" rx="3" class="c-mask"/>
+          <text x="540" y="127" class="t-backend" font-size="8" text-anchor="middle">invoke(thread_id)</text>
+        </g>
+        <g data-detail="context" data-edge-from="agent" data-edge-to="gemini" data-edge-label="slot + intent extraction" data-edge-key="4" data-edge-id="agent-gemini">
+          <rect x="287.4" y="253.5" width="125.19999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="350" y="263.5" class="t-muted" font-size="8" text-anchor="middle">slot + intent extraction</text>
+        </g>
+        <g data-detail="context" data-edge-from="agent" data-edge-to="rag" data-edge-label="confirmed trip slots" data-edge-key="5" data-edge-id="agent-rag">
+          <rect x="487" y="237" width="106" height="14" rx="3" class="c-mask"/>
+          <text x="540" y="247" class="t-backend" font-size="8" text-anchor="middle">confirmed trip slots</text>
+        </g>
+        <g data-detail="context" data-edge-from="rag" data-edge-to="faiss" data-edge-label="per-segment search" data-edge-key="6" data-edge-id="rag-faiss">
+          <rect x="681.8" y="287" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="730" y="297" class="t-backend" font-size="8" text-anchor="middle">per-segment search</text>
+        </g>
+        <g data-detail="context" data-edge-from="rag" data-edge-to="planner" data-edge-label="top-k anchor courses" data-edge-key="7" data-edge-id="rag-planner">
+          <rect x="487" y="357" width="106" height="14" rx="3" class="c-mask"/>
+          <text x="540" y="367" class="t-backend" font-size="8" text-anchor="middle">top-k anchor courses</text>
+        </g>
+        <g data-detail="context" data-edge-from="planner" data-edge-to="gemini" data-edge-label="itinerary draft" data-edge-key="8" data-edge-id="planner-gemini">
+          <rect x="309" y="380.5" width="82" height="14" rx="3" class="c-mask"/>
+          <text x="350" y="390.5" class="t-backend" font-size="8" text-anchor="middle">itinerary draft</text>
+        </g>
+        <g data-detail="context" data-edge-from="planner" data-edge-to="places" data-edge-label="gap fill per area" data-edge-key="9" data-edge-id="planner-places">
+          <rect x="684.2" y="407" width="91.6" height="14" rx="3" class="c-mask"/>
+          <text x="730" y="417" class="t-muted" font-size="8" text-anchor="middle">gap fill per area</text>
+        </g>
+        <g data-detail="context" data-edge-from="planner" data-edge-to="critic" data-edge-label="draft itinerary" data-edge-key="10" data-edge-id="planner-critic">
+          <rect x="499" y="475" width="82" height="14" rx="3" class="c-mask"/>
+          <text x="540" y="485" class="t-backend" font-size="8" text-anchor="middle">draft itinerary</text>
+        </g>
+
+        <!-- Boundary labels (foreground masks keep routes out of titles) -->
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="LangGraph StateGraph — checkpointed per thread_id">
+          <rect data-graph-role="structural-frame-label-mask" x="414" y="140" width="252" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="418" y="152.2312925170068" class="t-cloud" font-size="8.231292517006803" font-weight="600">LangGraph StateGraph — checkpointed per thread_id</text>
+        </g>
+
+        <!-- Legend -->
+
+      </svg></div>
+    </div>
+    <p class="frame-note"><span>The dashed enclosure is the StateGraph — everything inside it shares one checkpointed <code>TravelState</code></span></p>
+
+    <div class="legend">
+      <div class="leg">
+        <div class="leg-key"><span class="swatch" style="background:var(--dg-frontend-fill);border-color:var(--dg-frontend-stroke)"></span><span class="leg-name">Client</span></div>
+        <p>The Flutter app. Talks to one FastAPI process over REST.</p>
+      </div>
+      <div class="leg">
+        <div class="leg-key"><span class="swatch" style="background:var(--dg-backend-fill);border-color:var(--dg-backend-stroke)"></span><span class="leg-name">Python modules</span></div>
+        <p>API, agent, retrieval, planner, critic — plus the Lens and Live Help routers.</p>
+      </div>
+      <div class="leg">
+        <div class="leg-key"><span class="swatch" style="background:var(--dg-database-fill);border-color:var(--dg-database-stroke)"></span><span class="leg-name">Local index</span></div>
+        <p>A FAISS store over the curated course dataset, built ahead of time.</p>
+      </div>
+      <div class="leg">
+        <div class="leg-key"><span class="swatch" style="background:var(--dg-cloud-fill);border-color:var(--dg-cloud-stroke)"></span><span class="leg-name">Model</span></div>
+        <p>Gemini, used three ways: slot extraction, embeddings, itinerary drafting.</p>
+      </div>
+      <div class="leg">
+        <div class="leg-key"><span class="swatch" style="background:var(--dg-security-fill);border-color:var(--dg-security-stroke)"></span><span class="leg-name">Gate</span></div>
+        <p>The NeMo input rail. The only thing that can stop a message reaching the planner.</p>
+      </div>
+      <div class="leg">
+        <div class="leg-key"><span class="swatch" style="background:var(--dg-external-fill);border-color:var(--dg-external-stroke)"></span><span class="leg-name">Third party</span></div>
+        <p>Google Places for the planner; TourAPI, E-Gen and ODsay behind Live Help.</p>
+      </div>
+    </div>
+
+    <p class="caveat">
+      <b>Two simplifications on this drawing.</b> The public APIs behind Live Help are named on that
+      component rather than drawn as separate boxes, and the SQLite file that holds trip check-ins is a
+      tag on FastAPI rather than its own node. Both were folded in to keep the one request path legible.
+    </p>
+  </section>
+
+  <footer>
+    <span>Drawn from the code, not from memory</span>
+    <span>·</span>
+    <span>Specs: docs/diagrams/*.json</span>
+    <span>·</span>
+    <span>Rendered with archify 2.16 · showcase profile</span>
+  </footer>
+</div>

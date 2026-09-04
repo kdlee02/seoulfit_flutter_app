@@ -44,6 +44,20 @@ def test_unicode_survives(db):
     assert load_checkin("trip-c", db_path=db)["days"] == days
 
 
+def test_other_device_cannot_overwrite(db):
+    """trip_id comes from an unauthenticated client, so a second device
+    reusing someone's trip_id must be refused, not silently applied."""
+    assert save_checkin("trip-e", "dev-1", ITIN, DAYS, db_path=db) is True
+    hijack = {"1": {"visited": ["ATTACKER"], "misses": {}}}
+    assert save_checkin("trip-e", "dev-2", ITIN, hijack, db_path=db) is False
+    row = load_checkin("trip-e", db_path=db)
+    assert row["device_id"] == "dev-1", "owner must not change"
+    assert row["days"] == DAYS, "attacker payload must not be stored"
+    # The real owner can still update its own row.
+    assert save_checkin("trip-e", "dev-1", ITIN, hijack, db_path=db) is True
+    assert load_checkin("trip-e", db_path=db)["days"] == hijack
+
+
 def test_bad_path_returns_false_not_raises():
     ok = save_checkin("trip-d", "dev-1", ITIN, DAYS, db_path="/nonexistent-dir/x.db")
     assert ok is False, "storage failure must be reported, not raised"
@@ -56,5 +70,6 @@ if __name__ == "__main__":
         test_upsert_replaces_not_duplicates(db)
         test_missing_trip_is_none(db)
         test_unicode_survives(db)
+        test_other_device_cannot_overwrite(db)
         test_bad_path_returns_false_not_raises()
     print("checkin_store: all checks passed")
