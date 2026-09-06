@@ -304,6 +304,10 @@ def candidate_from_course_poi(raw: dict[str, Any]) -> dict[str, Any]:
         # Station") — 방문지가 아니라 이동 마커일 뿐이라 is_generic_activity와
         # 같은 방식으로 후보 풀에서 제외한다.
         "is_transit_marker": bool(raw.get("is_transit_marker")),
+        # 이름 표기가 모호해 수동 검토가 필요한 POI(예: "예술의전당" 관련
+        # 여러 동명/유사명 항목) — 어느 실제 장소를 가리키는지 확정 못한
+        # 상태라 위 둘과 같은 방식으로 후보 풀에서 제외한다.
+        "requires_review": bool(raw.get("requires_review")),
         "rating": raw.get("rating"),
         "opening_hours": opening_hours,
         # course_data_v6: Google Places Legacy Place Details로 얻은 정기 휴무
@@ -371,6 +375,11 @@ def build_candidate_pool(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
             if item.get("is_transit_marker"):
                 # 코스 시작/끝에 찍힌 순수 지하철역명(예: "Anguk Station") — 방문
                 # 목적지가 아니라 이동 마커일 뿐이라 같은 이유로 제외한다.
+                continue
+            if item.get("requires_review"):
+                # 이름 표기가 모호해 수동 검토가 필요한 POI(예: 예술의전당 계열
+                # 명칭 중복) — 어느 실제 장소인지 확정되기 전까지 같은 이유로
+                # 후보 풀에서 제외한다.
                 continue
             key = normalize_text(item.get("name"))
             if key:
