@@ -330,6 +330,7 @@ def fill_meal_slot(
         )
         return {
             "name": best.get("name"),
+            "type": "restaurant",
             "lat": best.get("lat"),
             "lng": best.get("lon"),
             "address": best.get("street"),
@@ -361,6 +362,7 @@ def fill_meal_slot(
         best_google = max(google_results, key=lambda g: g.get("rating") or 0)
         return {
             "name": best_google.get("poi_name"),
+            "type": "restaurant",
             "lat": best_google.get("lat"),
             "lng": best_google.get("lng"),
             "address": best_google.get("address_en"),
