@@ -81,7 +81,7 @@ class TravelProvider extends ChangeNotifier {
     try {
       recomputedLegs = await _api.fetchTransitLegs(selectedStops);
     } catch (_) {
-      recomputedLegs = null; // leave null → screen uses fallback
+      recomputedLegs = null; // leave null → recomputedLegBetween() finds nothing, screen falls back to legBetween()/haversine
     } finally {
       legsLoading = false;
       notifyListeners();
@@ -132,6 +132,21 @@ class TravelProvider extends ChangeNotifier {
           return day.transitLegs[i];
         }
       }
+    }
+    return null;
+  }
+
+  /// The real ODsay-backed leg [recomputedLegs] holds for (a, b), or null if
+  /// recomputedLegs hasn't loaded yet or doesn't cover this pair.
+  ///
+  /// Looked up by name, like [legBetween], not by position: recomputedLegs is
+  /// a flat list matching the full selection POST /transit-legs was called
+  /// with, but the route screen also filters that selection down to one day
+  /// at a time, so a hop's position within a single day's list never lines up
+  /// with its position in the flat recomputed list.
+  TransitLeg? recomputedLegBetween(Poi a, Poi b) {
+    for (final leg in recomputedLegs ?? const <TransitLeg>[]) {
+      if (leg.fromName == a.name && leg.toName == b.name) return leg;
     }
     return null;
   }

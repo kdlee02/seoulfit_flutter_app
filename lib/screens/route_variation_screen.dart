@@ -105,7 +105,10 @@ class _RouteVariationScreenState extends State<RouteVariationScreen> {
   }
 
   _Hop _hop(TravelProvider p, Poi a, Poi b) {
-    final leg = p.legBetween(a, b);
+    // Prefer the real ODsay-backed recompute for the current selection
+    // (User Selection swap/exclude changes land here); fall back to the
+    // original itinerary's leg, then to a local straight-line estimate.
+    final leg = p.recomputedLegBetween(a, b) ?? p.legBetween(a, b);
     var dist = leg?.distanceKm;
     var walk = leg?.walkMinutes;
     var car = leg?.carMinutes;
@@ -216,8 +219,12 @@ class _RouteVariationScreenState extends State<RouteVariationScreen> {
     final walkTotal = hops.fold<int>(0, (s, h) => s + (h.walkMin ?? 0));
     final dayCount = provider.itinerary?.days.length ?? 1;
 
-    // Transit legs: always use name-based lookup so day-filtered indices work.
+    // Transit legs: name-based lookup so day-filtered indices work, preferring
+    // the real ODsay recompute for the current selection over the original
+    // itinerary's leg (see recomputedLegBetween's doc for why this has to be
+    // name-based rather than positional).
     TransitLeg? transitFor(int i) =>
+        provider.recomputedLegBetween(dayStops[i], dayStops[i + 1]) ??
         provider.legBetween(dayStops[i], dayStops[i + 1]);
 
     // Synthetic itinerary for the map widget (selected day only).

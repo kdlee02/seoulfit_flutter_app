@@ -163,6 +163,15 @@ class TransitLeg {
   final String? kakaoCarUrl;
   final List<TransitOption> transitOptions;
 
+  /// POI names this leg connects. Backend always sends these (compute_transit_legs
+  /// sets from_name/to_name); needed so a *recomputed* leg list (POST /transit-legs,
+  /// flat and re-indexed for the current selection) can be matched back to a (a, b)
+  /// pair by identity — the same way TravelProvider.legBetween looks up legs from
+  /// the original itinerary — instead of by position, which breaks the moment the
+  /// selection is filtered to one day or edited.
+  final String? fromName;
+  final String? toName;
+
   const TransitLeg({
     this.distanceKm,
     this.walkMinutes,
@@ -170,6 +179,8 @@ class TransitLeg {
     this.kakaoWalkUrl,
     this.kakaoCarUrl,
     this.transitOptions = const [],
+    this.fromName,
+    this.toName,
   });
 
   factory TransitLeg.fromJson(Map<String, dynamic> json) => TransitLeg(
@@ -181,6 +192,8 @@ class TransitLeg {
         transitOptions: _asJsonList(json['transit_options'])
             .map(TransitOption.fromJson)
             .toList(),
+        fromName: json['from_name'] as String?,
+        toName: json['to_name'] as String?,
       );
 
   bool get hasAnyData =>
