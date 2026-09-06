@@ -1,5 +1,10 @@
-"""Self-check for the day-cap fold redesign (fixes the "17-42 POIs crammed
-into one day" bug) and pace-aware POI targets in planner.py/rag.py.
+"""Self-check for the day-cap fold redesign, the day-level pace-aware
+trim/fill bounds, and pace-aware POI targets in planner.py/rag.py. Together
+these fix the "17-42 POIs crammed into one day" bug: the fold spreads
+overflow across days when there's more than one day, and the trim step
+(added after the fold no longer has anywhere to redistribute to, e.g. a
+1-day trip) caps any single day at the pace's max instead of leaving
+everything the fold couldn't redistribute in place.
 
 Note: an earlier version of this fix added state["start_date"]/state["num_days"]
 fields end-to-end (state.py/graph.py/api.py). That was abandoned when
@@ -53,12 +58,26 @@ def test_parse_day_segments_override_bypasses_text_parsing():
     print("OK - parse_day_segments num_days override")
 
 
+def test_pace_bounds():
+    assert planner._pace_bounds({"pace": "relaxed"}) == (5, 6)
+    assert planner._pace_bounds({"pace": "packed"}) == (7, 8)
+    assert planner._pace_bounds({"pace": None}) == (6, 7)   # no pace on record -- middling default
+    assert planner._pace_bounds({}) == (6, 7)
+    assert planner._pace_bounds({"pace": "PACKED"}) == (7, 8)  # case-insensitive
+    print("OK - _pace_bounds")
+
+
 def test_pace_target_line():
-    assert "7-8" in planner._pace_target_line("packed")
-    assert "5-6" in planner._pace_target_line("relaxed")
-    assert planner._pace_target_line(None) == ""
-    assert planner._pace_target_line("") == ""
-    assert planner._pace_target_line("PACKED") != ""  # case-insensitive
+    # Single source of truth: the numbers in the prompt line must always
+    # match _pace_bounds exactly (that's the whole point of routing both
+    # through it) -- assert against _pace_bounds' own output, not literals.
+    lo, hi = planner._pace_bounds({"pace": "packed"})
+    assert f"{lo}-{hi}" in planner._pace_target_line({"pace": "packed"})
+    lo, hi = planner._pace_bounds({"pace": "relaxed"})
+    assert f"{lo}-{hi}" in planner._pace_target_line({"pace": "relaxed"})
+    assert planner._pace_target_line({"pace": None}) == ""
+    assert planner._pace_target_line({}) == ""
+    assert planner._pace_target_line({"pace": "PACKED"}) != ""  # case-insensitive
     print("OK - _pace_target_line")
 
 
@@ -111,6 +130,91 @@ def test_fold_least_filled_not_round_robin():
     all_names = {p["name"] for d in out_days for p in d["pois"]}
     assert all_names == set(pool_names), all_names - set(pool_names)
     print(f"OK - fold least-filled-first, final day sizes = {counts}")
+
+
+def _poi_typed(name: str, ptype: str, area: str) -> dict:
+    return {"name": name, "type": ptype, "address": "", "lat": 37.5, "lng": 127.0,
+            "stay_minutes": 60, "notes": "", "area": area}
+
+
+def _bloated_one_day_courses_and_itinerary():
+    """25 POIs spread across 5 fake LLM day-entries for what should be a
+    1-day trip -- the exact shape that used to survive the fold as one day
+    with 25 POIs (no upper cap existed before this trim step)."""
+    pool_names = [f"poi {i}" for i in range(25)]
+    types = ["restaurant" if i == 3 else "tourist_spot" for i in range(25)]
+    areas = ["hongdae" if i < 15 else "seongsu" for i in range(25)]
+    courses = [{
+        "sequence": [
+            {"poi_name": n, "lat": 37.5, "lng": 127.0, "estimated_stay_time": 60,
+             "poi_type": t, "address_en": a}
+            for n, t, a in zip(pool_names, types, areas)
+        ],
+    }]
+    days = [
+        {"day": i + 1, "pois": [_poi_typed(pool_names[i * 5 + j], types[i * 5 + j], areas[i * 5 + j])
+                                 for j in range(5)]}
+        for i in range(5)
+    ]
+    return courses, {"days": days}
+
+
+def test_trim_over_max_keeps_meal_and_area_coverage():
+    """The bug this trim step fixes: a 1-day trip has nowhere to redistribute
+    overflow, so without an upper cap all 25 POIs from an over-produced LLM
+    response used to survive untouched in that single day. Checks both pace
+    extremes, and that the meal-slot POI and the requested area survive the
+    cut."""
+    for pace, expected_max in [("packed", 8), ("relaxed", 6)]:
+        courses, itinerary = _bloated_one_day_courses_and_itinerary()
+        result = planner._validate_and_repair_itinerary(
+            itinerary, courses=courses, google_supplement=[],
+            requested_areas=["hongdae"], duration="October 10, 2026 (1 day)",
+            num_days=None, pace=pace, purpose="",
+        )
+        out_days = result["days"]
+        assert len(out_days) == 1, len(out_days)
+        pois = out_days[0]["pois"]
+        assert len(pois) == expected_max, (pace, len(pois))  # trimmed exactly to the pace max
+        assert any(planner._is_meal_poi(p) for p in pois), (pace, "meal POI lost")
+        assert any(p.get("area") == "hongdae" for p in pois), (pace, "requested area lost")
+        print(f"OK - trim to pace max ({pace}): 25 POIs -> {len(pois)}, meal+area survived")
+
+
+def test_trim_backs_off_when_protected_set_alone_exceeds_max():
+    """If the protected set (meal POIs + one per requested area) alone
+    already reaches/exceeds the pace max, trimming must back off entirely
+    (log only) rather than cut into coverage -- coverage wins."""
+    # Real Seoul area names -- _poi_area/_infer_area_from_text_or_coords only
+    # recognizes these (via alias-pattern matching on name/address text), not
+    # arbitrary made-up labels.
+    requested_areas = ["hongdae", "seongsu", "gangnam", "itaewon", "myeongdong", "jongno"]
+    # One non-meal POI per requested area (6 protected-by-area) + one meal
+    # POI in an unrelated area (protected-by-meal) = 7 protected already,
+    # which alone exceeds relaxed's max of 6.
+    pois = [_poi_typed(f"spot {a}", "tourist_spot", a) for a in requested_areas]
+    pois.append(_poi_typed("restaurant x", "restaurant", "mapo"))
+    # Two removable filler POIs duplicating an already-protected area.
+    pois.append(_poi_typed("extra 1", "tourist_spot", "hongdae"))
+    pois.append(_poi_typed("extra 2", "tourist_spot", "hongdae"))
+    assert len(pois) == 9
+
+    itinerary = {"days": [{"day": 1, "pois": pois}]}
+    courses = [{"sequence": [
+        {"poi_name": p["name"], "lat": 37.5, "lng": 127.0, "poi_type": p["type"], "address_en": p["area"]}
+        for p in pois
+    ]}]
+
+    result = planner._validate_and_repair_itinerary(
+        itinerary, courses=courses, google_supplement=[],
+        requested_areas=requested_areas, duration="October 10, 2026 (1 day)",
+        num_days=None, pace="relaxed", purpose="",
+    )
+    out_pois = result["days"][0]["pois"]
+    # 7 protected > relaxed max (6), and only 2 removable < needed excess (3)
+    # -- not enough to cut down to 6, so nothing is removed at all.
+    assert len(out_pois) == 9, len(out_pois)
+    print("OK - trim backs off (coverage wins) when protected set alone exceeds the pace max")
 
 
 def test_plan_node_end_to_end_with_structured_num_days():
@@ -269,8 +373,11 @@ if __name__ == "__main__":
     test_parse_num_days_override()
     test_resolve_num_days()
     test_parse_day_segments_override_bypasses_text_parsing()
+    test_pace_bounds()
     test_pace_target_line()
     test_fold_least_filled_not_round_robin()
+    test_trim_over_max_keeps_meal_and_area_coverage()
+    test_trim_backs_off_when_protected_set_alone_exceeds_max()
     test_plan_node_end_to_end_with_structured_num_days()
     test_plan_node_with_origin_date_picker_format()
     print("\nAll num_days/pace self-checks passed.")

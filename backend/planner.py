@@ -1256,9 +1256,11 @@ def _validate_and_repair_itinerary(
     requested_areas: list[str],
     duration: str = "",
     num_days: int | None = None,
+    pace: str | None = None,
     purpose: str = "",
 ) -> dict[str, Any]:
     """Remove hallucinations and force requested area coverage."""
+    poi_min, poi_max = _pace_bounds({"pace": pace})
     pool = _build_candidate_pool(courses, google_supplement)
     valid_names = set(pool.keys())
     used_names: set[str] = set()
@@ -1403,10 +1405,10 @@ def _validate_and_repair_itinerary(
             used_names.add(_normalize_text(out.get("name")))
             print(f"[Validator] Day {day.get('day')} 식사 슬롯 추가: {out.get('name')}")
 
-    # 4. Fill under-populated days up to 5 POIs.
+    # 4. Fill under-populated days up to the pace's minimum POI count.
     for idx, day in enumerate(days):
         pois = day.setdefault("pois", [])
-        if len(pois) >= 5:
+        if len(pois) >= poi_min:
             continue
 
         target_area = None
@@ -1431,12 +1433,74 @@ def _validate_and_repair_itinerary(
                 )
             ]
 
-        while len(pois) < 5 and candidates:
+        while len(pois) < poi_min and candidates:
             item = candidates.pop(0)
             out = _as_output_poi(item, extra_note="Added to make the day sufficiently complete.")
             pois.append(out)
             used_names.add(_normalize_text(out.get("name")))
             print(f"[Validator] Day {day.get('day')} POI 수 보완: {out.get('name')}")
+
+    # 4b. Trim over-populated days down to the pace's maximum POI count. Runs
+    # after area coverage (2) and the meal slot (3) so trimming never has to
+    # undo what those steps just added, and after the min-fill (4) since
+    # trimming first would be pointless when a day is still under min.
+    #
+    # Always protects: every meal-slot POI (the same _is_meal_poi check step 3
+    # uses) and at least one POI per requested area already present in the
+    # day (so the day keeps the area coverage step 2 just secured). If the
+    # protected set alone is already at or over the max, coverage wins --
+    # nothing is cut, only logged.
+    #
+    # Cut order for the rest: POIs whose area duplicates an area that's
+    # already protected go first (they add the least additional coverage);
+    # once those are exhausted, remaining excess is cut from the back of the
+    # day's POI list.
+    for day in days:
+        pois = day.get("pois") or []
+        if len(pois) <= poi_max:
+            continue
+
+        protected_idx: set[int] = {i for i, p in enumerate(pois) if _is_meal_poi(p)}
+        protected_areas: set[str] = set()
+        for i, p in enumerate(pois):
+            area = _poi_area(p)
+            if not area:
+                continue
+            matched_req = next((req for req in requested_areas if _area_matches_requested(area, req)), None)
+            if matched_req and matched_req not in protected_areas:
+                protected_idx.add(i)
+                protected_areas.add(matched_req)
+
+        excess = len(pois) - poi_max
+        removable = [i for i in range(len(pois)) if i not in protected_idx]
+        if len(removable) < excess:
+            print(
+                f"[Validator] Day {day.get('day')} POI {len(pois)}개가 상한({poi_max}) 초과지만 "
+                f"보존 대상(식사 슬롯/지역 커버리지)만으로 이미 여유가 없어 자르지 않음"
+            )
+            continue
+
+        protected_area_set = {_poi_area(pois[i]) for i in protected_idx if _poi_area(pois[i])}
+        dup_of_protected_area = [i for i in removable if _poi_area(pois[i]) in protected_area_set]
+        unique_area = [i for i in removable if i not in dup_of_protected_area]
+
+        to_remove: set[int] = set()
+        for i in sorted(dup_of_protected_area, reverse=True):
+            if len(to_remove) >= excess:
+                break
+            to_remove.add(i)
+        if len(to_remove) < excess:
+            for i in sorted(unique_area, reverse=True):
+                if len(to_remove) >= excess:
+                    break
+                to_remove.add(i)
+
+        removed_names = [pois[i].get("name") for i in sorted(to_remove)]
+        day["pois"] = [p for i, p in enumerate(pois) if i not in to_remove]
+        print(
+            f"[Validator] Day {day.get('day')} POI 상한({poi_max}) 초과 -- "
+            f"{len(to_remove)}개 제거: {removed_names}"
+        )
 
     # 5. Reorder each day lightly by area grouping, preserving the LLM order mostly.
     for day in days:
@@ -1632,17 +1696,38 @@ def _resolve_num_days(state: TravelState) -> int | None:
     return 3
 
 
-_PACE_TARGETS: dict[str, str] = {
-    "packed": "PACE: packed schedule -- aim for 7-8 POIs per day (never fewer than 7).",
-    "relaxed": "PACE: relaxed pace -- aim for 5-6 POIs per day (never fewer than 5, never more than 6).",
-}
+def _pace_bounds(state: TravelState) -> tuple[int, int]:
+    """Single source of truth for the per-day POI count target driven by
+    trip pace (relaxed/packed): both the LLM prompt guidance
+    (`_pace_target_line`) and `_validate_and_repair_itinerary`'s fill/trim
+    steps read the (min, max) from here, so the prompt and the validator can
+    never end up quoting different numbers."""
+    pace = (state.get("pace") or "").strip().lower()
+    if pace == "relaxed":
+        return (5, 6)
+    if pace == "packed":
+        return (7, 8)
+    return (6, 7)  # no pace on record -- a middling default, not a guess at either extreme
 
 
-def _pace_target_line(pace: str | None) -> str:
+_PACE_LABELS: dict[str, str] = {"packed": "packed schedule", "relaxed": "relaxed pace"}
+
+
+def _pace_target_line(state: TravelState) -> str:
     """Extra prompt line steering the LLM's per-day POI count toward the
     user's trip_style. Kept out of the ItineraryPlanner docstring (which is
-    shared/static across every call) since the target varies per request."""
-    return _PACE_TARGETS.get((pace or "").strip().lower(), "")
+    shared/static across every call) since the target varies per request.
+    Silent (no line) when pace is unset/unrecognized -- the LLM falls back to
+    the docstring's plain 5-8 rule, and the validator's default bounds (6-7,
+    see _pace_bounds) still apply underneath it regardless."""
+    pace = (state.get("pace") or "").strip().lower()
+    if pace not in _PACE_LABELS:
+        return ""
+    lo, hi = _pace_bounds(state)
+    return (
+        f"PACE: {_PACE_LABELS[pace]} -- aim for {lo}-{hi} POIs per day "
+        f"(never fewer than {lo}, never more than {hi})."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1735,7 +1820,7 @@ def plan_node(state: TravelState) -> TravelState:
 
     try:
         system_prompt = ItineraryPlanner.__doc__ or ""
-        pace_line = _pace_target_line(pace)
+        pace_line = _pace_target_line(state)
         user_prompt = (
             f"{system_prompt}\n\n"
             f"Duration: {duration_text}\n"
@@ -1757,6 +1842,7 @@ def plan_node(state: TravelState) -> TravelState:
             requested_areas=requested_areas,
             duration=duration,
             num_days=num_days,
+            pace=pace,
             purpose=purpose,
         )
 
