@@ -23,6 +23,11 @@ class TravelState {
   final String? companion;
   final String? pace;
   final String currentStep;
+
+  /// The slot the backend is waiting on right now ('travel_dates', 'category',
+  /// …), or null outside the collecting step. Drives the per-question quick
+  /// replies, the date picker and the progress line on the chat screen.
+  final String? currentField;
   final bool confirmed;
   final String? reply;
   final Itinerary? itinerary;
@@ -35,6 +40,7 @@ class TravelState {
     this.companion,
     this.pace,
     this.currentStep = 'start',
+    this.currentField,
     this.confirmed = false,
     this.reply,
     this.itinerary,
@@ -50,6 +56,7 @@ class TravelState {
       companion: json['companion'] as String?,
       pace: json['pace'] as String?,
       currentStep: (json['current_step'] as String?) ?? 'start',
+      currentField: json['current_field'] as String?,
       confirmed: (json['confirmed'] as bool?) ?? false,
       reply: json['reply'] as String?,
       itinerary:
