@@ -48,6 +48,11 @@ SCENARIOS={
     "scenario_3":{"purpose":"k-pop, food tour","location":"hongdae, itaewon, yongsan","dietary":"vegetarian"},
     "scenario_4":{"purpose":"shopping, k-pop","location":"hongdae, seongsu, gangnam, jamsil"},
     "scenario_5":{"purpose":"general sightseeing, family","location":"hongdae, jongno, itaewon, yongsan, seongsu, jamsil"},
+    # WD 표본 확대용으로 추가한 장기 여행 시나리오 (7/10일) -- 요청 사양의
+    # "closed_weekday 데이터 있는 major-attraction POI"를 더 많이 끌어오도록
+    # history/culture/museum 비중을 의도적으로 높게 설계함.
+    "scenario_6":{"purpose":"history, culture, museums","location":"jongno, insadong, yongsan, myeongdong"},
+    "scenario_7":{"purpose":"general sightseeing, history, culture, shopping, k-pop","location":"jongno, insadong, yongsan, itaewon, hongdae, seongsu, gangnam, jamsil"},
 }
 
 # ── 유틸 ───────────────────────────────────────────────────
@@ -135,6 +140,72 @@ def chkoh(oh,day,s,e):
 _pmdf=None; _pmc={}
 def _nrm(s):
     s=str(s).lower(); s=re.sub(r'\([^)]*\)',' ',s); s=re.sub(r'[^a-z0-9가-힣]+',' ',s); return re.sub(r'\s+',' ',s).strip()
+
+# ── WD (요일휴무) ───────────────────────────────────────────
+# 벤치마크 시나리오 JSON(gpt_results/*, seoulfit_results/*)엔 trip_start_date가
+# 없다 -- 두 시스템 다 같은 조건으로 비교하려면 고정 기준일이 필요해서, 모든
+# 시나리오에 동일하게 Day 1 = 이 날짜를 적용한다. 2025-01-06은 월요일.
+WD_TRIP_START="2025-01-06"
+_WD_EN=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+def weekday_for_day(start_date_str,day_number):
+    from datetime import date,timedelta
+    y,m,d=map(int,str(start_date_str).split("-"))
+    return _WD_EN[(date(y,m,d)+timedelta(days=int(day_number)-1)).weekday()]
+
+_wdf=None
+def load_wd_flags():
+    """course_data_v6.json에서 POI 이름 -> {is_area_type, is_transit_marker,
+    closed_weekday} 룩업 테이블을 만든다. 최종 itinerary POI dict엔 이 필드들이
+    없을 수 있어(critic_repair.as_output_poi가 걷어냄) -- 오늘 critic_repair.py의
+    CLOSED_ON_ASSIGNED_DAY와 같은 패턴으로, 이름으로 원본 course 데이터를
+    재조회해서 얻는다."""
+    global _wdf
+    if _wdf is not None: return _wdf
+    _wdf={}
+    for p in [Path(__file__).resolve().parent.parent/"backend"/"dataset"/"course_data_v6.json",
+              Path("backend/dataset/course_data_v6.json")]:
+        if p.exists():
+            try:
+                data=json.loads(p.read_text(encoding="utf-8"))
+                for c in data:
+                    for seq in c.get("sequence",[]) or []:
+                        name=seq.get("poi_name") or seq.get("name") or ""
+                        if not name: continue
+                        oh=seq.get("opening_hours") or {}
+                        _wdf[_nrm(name)]={
+                            "is_area_type":bool(seq.get("is_area_type")),
+                            "is_transit_marker":bool(seq.get("is_transit_marker")),
+                            "closed_weekday":oh.get("closed_weekday"),
+                        }
+                print(f"[WD] course_data_v6 {len(_wdf)}개 POI 플래그 로드")
+                return _wdf
+            except Exception as e:
+                print(f"[WD] course_data_v6 로드 실패:{e}")
+    print("[WD] course_data_v6.json 못 찾음 -- WD 전부 unknown 처리됨")
+    return _wdf
+
+def WD(days,trip_start_date=WD_TRIP_START):
+    """WD = (n_ok + 0.5*n_unknown) / (n_ok + n_violated + n_unknown).
+    is_area_type/is_transit_marker POI는 분모에서 완전히 제외된다."""
+    flags=load_wd_flags()
+    n_ok=n_violated=n_unknown=0; vl=[]
+    for day in days:
+        try: weekday=weekday_for_day(trip_start_date,day.get("day"))
+        except Exception: weekday=None
+        for p in pois(day):
+            flag=flags.get(_nrm(p.get("name","")))
+            if flag and (flag.get("is_area_type") or flag.get("is_transit_marker")):
+                continue  # 구역형/경유마커 -- "정기휴무" 개념 자체가 안 맞음, 분모 제외
+            closed=flag.get("closed_weekday") if flag else None
+            if not closed or weekday is None:
+                n_unknown+=1; continue
+            if weekday in closed:
+                n_violated+=1; vl.append({"day":day.get("day"),"poi":p.get("name","")[:25],"weekday":weekday})
+            else:
+                n_ok+=1
+    total=n_ok+n_violated+n_unknown
+    return {"score":round((n_ok+0.5*n_unknown)/total,3) if total else 1.0,
+            "n_ok":n_ok,"n_violated":n_violated,"n_unknown":n_unknown,"violations":vl}
 def load_pm():
     global _pmdf
     if _pmdf is not None: return _pmdf
@@ -525,10 +596,12 @@ def CC(days,dietary,use_api):
 
 def score(it,us,use_api):
     days=it.get("days",[]); dietary=us.get("dietary","")
-    tf=TF(days); mc=MC(days); oh=OH(days,use_api)
+    tf=TF(days); mc=MC(days); oh=OH(days,use_api); wd=WD(days)
     rd=RD(days); vd=VD(days); ss=SS(days); cp=CP(days); fs=FS(days)
     la=LA(days); ab=AB(days); mb=MB(days); cf=CF(days); cc=CC(days,dietary,use_api)
     F=round((mc["score"]+tf["score"]+oh["score"])/3,3)
+    # F(p)_v2: 요일휴무(WD)까지 포함한 확장판. 기존 F(p)는 비교용으로 그대로 둔다.
+    F_v2=round((mc["score"]+tf["score"]+oh["score"]+wd["score"])/4,3)
     ECS=round((rd["score"]+vd["score"]+ss["score"]+cp["score"]+fs["score"])/5,3)
     # 외국인친화성은 단순 평균이 아니라 실제 여행 성공에 미치는 영향 기준으로 가중 평균
     # LA/MB는 현장 실행성에 직접적이므로 높게, AB/CF는 안내로 완화 가능하므로 보조 지표로 둔다.
@@ -540,27 +613,27 @@ def score(it,us,use_api):
         ab["score"]*FG_WEIGHTS["AB"] +
         cf["score"]*FG_WEIGHTS["CF"], 3
     )
-    return {"overall":round((F+ECS+FG)/3,3),"F":F,"ECS":ECS,"FG":FG,
-            "MC":mc,"TF":tf,"OH":oh,"RD":rd,"VD":vd,"SS":ss,"CP":cp,"FS":fs,"LA":la,"AB":ab,"MB":mb,"CF":cf,"CC":cc}
+    return {"overall":round((F+ECS+FG)/3,3),"F":F,"F_v2":F_v2,"ECS":ECS,"FG":FG,
+            "MC":mc,"TF":tf,"OH":oh,"WD":wd,"RD":rd,"VD":vd,"SS":ss,"CP":cp,"FS":fs,"LA":la,"AB":ab,"MB":mb,"CF":cf,"CC":cc}
 
 # ── 출력 ───────────────────────────────────────────────────
-LBL={"MC":"MC 식사슬롯  ","TF":"TF 이동가능성","OH":"OH 운영시간  ","RD":"RD 이동거리  ","VD":"VD 체류시간  ","SS":"SS 순서효율  ","CP":"CP 동선일관성","FS":"FS 흐름균형  ","LA":"LA 언어접근성","AB":"AB 진입장벽  ","MB":"MB 이동복잡도","CF":"CF 문화마찰  ","CC":"CC 제약충족  ","F":"F(p)         ","ECS":"ECS(p)       ","FG":"FG(p) ★      ","overall":"종합 점수    "}
-METS=["MC","TF","OH","RD","VD","SS","CP","FS","LA","AB","MB","CF","CC","F","ECS","FG","overall"]
+LBL={"MC":"MC 식사슬롯  ","TF":"TF 이동가능성","OH":"OH 운영시간  ","WD":"WD 요일휴무  ","RD":"RD 이동거리  ","VD":"VD 체류시간  ","SS":"SS 순서효율  ","CP":"CP 동선일관성","FS":"FS 흐름균형  ","LA":"LA 언어접근성","AB":"AB 진입장벽  ","MB":"MB 이동복잡도","CF":"CF 문화마찰  ","CC":"CC 제약충족  ","F":"F(p)         ","F_v2":"F(p)_v2      ","ECS":"ECS(p)       ","FG":"FG(p) ★      ","overall":"종합 점수    "}
+METS=["MC","TF","OH","WD","RD","VD","SS","CP","FS","LA","AB","MB","CF","CC","F","F_v2","ECS","FG","overall"]
 
 def vv(r,k):
-    if k in ("overall","F","ECS","FG"): return float(r.get(k,0))
+    if k in ("overall","F","F_v2","ECS","FG"): return float(r.get(k,0))
     return float(r.get(k,{}).get("score",0))
 
 def print_all(all_r):
     print("\n"+"="*80)
-    print("📊  SeoulFit vs GPT — 전체 성능 비교 (13개 지표)")
+    print("📊  SeoulFit vs GPT — 전체 성능 비교 (14개 지표, WD 추가)")
     print("="*80)
     gavgs={m:[] for m in METS}; savgs={m:[] for m in METS}
     for sid,data in all_r.items():
         g=data.get("gpt",{}); s=data.get("sf",{})
         if not g or not s: continue
         print(f"\n▶ {sid.upper()}")
-        groups=[("F(p)",["MC","TF","OH","F"]),("ECS(p)",["RD","VD","SS","CP","FS","ECS"]),("FG(p) ★외국인친화",["LA","AB","MB","CF","CC","FG"]),("종합",["overall"])]
+        groups=[("F(p)",["MC","TF","OH","WD","F","F_v2"]),("ECS(p)",["RD","VD","SS","CP","FS","ECS"]),("FG(p) ★외국인친화",["LA","AB","MB","CF","CC","FG"]),("종합",["overall"])]
         for gn,ms in groups:
             print(f"  [{gn}]")
             for m in ms:
@@ -568,6 +641,14 @@ def print_all(all_r):
                 mk=" ◀" if abs(diff)>=0.05 else ""
                 print(f"  {LBL.get(m,m):<18} GPT:{gv:>6.3f}  SeoulFit:{sv:>6.3f}  {diff:>+7.3f}{mk}")
                 gavgs[m].append(gv); savgs[m].append(sv)
+        # WD 세부 breakdown -- n_unknown 비중을 바로 보기 위함 (GPT가 이 정보를
+        # 아예 추적 안 해서 WD가 기계적으로 0.5 근처에 고정되는지 확인용)
+        for who,r in [("GPT",g),("SeoulFit",s)]:
+            wd=r.get("WD",{})
+            ok,vi,un=wd.get("n_ok",0),wd.get("n_violated",0),wd.get("n_unknown",0)
+            tot=ok+vi+un
+            pct=f"{un/tot*100:.0f}%" if tot else "N/A"
+            print(f"    {who} WD 세부: ok={ok} violated={vi} unknown={un} (unknown 비중 {pct})")
         # 이슈
         for k,lbl in [("TF","TF불가"),("MC","MC누락"),("LA","LA위반"),("AB","AB장벽"),("CF","CF누락"),("CC","CC위반"),("FS","FS문제")]:
             gd=g.get(k,{})
@@ -581,7 +662,7 @@ def print_all(all_r):
 
     print("\n"+"="*80)
     print("📈  전체 평균")
-    groups2=[("F(p)",["MC","TF","OH","F"]),("ECS(p)",["RD","VD","SS","CP","FS","ECS"]),("FG(p) ★외국인친화",["LA","AB","MB","CF","CC","FG"]),("종합",["overall"])]
+    groups2=[("F(p)",["MC","TF","OH","WD","F","F_v2"]),("ECS(p)",["RD","VD","SS","CP","FS","ECS"]),("FG(p) ★외국인친화",["LA","AB","MB","CF","CC","FG"]),("종합",["overall"])]
     for gn,ms in groups2:
         print(f"  [{gn}]")
         for m in ms:
@@ -590,6 +671,34 @@ def print_all(all_r):
             diff=sa-ga; mk=" ◀◀" if abs(diff)>=0.1 else (" ◀" if abs(diff)>=0.05 else "")
             print(f"  {LBL.get(m,m):<18} GPT:{ga:>6.3f}  SeoulFit:{sa:>6.3f}  {diff:>+7.3f}{mk}")
     print("="*80)
+
+def wd_detection_summary(all_r):
+    """WD '판정 능력' 보조 지표 -- compute_wd()의 점수(0~1) 자체는 표본이 작을 땐
+    우연에 좌우되기 쉬워서(시나리오당 closed_weekday 있는 POI가 0~2개뿐이면
+    +-1건 차이로 점수가 크게 흔들림) 지표 비교엔 참고용으로만 쓰고, 대신
+    "애초에 판정을 시도한 비율"과 "실제로 잡아낸 위반 건수"를 표본 크기와
+    무관하게 직접 비교한다. compute_wd()/WD()의 점수 계산 로직 자체는 그대로다
+    -- 이미 나온 n_ok/n_violated/n_unknown을 다르게 집계할 뿐."""
+    print("\n"+"="*80)
+    print("🔎  WD 판정 능력 (시나리오 전체 합산) -- WD 점수(0~1)는 표본이 작아 참고용,")
+    print("    detection_rate / violation_catch_count 를 메인 비교 지표로 사용")
+    print("="*80)
+    rows=[]
+    for who in ("gpt","sf"):
+        tot_ok=tot_vi=tot_unk=0
+        for sid,data in all_r.items():
+            r=data.get(who,{})
+            wd=r.get("WD",{})
+            tot_ok+=wd.get("n_ok",0); tot_vi+=wd.get("n_violated",0); tot_unk+=wd.get("n_unknown",0)
+        denom=tot_ok+tot_vi+tot_unk
+        detection_rate=(tot_ok+tot_vi)/denom if denom else 0.0
+        rows.append((who,tot_ok,tot_vi,tot_unk,denom,detection_rate))
+        label="GPT" if who=="gpt" else "SeoulFit"
+        print(f"  {label:<10} n_ok={tot_ok:>3}  n_violated={tot_vi:>3}  n_unknown={tot_unk:>3}  "
+              f"총 POI-Day 쌍={denom:>3}  detection_rate={detection_rate:>6.1%}  "
+              f"violation_catch_count={tot_vi}")
+    print("="*80)
+    return rows
 
 def main():
     parser=argparse.ArgumentParser()
@@ -621,6 +730,7 @@ def main():
             r=all_r[sid]["sf"]; print(f"  SeoulFit F={r['F']:.3f} ECS={r['ECS']:.3f} FG={r['FG']:.3f} overall={r['overall']:.3f}")
         else: print(f"  ⚠️ SeoulFit 없음")
     print_all(all_r)
+    wd_detection_summary(all_r)
     Path(args.out).parent.mkdir(parents=True,exist_ok=True)
     with open(args.out,"w",encoding="utf-8") as f: json.dump(all_r,f,ensure_ascii=False,indent=2)
     print(f"\n💾 {args.out}")

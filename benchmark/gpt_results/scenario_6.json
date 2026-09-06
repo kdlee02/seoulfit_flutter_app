@@ -1,0 +1,357 @@
+{
+  "summary": "Explore the rich historical and cultural heritage of Seoul over 7 days, visiting world-famous palaces, museums, and traditional markets.",
+  "days": [
+    {
+      "day": 1,
+      "theme": "Royal Heritage",
+      "pois": [
+        {
+          "name": "Gyeongbokgung Palace (경복궁)",
+          "type": "tourist_spot",
+          "lat": 37.579617,
+          "lng": 126.977041,
+          "stay_minutes": 120,
+          "estimated_start_time": "09:00",
+          "estimated_end_time": "11:00",
+          "notes": "The largest of the Five Grand Palaces built during the Joseon Dynasty."
+        },
+        {
+          "name": "National Folk Museum of Korea",
+          "type": "museum",
+          "lat": 37.581091,
+          "lng": 126.978652,
+          "stay_minutes": 90,
+          "estimated_start_time": "11:15",
+          "estimated_end_time": "12:45",
+          "notes": "Features exhibits on Korean traditional life and culture."
+        },
+        {
+          "name": "Tosokchon Samgyetang (토속촌 삼계탕)",
+          "type": "restaurant",
+          "lat": 37.582258,
+          "lng": 126.974932,
+          "stay_minutes": 60,
+          "estimated_start_time": "13:00",
+          "estimated_end_time": "14:00",
+          "notes": "Famous for its ginseng chicken soup, a traditional Korean dish."
+        },
+        {
+          "name": "Bukchon Hanok Village (북촌한옥마을)",
+          "type": "culture",
+          "lat": 37.582314,
+          "lng": 126.983614,
+          "stay_minutes": 90,
+          "estimated_start_time": "14:30",
+          "estimated_end_time": "16:00",
+          "notes": "A picturesque village featuring traditional Korean hanok houses."
+        },
+        {
+          "name": "Insadong (인사동)",
+          "type": "market",
+          "lat": 37.574037,
+          "lng": 126.985302,
+          "stay_minutes": 60,
+          "estimated_start_time": "16:30",
+          "estimated_end_time": "17:30",
+          "notes": "A vibrant area known for its traditional arts and crafts shops."
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "theme": "Dynastic Splendor",
+      "pois": [
+        {
+          "name": "Changdeokgung Palace (창덕궁)",
+          "type": "tourist_spot",
+          "lat": 37.579417,
+          "lng": 126.991014,
+          "stay_minutes": 120,
+          "estimated_start_time": "09:00",
+          "estimated_end_time": "11:00",
+          "notes": "A UNESCO World Heritage site known for its beautiful garden."
+        },
+        {
+          "name": "Jongmyo Shrine (종묘)",
+          "type": "culture",
+          "lat": 37.574341,
+          "lng": 126.994517,
+          "stay_minutes": 90,
+          "estimated_start_time": "11:30",
+          "estimated_end_time": "13:00",
+          "notes": "A Confucian shrine dedicated to the deceased kings and queens of the Joseon Dynasty."
+        },
+        {
+          "name": "Gwangjang Market (광장시장)",
+          "type": "market",
+          "lat": 37.570189,
+          "lng": 126.999573,
+          "stay_minutes": 60,
+          "estimated_start_time": "13:15",
+          "estimated_end_time": "14:15",
+          "notes": "One of Korea's largest traditional markets, perfect for sampling local street food."
+        },
+        {
+          "name": "Changgyeonggung Palace (창경궁)",
+          "type": "tourist_spot",
+          "lat": 37.578617,
+          "lng": 126.996673,
+          "stay_minutes": 90,
+          "estimated_start_time": "14:45",
+          "estimated_end_time": "16:15",
+          "notes": "Originally built as a summer palace, it is known for its beautiful botanical garden."
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "theme": "Museums and Modern History",
+      "pois": [
+        {
+          "name": "National Museum of Korea",
+          "type": "museum",
+          "lat": 37.523984,
+          "lng": 126.980355,
+          "stay_minutes": 120,
+          "estimated_start_time": "09:00",
+          "estimated_end_time": "11:00",
+          "notes": "The largest museum in Korea, showcasing a vast collection of historical artifacts."
+        },
+        {
+          "name": "War Memorial of Korea",
+          "type": "museum",
+          "lat": 37.535767,
+          "lng": 126.977093,
+          "stay_minutes": 120,
+          "estimated_start_time": "11:30",
+          "estimated_end_time": "13:30",
+          "notes": "A comprehensive war history museum with exhibits on Korean and international conflicts."
+        },
+        {
+          "name": "Itaewon (이태원)",
+          "type": "restaurant",
+          "lat": 37.534683,
+          "lng": 126.993623,
+          "stay_minutes": 60,
+          "estimated_start_time": "14:00",
+          "estimated_end_time": "15:00",
+          "notes": "A diverse area known for its international cuisine and vibrant atmosphere."
+        },
+        {
+          "name": "Namsan Seoul Tower (N서울타워)",
+          "type": "tourist_spot",
+          "lat": 37.551169,
+          "lng": 126.988227,
+          "stay_minutes": 90,
+          "estimated_start_time": "15:30",
+          "estimated_end_time": "17:00",
+          "notes": "An iconic landmark offering panoramic views of Seoul."
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "theme": "Traditional Markets and Art",
+      "pois": [
+        {
+          "name": "Namdaemun Market (남대문시장)",
+          "type": "market",
+          "lat": 37.558514,
+          "lng": 126.978254,
+          "stay_minutes": 90,
+          "estimated_start_time": "09:00",
+          "estimated_end_time": "10:30",
+          "notes": "The largest traditional market in Korea, known for its variety of goods."
+        },
+        {
+          "name": "Deoksugung Palace (덕수궁)",
+          "type": "tourist_spot",
+          "lat": 37.565804,
+          "lng": 126.975148,
+          "stay_minutes": 90,
+          "estimated_start_time": "11:00",
+          "estimated_end_time": "12:30",
+          "notes": "Famous for its elegant stone-wall road and the changing of the guard ceremony."
+        },
+        {
+          "name": "Myeongdong Kyoja (명동교자)",
+          "type": "restaurant",
+          "lat": 37.56314,
+          "lng": 126.986436,
+          "stay_minutes": 60,
+          "estimated_start_time": "13:00",
+          "estimated_end_time": "14:00",
+          "notes": "Known for its delicious handmade kalguksu (noodle soup)."
+        },
+        {
+          "name": "Myeongdong Shopping Street (명동거리)",
+          "type": "shopping",
+          "lat": 37.563757,
+          "lng": 126.982499,
+          "stay_minutes": 90,
+          "estimated_start_time": "14:30",
+          "estimated_end_time": "16:00",
+          "notes": "A bustling area known for its shops, street food, and vibrant energy."
+        },
+        {
+          "name": "Seoul Arts Center (예술의전당)",
+          "type": "culture",
+          "lat": 37.480403,
+          "lng": 127.01369,
+          "stay_minutes": 120,
+          "estimated_start_time": "17:00",
+          "estimated_end_time": "19:00",
+          "notes": "A comprehensive cultural complex offering a variety of performances and exhibitions."
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "theme": "Cultural Exploration",
+      "pois": [
+        {
+          "name": "Seodaemun Prison History Hall (서대문형무소역사관)",
+          "type": "museum",
+          "lat": 37.574372,
+          "lng": 126.957607,
+          "stay_minutes": 90,
+          "estimated_start_time": "09:00",
+          "estimated_end_time": "10:30",
+          "notes": "A museum and former prison showcasing Korea's struggle for independence."
+        },
+        {
+          "name": "Seoul Museum of History (서울역사박물관)",
+          "type": "museum",
+          "lat": 37.57046,
+          "lng": 126.968729,
+          "stay_minutes": 90,
+          "estimated_start_time": "11:00",
+          "estimated_end_time": "12:30",
+          "notes": "Explores the history of Seoul from its prehistoric times to the present."
+        },
+        {
+          "name": "Cheonggyecheon Stream (청계천)",
+          "type": "tourist_spot",
+          "lat": 37.568756,
+          "lng": 126.977703,
+          "stay_minutes": 60,
+          "estimated_start_time": "13:00",
+          "estimated_end_time": "14:00",
+          "notes": "A serene urban renewal project offering a pleasant walkway through central Seoul."
+        },
+        {
+          "name": "Gwangjang Market (광장시장)",
+          "type": "restaurant",
+          "lat": 37.570189,
+          "lng": 126.999573,
+          "stay_minutes": 60,
+          "estimated_start_time": "14:30",
+          "estimated_end_time": "15:30",
+          "notes": "Return visit for more delicious street food options."
+        },
+        {
+          "name": "Dongdaemun Design Plaza (동대문디자인플라자)",
+          "type": "tourist_spot",
+          "lat": 37.566295,
+          "lng": 127.008304,
+          "stay_minutes": 90,
+          "estimated_start_time": "16:00",
+          "estimated_end_time": "17:30",
+          "notes": "A major urban development landmark known for its neo-futuristic design."
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "theme": "Modern and Traditional Harmony",
+      "pois": [
+        {
+          "name": "Lotte World Tower (롯데월드타워)",
+          "type": "tourist_spot",
+          "lat": 37.513068,
+          "lng": 127.102482,
+          "stay_minutes": 90,
+          "estimated_start_time": "09:00",
+          "estimated_end_time": "10:30",
+          "notes": "The tallest building in Korea with an observation deck offering stunning city views."
+        },
+        {
+          "name": "Bongeunsa Temple (봉은사)",
+          "type": "culture",
+          "lat": 37.514068,
+          "lng": 127.057968,
+          "stay_minutes": 90,
+          "estimated_start_time": "11:00",
+          "estimated_end_time": "12:30",
+          "notes": "A beautiful Buddhist temple offering a tranquil escape from the city."
+        },
+        {
+          "name": "COEX Mall (코엑스몰)",
+          "type": "shopping_mall",
+          "lat": 37.511044,
+          "lng": 127.059481,
+          "stay_minutes": 90,
+          "estimated_start_time": "13:00",
+          "estimated_end_time": "14:30",
+          "notes": "The largest underground shopping mall in Asia, a hub for shopping and entertainment."
+        },
+        {
+          "name": "Samcheong-dong (삼청동)",
+          "type": "restaurant",
+          "lat": 37.584381,
+          "lng": 126.981037,
+          "stay_minutes": 90,
+          "estimated_start_time": "15:30",
+          "estimated_end_time": "17:00",
+          "notes": "Known for its charming cafes and traditional Korean houses."
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "theme": "Final Cultural Immersion",
+      "pois": [
+        {
+          "name": "Seoul City Wall (서울성곽)",
+          "type": "tourist_spot",
+          "lat": 37.592481,
+          "lng": 126.987885,
+          "stay_minutes": 120,
+          "estimated_start_time": "09:00",
+          "estimated_end_time": "11:00",
+          "notes": "Explore sections of the historic fortress wall surrounding the city."
+        },
+        {
+          "name": "Dongdaemun History & Culture Park (동대문역사문화공원)",
+          "type": "park",
+          "lat": 37.566295,
+          "lng": 127.009832,
+          "stay_minutes": 90,
+          "estimated_start_time": "11:30",
+          "estimated_end_time": "13:00",
+          "notes": "A modern park featuring historic ruins and cutting-edge design elements."
+        },
+        {
+          "name": "Tteokbokki Town (떡볶이타운)",
+          "type": "restaurant",
+          "lat": 37.561319,
+          "lng": 127.008757,
+          "stay_minutes": 60,
+          "estimated_start_time": "13:30",
+          "estimated_end_time": "14:30",
+          "notes": "Famous for its spicy rice cake dishes, a must-try Korean street food."
+        },
+        {
+          "name": "Seoul Animation Center (서울애니메이션센터)",
+          "type": "culture",
+          "lat": 37.560006,
+          "lng": 126.986052,
+          "stay_minutes": 90,
+          "estimated_start_time": "15:00",
+          "estimated_end_time": "16:30",
+          "notes": "Explore Korea's animation industry and enjoy interactive exhibits."
+        }
+      ]
+    }
+  ]
+}

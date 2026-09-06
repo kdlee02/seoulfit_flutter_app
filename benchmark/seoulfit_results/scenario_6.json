@@ -1,0 +1,883 @@
+{
+  "summary": "This 7-day Seoul itinerary is tailored for foreign tourists interested in history, focusing on the iconic neighborhoods of Jongno, Insadong, and Myeongdong. Days 1-2 delve into Jongno's royal palaces and historical museums, Days 3-4 immerse you in Insadong's traditional culture and arts, and Days 5-7 explore Myeongdong's blend of modern and historical landmarks.",
+  "days": [
+    {
+      "day": 1,
+      "theme": "Royal Palaces and Historical Grandeur in Jongno",
+      "pois": [
+        {
+          "name": "Mokkoji",
+          "type": "restaurant",
+          "address": "1층, 120-19 지하 Seosomun-dong, Jung District",
+          "lat": 37.5618686,
+          "lng": 126.9733868,
+          "stay_minutes": 60,
+          "notes": "Enjoy a delightful dinner at this restaurant known for its authentic Korean cuisine, a great way to experience local flavors after a day of historical immersion.",
+          "area": "jongno"
+        },
+        {
+          "name": "Gwanghwamun Square (광화문광장)",
+          "type": "history",
+          "address": "172 Sejong-daero, Jongno-gu, Seoul",
+          "lat": 37.571620087032585,
+          "lng": 126.97676492906585,
+          "stay_minutes": 60,
+          "notes": "Start your historical journey at this grand square, learning about King Sejong the Great and Admiral Yi Sun-sin, key figures in Korean history. It's a symbolic heart of Seoul.",
+          "area": "jongno"
+        },
+        {
+          "name": "National Museum of Korean Contemporary History",
+          "type": "tourist_spot",
+          "address": "198 Sejong-daero, Jongno District, Seoul, South Korea",
+          "lat": 37.5739432,
+          "lng": 126.9779299,
+          "stay_minutes": 60,
+          "notes": "Delve into Korea's modern history from the late 19th century to the present, offering insights into the nation's journey and development. Located conveniently near Gwanghwamun Square.",
+          "area": "jongno"
+        },
+        {
+          "name": "The Restaurant",
+          "type": "restaurant",
+          "address": "54 Samcheong-ro, Jongno District",
+          "lat": 37.5808101,
+          "lng": 126.9803885,
+          "stay_minutes": 60,
+          "notes": "Enjoy a refined lunch in a scenic setting near the Bukchon area, offering a taste of contemporary Korean dining.",
+          "area": "jongno"
+        },
+        {
+          "name": "Bukchon Hanok Village (북촌한옥마을)",
+          "type": "tourist_spot",
+          "address": "37 Gyedong-gil, Jongno-gu, Seoul",
+          "lat": 37.579018508290275,
+          "lng": 126.98661052339429,
+          "stay_minutes": 90,
+          "notes": "Wander through this traditional village with beautifully preserved hanok (traditional Korean houses), offering a glimpse into Joseon-era urban living and panoramic views of the city.",
+          "area": "jongno"
+        },
+        {
+          "name": "Changdeokgung Palace Complex [UNESCO World Heritage Site] (창덕궁과 후원 [유네스코 세계유산])",
+          "type": "history",
+          "address": "99 Yulgok-ro, Jongno-gu, Seoul",
+          "lat": 37.579356686853515,
+          "lng": 126.99019110040985,
+          "stay_minutes": 120,
+          "notes": "Explore one of the 'Five Grand Palaces' built during the Joseon Dynasty. Its 'Secret Garden' (Hu won) is particularly renowned for its natural beauty and historical significance. Book a guided tour for the Secret Garden in advance.",
+          "area": "jongno"
+        },
+        {
+          "name": "Changgyeonggung Palace (창경궁)",
+          "type": "history",
+          "address": "185 Changgyeonggung-ro, Jongno-gu, Seoul",
+          "lat": 37.57888796739405,
+          "lng": 126.99465788333575,
+          "stay_minutes": 90,
+          "notes": "Adjacent to Changdeokgung, this palace has a more tragic history, often used for royal concubines and later transformed into a zoo and botanical garden during the Japanese colonial period. It offers a more tranquil, reflective experience.",
+          "area": "jongno"
+        },
+        {
+          "name": "Ikseon-dong Hanok Street (익선동 한옥거리)",
+          "type": "street",
+          "address": "Ikseon-dong, Jongno-gu, Seoul",
+          "lat": 37.573393345968874,
+          "lng": 126.99091885285405,
+          "stay_minutes": 60,
+          "notes": "Conclude your day in this charming alleyway filled with modernized hanoks, now housing trendy cafes, restaurants, and shops. It's a perfect blend of tradition and contemporary Seoul.",
+          "area": "jongno"
+        }
+      ],
+      "estimated_cost": "₩70,000-₩100,000",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Mokkoji",
+          "to_name": "Gwanghwamun Square (광화문광장)",
+          "distance_km": 1.12,
+          "walk_minutes": 17,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5618686,126.9733868&ep=37.571620087032585,126.97676492906585&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5618686,126.9733868&ep=37.571620087032585,126.97676492906585&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "Gwanghwamun Square (광화문광장)",
+          "to_name": "National Museum of Korean Contemporary History",
+          "distance_km": 0.28,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.571620087032585,126.97676492906585&ep=37.5739432,126.9779299&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.571620087032585,126.97676492906585&ep=37.5739432,126.9779299&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "National Museum of Korean Contemporary History",
+          "to_name": "The Restaurant",
+          "distance_km": 0.79,
+          "walk_minutes": 12,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5739432,126.9779299&ep=37.5808101,126.9803885&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5739432,126.9779299&ep=37.5808101,126.9803885&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "The Restaurant",
+          "to_name": "Bukchon Hanok Village (북촌한옥마을)",
+          "distance_km": 0.58,
+          "walk_minutes": 9,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5808101,126.9803885&ep=37.579018508290275,126.98661052339429&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5808101,126.9803885&ep=37.579018508290275,126.98661052339429&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Bukchon Hanok Village (북촌한옥마을)",
+          "to_name": "Changdeokgung Palace Complex [UNESCO World Heritage Site] (창덕궁과 후원 [유네스코 세계유산])",
+          "distance_km": 0.32,
+          "walk_minutes": 5,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.579018508290275,126.98661052339429&ep=37.579356686853515,126.99019110040985&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.579018508290275,126.98661052339429&ep=37.579356686853515,126.99019110040985&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "Changdeokgung Palace Complex [UNESCO World Heritage Site] (창덕궁과 후원 [유네스코 세계유산])",
+          "to_name": "Changgyeonggung Palace (창경궁)",
+          "distance_km": 0.4,
+          "walk_minutes": 6,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.579356686853515,126.99019110040985&ep=37.57888796739405,126.99465788333575&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.579356686853515,126.99019110040985&ep=37.57888796739405,126.99465788333575&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 6,
+          "to_idx": 7,
+          "from_name": "Changgyeonggung Palace (창경궁)",
+          "to_name": "Ikseon-dong Hanok Street (익선동 한옥거리)",
+          "distance_km": 0.69,
+          "walk_minutes": 10,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.57888796739405,126.99465788333575&ep=37.573393345968874,126.99091885285405&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.57888796739405,126.99465788333575&ep=37.573393345968874,126.99091885285405&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "theme": "Seoul's Urban History and Market Culture in Jongno",
+      "pois": [
+        {
+          "name": "The Spoon",
+          "type": "restaurant",
+          "address": "61-1 Migeun-dong, Seodaemun-gu",
+          "lat": 37.5625073,
+          "lng": 126.9665819,
+          "stay_minutes": 60,
+          "notes": "A cozy spot for lunch, offering a variety of dishes to refuel before continuing your historical exploration. Conveniently located near the museum.",
+          "area": "jongno"
+        },
+        {
+          "name": "Seoul Museum of History",
+          "type": "tourist_spot",
+          "address": "55 Saemunan-ro, Jongno District, Seoul, South Korea",
+          "lat": 37.5704616,
+          "lng": 126.9705126,
+          "stay_minutes": 60,
+          "notes": "Gain a comprehensive understanding of Seoul's past from the Joseon Dynasty to modern times, including urban development and the daily lives of its people.",
+          "area": "jongno"
+        },
+        {
+          "name": "Gongpyeong Historic Sites Museum",
+          "type": "tourist_spot",
+          "address": "26 Ujeongguk-ro, Jongno District, Seoul, South Korea",
+          "lat": 37.571845,
+          "lng": 126.9833671,
+          "stay_minutes": 60,
+          "notes": "Discover the archaeological findings from the Gongpyeong-dong area, revealing layers of Seoul's history from ancient times beneath modern structures.",
+          "area": "jongno"
+        },
+        {
+          "name": "Insa-dong Culture Street",
+          "type": "tourist_spot",
+          "address": "Insa-dong, Jongno District, Seoul, South Korea",
+          "lat": 37.5721517,
+          "lng": 126.9867517,
+          "stay_minutes": 60,
+          "notes": "While Insadong is its own neighborhood, this section within Jongno District offers a taste of its traditional charm, with art galleries and traditional craft shops, linking to historical Korean artistry.",
+          "area": "jongno"
+        },
+        {
+          "name": "Gwangjang Market (광장시장)",
+          "type": "shopping",
+          "address": "88, Changgyeonggung-ro, Jongno-gu, Seoul",
+          "lat": 37.570467421762785,
+          "lng": 127.00033715844381,
+          "stay_minutes": 90,
+          "notes": "Experience one of Korea's oldest and largest traditional markets. While famous for its street food, it's also a historical hub of commerce and local culture, perfect for a casual dinner.",
+          "area": "jongno"
+        },
+        {
+          "name": "Seoul City Wall Museum",
+          "type": "tourist_spot",
+          "address": "283 Yulgok-ro, Jongno District, Seoul, South Korea",
+          "lat": 37.5728474,
+          "lng": 127.0085027,
+          "stay_minutes": 60,
+          "notes": "Learn about the fascinating history and significance of the Seoul City Wall, a UNESCO World Heritage Tentative Site that once protected the city.",
+          "area": "jongno"
+        }
+      ],
+      "estimated_cost": "₩60,000-₩90,000",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "The Spoon",
+          "to_name": "Seoul Museum of History",
+          "distance_km": 0.95,
+          "walk_minutes": 14,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5625073,126.9665819&ep=37.5704616,126.9705126&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5625073,126.9665819&ep=37.5704616,126.9705126&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "Seoul Museum of History",
+          "to_name": "Gongpyeong Historic Sites Museum",
+          "distance_km": 1.14,
+          "walk_minutes": 17,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5704616,126.9705126&ep=37.571845,126.9833671&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5704616,126.9705126&ep=37.571845,126.9833671&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Gongpyeong Historic Sites Museum",
+          "to_name": "Insa-dong Culture Street",
+          "distance_km": 0.3,
+          "walk_minutes": 5,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.571845,126.9833671&ep=37.5721517,126.9867517&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.571845,126.9833671&ep=37.5721517,126.9867517&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Insa-dong Culture Street",
+          "to_name": "Gwangjang Market (광장시장)",
+          "distance_km": 1.21,
+          "walk_minutes": 18,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5721517,126.9867517&ep=37.570467421762785,127.00033715844381&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5721517,126.9867517&ep=37.570467421762785,127.00033715844381&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Gwangjang Market (광장시장)",
+          "to_name": "Seoul City Wall Museum",
+          "distance_km": 0.77,
+          "walk_minutes": 12,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.570467421762785,127.00033715844381&ep=37.5728474,127.0085027&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.570467421762785,127.00033715844381&ep=37.5728474,127.0085027&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "theme": "Traditional Art and Culture in Insadong",
+      "pois": [
+        {
+          "name": "Goryeo Samgyetang Gwanghwamun",
+          "type": "restaurant",
+          "address": "5-1 Sejong-daero 23-gil, Jongno District",
+          "lat": 37.5714453,
+          "lng": 126.9760906,
+          "stay_minutes": 60,
+          "notes": "Enjoy a traditional Samgyetang (ginseng chicken soup) for dinner, a historical and healthy Korean dish perfect for experiencing local flavors.",
+          "area": "insadong"
+        },
+        {
+          "name": "Jogeum",
+          "type": "restaurant",
+          "address": "60 Insadong-gil, Jongno District",
+          "lat": 37.5752805,
+          "lng": 126.983647,
+          "stay_minutes": 60,
+          "notes": "Savor a traditional Korean lunch in the heart of Insadong, offering an authentic culinary experience that complements the area's cultural theme.",
+          "area": "insadong"
+        },
+        {
+          "name": "Insadong Information Center",
+          "type": "tourist_spot",
+          "address": "19 Insadong 11-gil, 종로1.2.3.4가동 Jongno District, Seoul, South Korea",
+          "lat": 37.5736368,
+          "lng": 126.9835776,
+          "stay_minutes": 60,
+          "notes": "Begin your exploration of Insadong by gathering maps and information on the area's many traditional shops, galleries, and cultural events, enhancing your understanding of its historical role.",
+          "area": "insadong"
+        },
+        {
+          "name": "Insadong Culture Street",
+          "type": "tourist_spot",
+          "address": "30-9 Gwanhun-dong, Jongno District, Seoul, South Korea",
+          "lat": 37.5738699,
+          "lng": 126.9850291,
+          "stay_minutes": 60,
+          "notes": "Explore the many side alleys of Insadong, discovering hidden tea houses, antique shops, and art galleries that showcase Korea's rich artistic heritage and history.",
+          "area": "insadong"
+        },
+        {
+          "name": "Insa-dong (인사동)",
+          "type": "shopping",
+          "address": "Insadong-gil, Jongno-gu, Seoul",
+          "lat": 37.57183419516366,
+          "lng": 126.98679180882951,
+          "stay_minutes": 75,
+          "notes": "Stroll down the main street, a vibrant cultural hub where traditional Korean arts, crafts, and souvenirs abound. It's a place where you can truly feel the historical pulse of Seoul.",
+          "area": "insadong"
+        }
+      ],
+      "estimated_cost": "₩60,000-₩90,000",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Goryeo Samgyetang Gwanghwamun",
+          "to_name": "Jogeum",
+          "distance_km": 0.79,
+          "walk_minutes": 12,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5714453,126.9760906&ep=37.5752805,126.983647&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5714453,126.9760906&ep=37.5752805,126.983647&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "Jogeum",
+          "to_name": "Insadong Information Center",
+          "distance_km": 0.18,
+          "walk_minutes": 3,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5752805,126.983647&ep=37.5736368,126.9835776&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5752805,126.983647&ep=37.5736368,126.9835776&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Insadong Information Center",
+          "to_name": "Insadong Culture Street",
+          "distance_km": 0.13,
+          "walk_minutes": 2,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5736368,126.9835776&ep=37.5738699,126.9850291&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5736368,126.9835776&ep=37.5738699,126.9850291&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Insadong Culture Street",
+          "to_name": "Insa-dong (인사동)",
+          "distance_km": 0.27,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5738699,126.9850291&ep=37.57183419516366,126.98679180882951&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5738699,126.9850291&ep=37.57183419516366,126.98679180882951&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "theme": "Deeper Dive into Insadong's Heritage",
+      "pois": [
+        {
+          "name": "장수촌 풍천장어직판장",
+          "type": "restaurant",
+          "address": "7-5 Gwancheol-dong, Jongno District",
+          "lat": 37.569273,
+          "lng": 126.9871725,
+          "stay_minutes": 60,
+          "notes": "Enjoy a hearty Korean lunch at this local eatery, offering another taste of authentic Korean cuisine near Insadong.",
+          "area": "insadong"
+        },
+        {
+          "name": "Insadong-gil Street",
+          "type": "tourist_spot",
+          "address": "Insa-dong, Jongno District, Seoul, South Korea",
+          "lat": 37.5743033,
+          "lng": 126.9844135,
+          "stay_minutes": 60,
+          "notes": "Continue exploring the intricate network of Insadong's main and side streets, perhaps stopping at a traditional tea house for a moment of historical reflection and relaxation.",
+          "area": "insadong"
+        }
+      ],
+      "estimated_cost": "₩60,000-₩90,000",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "장수촌 풍천장어직판장",
+          "to_name": "Insadong-gil Street",
+          "distance_km": 0.61,
+          "walk_minutes": 9,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.569273,126.9871725&ep=37.5743033,126.9844135&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.569273,126.9871725&ep=37.5743033,126.9844135&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "theme": "Historical and Modern Contrasts in Myeongdong",
+      "pois": [
+        {
+          "name": "Namsangol Hanok Village (남산골한옥마을)",
+          "type": "history",
+          "address": "28 Toegye-ro 34-gil, Jung-gu, Seoul",
+          "lat": 37.55684031283972,
+          "lng": 126.99361993997445,
+          "stay_minutes": 60,
+          "notes": "Step back in time at this collection of five traditional hanok houses, relocated and restored to their original forms, representing different social classes of the Joseon Dynasty. Often hosts traditional performances.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Candle 1978",
+          "type": "restaurant",
+          "address": "3층, 95 Sopa-ro, Jung District",
+          "lat": 37.5567924,
+          "lng": 126.9853002,
+          "stay_minutes": 60,
+          "notes": "Enjoy a delicious lunch in Myeongdong, a convenient stop amidst your historical sightseeing.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Seoul Archdiocesan Catholic History Museum",
+          "type": "tourist_spot",
+          "address": "74 Myeongdong-gil, Jung District, Seoul, South Korea",
+          "lat": 37.5635006,
+          "lng": 126.9864116,
+          "stay_minutes": 60,
+          "notes": "Explore the history of Catholicism in Korea, a significant part of the nation's modern social and political history, especially relevant given the Myeongdong Cathedral's historical role.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Site of Yi Jaemyeong's Patriotic Deed",
+          "type": "tourist_spot",
+          "address": "South Korea, Seoul, Jung District, Myeongdong-gil, 80 가톨릭회관",
+          "lat": 37.5643208,
+          "lng": 126.9867068,
+          "stay_minutes": 60,
+          "notes": "Visit this site commemorating a significant act of resistance during the Japanese colonial period, reflecting a lesser-known but crucial part of Korean history.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Din Tai Fung Myeongdong",
+          "type": "restaurant",
+          "address": "2층 딘타이펑, 호텔28, 13 Myeongdong 7-gil, Jung District",
+          "lat": 37.5643649,
+          "lng": 126.9839488,
+          "stay_minutes": 60,
+          "notes": "For dinner, enjoy the famous Taiwanese xiaolongbao at this popular Myeongdong branch, a delicious and internationally renowned culinary experience.",
+          "area": "jongno"
+        },
+        {
+          "name": "Myeong-dong (명동)",
+          "type": "shopping",
+          "address": "Myeongdong-gil, Jung-gu, Seoul",
+          "lat": 37.5637988511093,
+          "lng": 126.98336409114219,
+          "stay_minutes": 150,
+          "notes": "Experience Myeongdong's bustling streets, a historical commercial district that has evolved into a vibrant hub of fashion, cosmetics, and street food. It's a snapshot of modern Seoul built upon historical foundations.",
+          "area": "myeongdong"
+        }
+      ],
+      "estimated_cost": "₩70,000-₩100,000",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Namsangol Hanok Village (남산골한옥마을)",
+          "to_name": "Candle 1978",
+          "distance_km": 0.73,
+          "walk_minutes": 11,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.55684031283972,126.99361993997445&ep=37.5567924,126.9853002&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.55684031283972,126.99361993997445&ep=37.5567924,126.9853002&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "Candle 1978",
+          "to_name": "Seoul Archdiocesan Catholic History Museum",
+          "distance_km": 0.75,
+          "walk_minutes": 11,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5567924,126.9853002&ep=37.5635006,126.9864116&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5567924,126.9853002&ep=37.5635006,126.9864116&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Seoul Archdiocesan Catholic History Museum",
+          "to_name": "Site of Yi Jaemyeong's Patriotic Deed",
+          "distance_km": 0.09,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5635006,126.9864116&ep=37.5643208,126.9867068&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5635006,126.9864116&ep=37.5643208,126.9867068&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Site of Yi Jaemyeong's Patriotic Deed",
+          "to_name": "Din Tai Fung Myeongdong",
+          "distance_km": 0.24,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5643208,126.9867068&ep=37.5643649,126.9839488&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5643208,126.9867068&ep=37.5643649,126.9839488&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Din Tai Fung Myeongdong",
+          "to_name": "Myeong-dong (명동)",
+          "distance_km": 0.08,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5643649,126.9839488&ep=37.5637988511093,126.98336409114219&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5643649,126.9839488&ep=37.5637988511093,126.98336409114219&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "theme": "Tracing Seoul's Transformation in Myeongdong",
+      "pois": [
+        {
+          "name": "Culture Station Seoul 284 (문화역서울284)",
+          "type": "museum",
+          "address": "1, Tongil-ro, Jung-gu, Seoul",
+          "lat": 37.55604091654651,
+          "lng": 126.97159453695092,
+          "stay_minutes": 60,
+          "notes": "Visit the former Seoul Station, a beautiful historical building transformed into a multidisciplinary cultural complex, offering a glimpse into Korea's modern architectural history and cultural evolution.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Seoullo 7017 (서울로7017)",
+          "type": "park",
+          "address": "432, Cheongpa-ro, Jung-gu, Seoul",
+          "lat": 37.55802066806207,
+          "lng": 126.97021517476847,
+          "stay_minutes": 45,
+          "notes": "Walk along this elevated pedestrian park, a repurposed highway overpass. It offers unique city views and highlights Seoul's urban regeneration, connecting historical sites with modern developments.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Hanyang Doseong (Fortress Walls) Historic Site Museum",
+          "type": "tourist_spot",
+          "address": "99 Sowol-ro, Jung District, Seoul, South Korea",
+          "lat": 37.5537842,
+          "lng": 126.9821227,
+          "stay_minutes": 60,
+          "notes": "Delve into the history of Seoul's ancient fortress walls, a crucial part of the city's defense and urban planning during the Joseon Dynasty. It offers a deeper understanding of historical Seoul.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Myeongdong Shopping Street",
+          "type": "tourist_spot",
+          "address": "Myeong-dong 2(i)-ga, Jung District, Seoul, South Korea",
+          "lat": 37.5637699,
+          "lng": 126.9844765,
+          "stay_minutes": 60,
+          "notes": "Explore the vibrant Myeongdong streets further, appreciating its historical role as a commercial hub while enjoying its modern energy. It's a great place for people-watching and soaking in the atmosphere.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Seoul Plaza (서울광장)",
+          "type": "tourist_spot",
+          "address": "110 Sejong-daero, Jung-gu, Seoul",
+          "lat": 37.565648719806816,
+          "lng": 126.98814254820141,
+          "stay_minutes": 20,
+          "notes": "A significant public space in front of City Hall, Seoul Plaza has been a site for many historical events and demonstrations, reflecting the city's democratic progress.",
+          "area": "myeongdong"
+        },
+        {
+          "name": "Berlin Wall",
+          "type": "tourist_spot",
+          "address": "1-7 Janggyo-dong, Jung District, Seoul, South Korea",
+          "lat": 37.5677796,
+          "lng": 126.98726,
+          "stay_minutes": 60,
+          "notes": "See a genuine section of the Berlin Wall, a powerful symbol of division and reunification, resonating deeply with Korea's own historical context.",
+          "area": "myeongdong"
+        }
+      ],
+      "estimated_cost": "₩70,000-₩100,000",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Culture Station Seoul 284 (문화역서울284)",
+          "to_name": "Seoullo 7017 (서울로7017)",
+          "distance_km": 0.25,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.55604091654651,126.97159453695092&ep=37.55802066806207,126.97021517476847&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.55604091654651,126.97159453695092&ep=37.55802066806207,126.97021517476847&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "Seoullo 7017 (서울로7017)",
+          "to_name": "Hanyang Doseong (Fortress Walls) Historic Site Museum",
+          "distance_km": 1.15,
+          "walk_minutes": 17,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.55802066806207,126.97021517476847&ep=37.5537842,126.9821227&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.55802066806207,126.97021517476847&ep=37.5537842,126.9821227&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Hanyang Doseong (Fortress Walls) Historic Site Museum",
+          "to_name": "Myeongdong Shopping Street",
+          "distance_km": 1.13,
+          "walk_minutes": 17,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5537842,126.9821227&ep=37.5637699,126.9844765&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5537842,126.9821227&ep=37.5637699,126.9844765&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Myeongdong Shopping Street",
+          "to_name": "Seoul Plaza (서울광장)",
+          "distance_km": 0.38,
+          "walk_minutes": 6,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5637699,126.9844765&ep=37.565648719806816,126.98814254820141&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5637699,126.9844765&ep=37.565648719806816,126.98814254820141&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Seoul Plaza (서울광장)",
+          "to_name": "Berlin Wall",
+          "distance_km": 0.25,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.565648719806816,126.98814254820141&ep=37.5677796,126.98726&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.565648719806816,126.98814254820141&ep=37.5677796,126.98726&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "theme": "Myeongdong's Enduring Legacy and Modern Charm",
+      "pois": [],
+      "estimated_cost": "₩70,000-₩100,000",
+      "transit_legs": []
+    }
+  ],
+  "sources": [
+    {
+      "course_id": "VS_MVP_012_DAY1",
+      "course_title": "3 nights 4 days course for novices",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/3nights4dayscoursefornovices/ENN034895"
+    },
+    {
+      "course_id": "VK_THEME_004",
+      "course_title": "An authentic Korean trip, traditional and charming.",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=253"
+    },
+    {
+      "course_id": "VS_MVP_033_DAY1",
+      "course_title": "If you are a cultural traveler",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/Ifyouareaculturaltraveler/ENN036599"
+    },
+    {
+      "course_id": "VS_MVP_013_DAY2",
+      "course_title": "2 nights 3 days course for novices",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/2nights3dayscoursefornovices/ENN034735"
+    },
+    {
+      "course_id": "VK_THEME_010",
+      "course_title": "Seoul Must-Do for First-Time Visitors",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=251"
+    },
+    {
+      "course_id": "VS_MVP_013_DAY1",
+      "course_title": "2 nights 3 days course for novices",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/2nights3dayscoursefornovices/ENN034735"
+    },
+    {
+      "course_id": "VS_MVP_030_DAY1AND2",
+      "course_title": "If you visit Seoul for the first time",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouvisitSeoulforthefirsttime/ENN036597"
+    },
+    {
+      "course_id": "VS_MVP_033_DAY2",
+      "course_title": "If you are a cultural traveler",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/Ifyouareaculturaltraveler/ENN036599"
+    }
+  ],
+  "requested_areas": [
+    "jongno",
+    "insadong",
+    "myeongdong"
+  ],
+  "area_coverage": {
+    "jongno": 43,
+    "insadong": 9,
+    "myeongdong": 17
+  },
+  "repair_log": [
+    "Removed duplicate POI: Insa-dong (인사동).",
+    "Removed duplicate POI: Gongpyeong Historic Sites Museum.",
+    "Removed duplicate POI: Jogeum.",
+    "Removed duplicate POI: Candle 1978.",
+    "Removed duplicate POI: Myeong-dong (명동).",
+    "Removed duplicate POI: Myeongdong Shopping Street.",
+    "Removed duplicate POI: Din Tai Fung Myeongdong.",
+    "Removed duplicate POI: Culture Station Seoul 284 (문화역서울284).",
+    "Removed duplicate POI: Seoul Plaza (서울광장).",
+    "Removed duplicate POI: Candle 1978."
+  ],
+  "removed_pois": [],
+  "critic_report": {
+    "before": {
+      "overall_score": 0.977,
+      "feasibility_score": 1.0,
+      "requested_area_coverage_score": 1.0,
+      "duplicate_score": 0.85,
+      "foreigner_readiness_score": 1.0,
+      "requested_areas": [
+        "jongno",
+        "insadong",
+        "myeongdong"
+      ],
+      "area_coverage": {
+        "jongno": 43,
+        "insadong": 9,
+        "myeongdong": 17
+      },
+      "missing_areas": [],
+      "issues": [
+        {
+          "code": "DUPLICATE_POIS",
+          "severity": "low",
+          "message": "Duplicate POIs found: Insa-dong (인사동), Gongpyeong Historic Sites Museum, Jogeum, Candle 1978, Myeong-dong (명동), Myeongdong Shopping Street, Din Tai Fung Myeongdong, Culture Station Seoul 284 (문화역서울284), Seoul Plaza (서울광장), Candle 1978.",
+          "day": null,
+          "area": null
+        }
+      ]
+    },
+    "after": {
+      "overall_score": 0.94,
+      "feasibility_score": 0.829,
+      "requested_area_coverage_score": 1.0,
+      "duplicate_score": 1.0,
+      "foreigner_readiness_score": 1.0,
+      "requested_areas": [
+        "jongno",
+        "insadong",
+        "myeongdong"
+      ],
+      "area_coverage": {
+        "jongno": 33,
+        "insadong": 7,
+        "myeongdong": 11
+      },
+      "missing_areas": [],
+      "issues": [
+        {
+          "code": "TOO_FEW_POIS",
+          "severity": "medium",
+          "message": "Day 4 has only 2 POIs; at least 5 are recommended.",
+          "day": 4,
+          "area": null
+        },
+        {
+          "code": "NO_MEAL_SLOT",
+          "severity": "medium",
+          "message": "Day 6 has no clear cafe/restaurant/market slot.",
+          "day": 6,
+          "area": null
+        },
+        {
+          "code": "TOO_FEW_POIS",
+          "severity": "medium",
+          "message": "Day 7 has only 0 POIs; at least 5 are recommended.",
+          "day": 7,
+          "area": null
+        },
+        {
+          "code": "NO_MEAL_SLOT",
+          "severity": "medium",
+          "message": "Day 7 has no clear cafe/restaurant/market slot.",
+          "day": 7,
+          "area": null
+        }
+      ]
+    },
+    "repair_applied": true,
+    "repair_log": [
+      "Removed duplicate POI: Insa-dong (인사동).",
+      "Removed duplicate POI: Gongpyeong Historic Sites Museum.",
+      "Removed duplicate POI: Jogeum.",
+      "Removed duplicate POI: Candle 1978.",
+      "Removed duplicate POI: Myeong-dong (명동).",
+      "Removed duplicate POI: Myeongdong Shopping Street.",
+      "Removed duplicate POI: Din Tai Fung Myeongdong.",
+      "Removed duplicate POI: Culture Station Seoul 284 (문화역서울284).",
+      "Removed duplicate POI: Seoul Plaza (서울광장).",
+      "Removed duplicate POI: Candle 1978."
+    ]
+  }
+}

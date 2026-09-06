@@ -1,0 +1,1517 @@
+{
+  "summary": "This 10-day personalized Seoul itinerary guides foreign tourists through the historical charm of Jongno and Insadong, the multicultural vibrancy of Itaewon, the youthful energy of Hongdae, the trendy industrial-chic of Seongsu, and the modern luxury and K-POP pulse of Gangnam, balancing history, shopping, food, and activities.",
+  "days": [
+    {
+      "day": 1,
+      "theme": "Historic Palaces, Traditional Culture, and K-Pop in Jongno",
+      "pois": [
+        {
+          "name": "K-pop Shop by CC",
+          "type": "kpop_landmark",
+          "address": "South Korea, Seoul, Jongno District, Jahamun-ro, 31 크레이브센터 1F",
+          "lat": 37.57884689999999,
+          "lng": 126.9713868,
+          "stay_minutes": 60,
+          "notes": "Start your day with a K-POP shopping experience near the palace. This spot offers a variety of idol merchandise, perfect for K-POP fans to find unique souvenirs.",
+          "area": "jongno"
+        },
+        {
+          "name": "Gyeongbokgung Palace (경복궁)",
+          "type": "history",
+          "address": "161, Sajik-ro, Jongno-gu, Seoul",
+          "lat": 37.57755982674375,
+          "lng": 126.97631055236648,
+          "stay_minutes": 120,
+          "notes": "Immerse yourself in Korean history at Seoul's largest and most beautiful palace. Don't miss the changing of the guard ceremony (check times) and consider renting a hanbok for memorable photos.",
+          "area": "jongno"
+        },
+        {
+          "name": "Gwanghwamun Square (광화문)",
+          "type": "history",
+          "address": "172, Sejong-daero, Jongno-gu, Seoul",
+          "lat": 37.571620087032585,
+          "lng": 126.97676492906585,
+          "stay_minutes": 60,
+          "notes": "Walk through this grand public space featuring statues of King Sejong the Great and Admiral Yi Sun-sin, symbolizing Korean heritage and spirit.",
+          "area": "jongno"
+        },
+        {
+          "name": "Bukchon Hanok Village (북촌 한옥마을)",
+          "type": "history",
+          "address": "37, Gyedong-gil, Jongno-gu, Seoul",
+          "lat": 37.579018508290275,
+          "lng": 126.98661052339429,
+          "stay_minutes": 90,
+          "notes": "Wander through this traditional Korean village, home to hundreds of hanok (traditional Korean houses). It offers a glimpse into Seoul's 600-year history.",
+          "area": "jongno"
+        },
+        {
+          "name": "The Restaurant",
+          "type": "restaurant",
+          "address": "54 Samcheong-ro, Jongno District",
+          "lat": 37.5808101,
+          "lng": 126.9803885,
+          "stay_minutes": 60,
+          "notes": "Enjoy a delicious lunch in the scenic Samcheong-dong area, known for its art galleries and cafes. This restaurant offers a great opportunity to recharge before more exploration.",
+          "area": "jongno"
+        },
+        {
+          "name": "Samcheong-dong (삼청동)",
+          "type": "street",
+          "address": "Samcheong-ro, Jongno-gu, Seoul",
+          "lat": 37.57609593622847,
+          "lng": 126.9794121359672,
+          "stay_minutes": 90,
+          "notes": "Explore the charming streets of Samcheong-dong, known for its unique shops, art galleries, and cafes. It's a great spot for leisurely activity and finding local crafts.",
+          "area": "jongno"
+        },
+        {
+          "name": "Ikseon-dong (익선동)",
+          "type": "history",
+          "address": "Supyo-ro 28-gil, Jongno-gu, Seoul",
+          "lat": 37.5729359053835,
+          "lng": 126.98916531993306,
+          "stay_minutes": 90,
+          "notes": "Discover Ikseon-dong Hanok Village, a blend of traditional hanoks reimagined as trendy cafes, restaurants, and boutiques. Perfect for a cultural and culinary evening.",
+          "area": "jongno"
+        },
+        {
+          "name": "Gwangjang Market (광장시장)",
+          "type": "shopping",
+          "address": "88, Changgyeonggung-ro, Jongno-gu, Seoul",
+          "lat": 37.570467421762785,
+          "lng": 127.00033715844381,
+          "stay_minutes": 90,
+          "notes": "Experience the bustling atmosphere of one of Korea's oldest and largest traditional markets. A must-visit for street food (like bindaetteok) and local goods, offering an authentic 'food' and 'shopping' experience.",
+          "area": "jongno"
+        }
+      ],
+      "estimated_cost": "70,000-100,000 KRW (includes food, palace entry, shopping)",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "K-pop Shop by CC",
+          "to_name": "Gyeongbokgung Palace (경복궁)",
+          "distance_km": 0.46,
+          "walk_minutes": 7,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.57884689999999,126.9713868&ep=37.57755982674375,126.97631055236648&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.57884689999999,126.9713868&ep=37.57755982674375,126.97631055236648&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "Gyeongbokgung Palace (경복궁)",
+          "to_name": "Gwanghwamun Square (광화문)",
+          "distance_km": 0.66,
+          "walk_minutes": 10,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.57755982674375,126.97631055236648&ep=37.571620087032585,126.97676492906585&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.57755982674375,126.97631055236648&ep=37.571620087032585,126.97676492906585&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Gwanghwamun Square (광화문)",
+          "to_name": "Bukchon Hanok Village (북촌 한옥마을)",
+          "distance_km": 1.2,
+          "walk_minutes": 18,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.571620087032585,126.97676492906585&ep=37.579018508290275,126.98661052339429&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.571620087032585,126.97676492906585&ep=37.579018508290275,126.98661052339429&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Bukchon Hanok Village (북촌 한옥마을)",
+          "to_name": "The Restaurant",
+          "distance_km": 0.58,
+          "walk_minutes": 9,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.579018508290275,126.98661052339429&ep=37.5808101,126.9803885&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.579018508290275,126.98661052339429&ep=37.5808101,126.9803885&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "The Restaurant",
+          "to_name": "Samcheong-dong (삼청동)",
+          "distance_km": 0.53,
+          "walk_minutes": 8,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5808101,126.9803885&ep=37.57609593622847,126.9794121359672&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5808101,126.9803885&ep=37.57609593622847,126.9794121359672&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "Samcheong-dong (삼청동)",
+          "to_name": "Ikseon-dong (익선동)",
+          "distance_km": 0.93,
+          "walk_minutes": 14,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.57609593622847,126.9794121359672&ep=37.5729359053835,126.98916531993306&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.57609593622847,126.9794121359672&ep=37.5729359053835,126.98916531993306&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 6,
+          "to_idx": 7,
+          "from_name": "Ikseon-dong (익선동)",
+          "to_name": "Gwangjang Market (광장시장)",
+          "distance_km": 1.02,
+          "walk_minutes": 15,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5729359053835,126.98916531993306&ep=37.570467421762785,127.00033715844381&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5729359053835,126.98916531993306&ep=37.570467421762785,127.00033715844381&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "theme": "Art, Culture, and K-Pop Finds in Insadong",
+      "pois": [
+        {
+          "name": "Jogeum",
+          "type": "restaurant",
+          "address": "60 Insadong-gil, Jongno District",
+          "lat": 37.5752805,
+          "lng": 126.983647,
+          "stay_minutes": 60,
+          "notes": "Enjoy a delicious lunch at Jogeum, a highly-rated restaurant in Insadong, offering a taste of local cuisine in a charming setting.",
+          "area": "insadong"
+        },
+        {
+          "name": "theSameE Insa",
+          "type": "kpop_landmark",
+          "address": "South Korea, Seoul, Jongno District, Gwanhun-dong, 인사동길 49",
+          "lat": 37.574265,
+          "lng": 126.9835351,
+          "stay_minutes": 60,
+          "notes": "Another excellent spot for K-POP enthusiasts to browse and purchase official merchandise and albums, enriching your K-POP 'shopping' experience.",
+          "area": "insadong"
+        },
+        {
+          "name": "Anyoung Insadong Shopping Mall",
+          "type": "tourist_spot",
+          "address": "49 Insadong-gil, Jongno District, Seoul, South Korea",
+          "lat": 37.5745329,
+          "lng": 126.9834556,
+          "stay_minutes": 60,
+          "notes": "Begin your exploration of Insadong at this modern complex blending with traditional aesthetics. It houses various shops, cafes, and cultural spaces, including K-POP stores.",
+          "area": "insadong"
+        },
+        {
+          "name": "Ktown4u Insa",
+          "type": "kpop_landmark",
+          "address": "49 3F Insadong-gil, Jongno District, Seoul, South Korea",
+          "lat": 37.5745514,
+          "lng": 126.9837955,
+          "stay_minutes": 60,
+          "notes": "A haven for K-POP fans, located within Anyoung Insadong. Find a wide selection of albums, merchandise, and fan items to satisfy your K-POP desires.",
+          "area": "insadong"
+        },
+        {
+          "name": "Music Complex Seoul",
+          "type": "kpop_landmark",
+          "address": "49 Insadong-gil, Jongno District, Seoul, South Korea",
+          "lat": 37.5745213,
+          "lng": 126.9838508,
+          "stay_minutes": 60,
+          "notes": "Dive deeper into the K-POP world with a visit to this music complex, offering more K-POP related items and experiences.",
+          "area": "insadong"
+        },
+        {
+          "name": "Insadong Ssamziegil (인사동 쌈지길)",
+          "type": "shopping",
+          "address": "44 Insadong-gil, Jongno-gu, Seoul",
+          "lat": 37.574251039742435,
+          "lng": 126.9848357918581,
+          "stay_minutes": 75,
+          "notes": "This unique spiral shopping complex offers traditional Korean crafts, art, and fashion. It's an 'activity' in itself to explore its four floors.",
+          "area": "insadong"
+        },
+        {
+          "name": "Insa-dong (인사동)",
+          "type": "shopping",
+          "address": "Insadong-gil, Jongno-gu, Seoul",
+          "lat": 37.57183419516366,
+          "lng": 126.98679180882951,
+          "stay_minutes": 90,
+          "notes": "Stroll down the main street of Insadong, famous for its traditional tea houses, antique shops, art galleries, and street performances. Perfect for 'shopping' and experiencing 'local culture'.",
+          "area": "insadong"
+        }
+      ],
+      "estimated_cost": "60,000-90,000 KRW (includes food, cultural experiences, shopping)",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Jogeum",
+          "to_name": "theSameE Insa",
+          "distance_km": 0.11,
+          "walk_minutes": 2,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5752805,126.983647&ep=37.574265,126.9835351&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5752805,126.983647&ep=37.574265,126.9835351&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "theSameE Insa",
+          "to_name": "Anyoung Insadong Shopping Mall",
+          "distance_km": 0.03,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.574265,126.9835351&ep=37.5745329,126.9834556&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.574265,126.9835351&ep=37.5745329,126.9834556&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Anyoung Insadong Shopping Mall",
+          "to_name": "Ktown4u Insa",
+          "distance_km": 0.03,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5745329,126.9834556&ep=37.5745514,126.9837955&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5745329,126.9834556&ep=37.5745514,126.9837955&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Ktown4u Insa",
+          "to_name": "Music Complex Seoul",
+          "distance_km": 0.01,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5745514,126.9837955&ep=37.5745213,126.9838508&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5745514,126.9837955&ep=37.5745213,126.9838508&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Music Complex Seoul",
+          "to_name": "Insadong Ssamziegil (인사동 쌈지길)",
+          "distance_km": 0.09,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5745213,126.9838508&ep=37.574251039742435,126.9848357918581&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5745213,126.9838508&ep=37.574251039742435,126.9848357918581&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "Insadong Ssamziegil (인사동 쌈지길)",
+          "to_name": "Insa-dong (인사동)",
+          "distance_km": 0.32,
+          "walk_minutes": 5,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.574251039742435,126.9848357918581&ep=37.57183419516366,126.98679180882951&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.574251039742435,126.9848357918581&ep=37.57183419516366,126.98679180882951&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "theme": "Panoramic Views, History, and Global Flavors in Itaewon",
+      "pois": [
+        {
+          "name": "Namsan Cable Car / N Seoul Tower (남산 케이블카 / N서울타워)",
+          "type": "tourist_spot",
+          "address": "105, Namsangongwon-gil, Yongsan-gu, Seoul",
+          "lat": 37.551069611276915,
+          "lng": 126.98787105045352,
+          "stay_minutes": 150,
+          "notes": "Start your day with breathtaking panoramic views of Seoul from N Seoul Tower, accessed via the Namsan Cable Car. A great 'activity' for sightseeing and photos.",
+          "area": "yongsan"
+        },
+        {
+          "name": "The War Memorial of Korea (전쟁기념관)",
+          "type": "museum",
+          "address": "29 Itaewon-ro, Yongsan-gu, Seoul",
+          "lat": 37.53665904267028,
+          "lng": 126.97711896758852,
+          "stay_minutes": 120,
+          "notes": "Gain insight into Korea's military history and conflicts at this comprehensive museum. An important 'history' and 'cultural' experience.",
+          "area": "itaewon"
+        },
+        {
+          "name": "Itaewon (이태원)",
+          "type": "shopping",
+          "address": "Itaewon-ro, Yongsan-gu, Seoul",
+          "lat": 37.53560506936094,
+          "lng": 126.97484019906094,
+          "stay_minutes": 90,
+          "notes": "Wander through Itaewon's main street, known for its unique shops, tailor services, and foreign goods. It's a great spot for 'shopping' and experiencing a diverse side of Seoul.",
+          "area": "itaewon"
+        },
+        {
+          "name": "Gyeongnidan-gil (경리단길)",
+          "type": "street",
+          "address": "Hoehwa-ro area, Yongsan-gu, Seoul",
+          "lat": 37.53873417103192,
+          "lng": 126.9880455602395,
+          "stay_minutes": 60,
+          "notes": "Discover the trendy Gyeongnidan-gil street, famous for its independent cafes, restaurants, and unique shops. A perfect spot for a leisurely 'activity' and 'shopping'.",
+          "area": "yongsan"
+        },
+        {
+          "name": "Taco Amigo",
+          "type": "restaurant",
+          "address": "13 Hoenamu-ro, Yongsan District",
+          "lat": 37.53884,
+          "lng": 126.98825,
+          "stay_minutes": 60,
+          "notes": "Enjoy dinner at Taco Amigo, a highly-rated restaurant offering delicious Mexican cuisine, perfectly fitting Itaewon's international 'food' scene.",
+          "area": "itaewon"
+        },
+        {
+          "name": "Itaewon World Food Street",
+          "type": "tourist_spot",
+          "address": "119-6 Itaewon-dong, Yongsan District, Seoul, South Korea",
+          "lat": 37.5349631,
+          "lng": 126.9933922,
+          "stay_minutes": 60,
+          "notes": "Explore a diverse range of international cuisines, perfect for lunch. This street embodies Itaewon's multicultural 'food' scene.",
+          "area": "itaewon"
+        },
+        {
+          "name": "CAFE TAPE",
+          "type": "kpop_landmark",
+          "address": "South Korea, Seoul, Yongsan District, Itaewon-dong, 63-5, 2층",
+          "lat": 37.5334678,
+          "lng": 126.9907606,
+          "stay_minutes": 60,
+          "notes": "Take a break at CAFE TAPE, a popular cafe with a unique, artistic vibe often frequented by K-POP fans, offering a relaxing 'cafe' experience.",
+          "area": "itaewon"
+        }
+      ],
+      "estimated_cost": "80,000-120,000 KRW (includes N Seoul Tower, food, shopping)",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Namsan Cable Car / N Seoul Tower (남산 케이블카 / N서울타워)",
+          "to_name": "The War Memorial of Korea (전쟁기념관)",
+          "distance_km": 1.86,
+          "walk_minutes": 28,
+          "car_minutes": 4,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.551069611276915,126.98787105045352&ep=37.53665904267028,126.97711896758852&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.551069611276915,126.98787105045352&ep=37.53665904267028,126.97711896758852&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "The War Memorial of Korea (전쟁기념관)",
+          "to_name": "Itaewon (이태원)",
+          "distance_km": 0.23,
+          "walk_minutes": 3,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.53665904267028,126.97711896758852&ep=37.53560506936094,126.97484019906094&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.53665904267028,126.97711896758852&ep=37.53560506936094,126.97484019906094&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Itaewon (이태원)",
+          "to_name": "Gyeongnidan-gil (경리단길)",
+          "distance_km": 1.22,
+          "walk_minutes": 18,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.53560506936094,126.97484019906094&ep=37.53873417103192,126.9880455602395&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.53560506936094,126.97484019906094&ep=37.53873417103192,126.9880455602395&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Gyeongnidan-gil (경리단길)",
+          "to_name": "Taco Amigo",
+          "distance_km": 0.02,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.53873417103192,126.9880455602395&ep=37.53884,126.98825&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.53873417103192,126.9880455602395&ep=37.53884,126.98825&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Taco Amigo",
+          "to_name": "Itaewon World Food Street",
+          "distance_km": 0.63,
+          "walk_minutes": 9,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.53884,126.98825&ep=37.5349631,126.9933922&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.53884,126.98825&ep=37.5349631,126.9933922&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "Itaewon World Food Street",
+          "to_name": "CAFE TAPE",
+          "distance_km": 0.29,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5349631,126.9933922&ep=37.5334678,126.9907606&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5349631,126.9933922&ep=37.5334678,126.9907606&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "theme": "Youthful Vibes, Indie Culture, and K-Pop in Hongdae & Mangwon",
+      "pois": [
+        {
+          "name": "Mangwon Hangang Park (한강시민공원 망원지구 (망원한강공원))",
+          "type": "park",
+          "address": "467 Maponaru-gil, Mapo-gu, Seoul",
+          "lat": 37.552343677962696,
+          "lng": 126.89988649187372,
+          "stay_minutes": 90,
+          "notes": "Begin your day with a relaxing stroll or bike ride along the Han River. This 'park' offers a peaceful escape and local 'activity' by the water.",
+          "area": "mangwon"
+        },
+        {
+          "name": "Seoul Battleship Park (서울함공원)",
+          "type": "tourist_spot",
+          "address": "407 Maponaru-gil, Mapo-gu, Seoul",
+          "lat": 37.55578810827803,
+          "lng": 126.89395375611852,
+          "stay_minutes": 45,
+          "notes": "Explore decommissioned naval vessels, including a real battleship, offering a unique and educational 'activity' right on the Han River.",
+          "area": "mapo"
+        },
+        {
+          "name": "Mangwon Market (망원시장)",
+          "type": "shopping",
+          "address": "27 Poeun-ro 6-gil, Mapo-gu, Seoul",
+          "lat": 37.556006831216976,
+          "lng": 126.90645478423207,
+          "stay_minutes": 45,
+          "notes": "Immerse yourself in a lively local market experience. Perfect for trying traditional Korean street 'food' and finding unique local goods for 'shopping'.",
+          "area": "mangwon"
+        },
+        {
+          "name": "Hongdae (Hongik University Street) (홍대)",
+          "type": "street",
+          "address": "20 Hongik-ro, Mapo-gu, Seoul",
+          "lat": 37.553922523080644,
+          "lng": 126.9134558741011,
+          "stay_minutes": 90,
+          "notes": "Dive into the vibrant, youthful atmosphere of Hongdae, renowned for its street art, indie music, fashion boutiques, and street performances. An excellent spot for 'shopping' and 'activity'.",
+          "area": "hongdae"
+        },
+        {
+          "name": "K-POP SQUARE Hongdae",
+          "type": "kpop_landmark",
+          "address": "141 Yanghwa-ro, Mapo-gu, Seoul, South Korea",
+          "lat": 37.5555491,
+          "lng": 126.9216216,
+          "stay_minutes": 60,
+          "notes": "A must-visit for K-POP fans, offering a wide range of albums, merchandise, and fan-related 'shopping' items to celebrate your favorite idols.",
+          "area": "hongdae"
+        },
+        {
+          "name": "Shanti Restaurant (Hongdae)",
+          "type": "restaurant",
+          "address": "2층, 70 Wausan-ro 27-gil, Mapo-gu",
+          "lat": 37.5554666,
+          "lng": 126.9249992,
+          "stay_minutes": 60,
+          "notes": "Enjoy a satisfying lunch at this highly-rated restaurant in Hongdae, offering a diverse menu that caters to various tastes.",
+          "area": "hongdae"
+        },
+        {
+          "name": "AK PLAZA Hongdae",
+          "type": "tourist_spot",
+          "address": "188 Yanghwa-ro, Mapo-gu, Seoul, South Korea",
+          "lat": 37.55782500000001,
+          "lng": 126.9263745,
+          "stay_minutes": 60,
+          "notes": "Explore this modern shopping complex for fashion, cosmetics, and various lifestyle goods. It's a convenient 'shopping' destination near Hongik University.",
+          "area": "hongdae"
+        },
+        {
+          "name": "Gyeongui Line Forest Park (Yeontral Park) (경의선숲길(연트럴파크))",
+          "type": "park",
+          "address": "133, Donggyo-ro 51-gil, Mapo-gu, Seoul",
+          "lat": 37.56392172640174,
+          "lng": 126.92291721675069,
+          "stay_minutes": 60,
+          "notes": "Enjoy a leisurely walk along this urban park, often called 'Yeontral Park' due to its resemblance to NYC's Central Park. A perfect spot for a relaxing 'activity' and people-watching.",
+          "area": "mapo"
+        }
+      ],
+      "estimated_cost": "60,000-100,000 KRW (includes food, park activities, shopping)",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Mangwon Hangang Park (한강시민공원 망원지구 (망원한강공원))",
+          "to_name": "Seoul Battleship Park (서울함공원)",
+          "distance_km": 0.65,
+          "walk_minutes": 10,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.552343677962696,126.89988649187372&ep=37.55578810827803,126.89395375611852&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.552343677962696,126.89988649187372&ep=37.55578810827803,126.89395375611852&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "Seoul Battleship Park (서울함공원)",
+          "to_name": "Mangwon Market (망원시장)",
+          "distance_km": 1.1,
+          "walk_minutes": 17,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.55578810827803,126.89395375611852&ep=37.556006831216976,126.90645478423207&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.55578810827803,126.89395375611852&ep=37.556006831216976,126.90645478423207&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Mangwon Market (망원시장)",
+          "to_name": "Hongdae (Hongik University Street) (홍대)",
+          "distance_km": 0.66,
+          "walk_minutes": 10,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.556006831216976,126.90645478423207&ep=37.553922523080644,126.9134558741011&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.556006831216976,126.90645478423207&ep=37.553922523080644,126.9134558741011&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Hongdae (Hongik University Street) (홍대)",
+          "to_name": "K-POP SQUARE Hongdae",
+          "distance_km": 0.74,
+          "walk_minutes": 11,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.553922523080644,126.9134558741011&ep=37.5555491,126.9216216&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.553922523080644,126.9134558741011&ep=37.5555491,126.9216216&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "K-POP SQUARE Hongdae",
+          "to_name": "Shanti Restaurant (Hongdae)",
+          "distance_km": 0.3,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5555491,126.9216216&ep=37.5554666,126.9249992&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5555491,126.9216216&ep=37.5554666,126.9249992&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "Shanti Restaurant (Hongdae)",
+          "to_name": "AK PLAZA Hongdae",
+          "distance_km": 0.29,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5554666,126.9249992&ep=37.55782500000001,126.9263745&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5554666,126.9249992&ep=37.55782500000001,126.9263745&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 6,
+          "to_idx": 7,
+          "from_name": "AK PLAZA Hongdae",
+          "to_name": "Gyeongui Line Forest Park (Yeontral Park) (경의선숲길(연트럴파크))",
+          "distance_km": 0.74,
+          "walk_minutes": 11,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.55782500000001,126.9263745&ep=37.56392172640174,126.92291721675069&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.55782500000001,126.9263745&ep=37.56392172640174,126.92291721675069&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "theme": "Trendy Cafes, K-Pop Culture, and Urban Nature in Seongsu",
+      "pois": [
+        {
+          "name": "Seoul Forest (서울숲)",
+          "type": "park",
+          "address": "273 Ttukseom-ro, Seongdong-gu, Seoul",
+          "lat": 37.54306914850906,
+          "lng": 127.04179894329786,
+          "stay_minutes": 90,
+          "notes": "Start your day with a refreshing visit to Seoul Forest, a large urban park perfect for a relaxing 'activity' and connecting with nature in the city.",
+          "area": "seongsu"
+        },
+        {
+          "name": "KWANGYA",
+          "type": "kpop_landmark",
+          "address": "83-21 Wangsimni-ro, Seongdong-gu, Seoul, South Korea",
+          "lat": 37.5448781,
+          "lng": 127.0437127,
+          "stay_minutes": 60,
+          "notes": "Visit KWANGYA, an immersive K-POP space related to SM Entertainment, offering fan experiences and merchandise. A highlight for K-POP enthusiasts.",
+          "area": "seongsu"
+        },
+        {
+          "name": "Seongsu Yeonmujang-gil (성수연무장길)",
+          "type": "street",
+          "address": "Yeonmujang-gil, Seongdong-gu, Seoul",
+          "lat": 37.54415874999967,
+          "lng": 127.0499445640484,
+          "stay_minutes": 60,
+          "notes": "Explore this trendy street known for its unique shops, ateliers, and cafes housed in converted factories. Great for 'shopping' and soaking in the local atmosphere.",
+          "area": "seongsu"
+        },
+        {
+          "name": "Seongsu-dong Galbi Alley (성수동 갈비골목)",
+          "type": "restaurant",
+          "address": "Around 26 Sangwon 1-gil, Seongdong-gu, Seoul",
+          "lat": 37.54617287080923,
+          "lng": 127.04848717018473,
+          "stay_minutes": 75,
+          "notes": "Savor authentic Korean BBQ at Seongsu-dong Galbi Alley, a popular spot for locals. This is a fantastic 'food' experience.",
+          "area": "seongsu"
+        },
+        {
+          "name": "Jayeondo Sogeumppang (Salt Bread) in Seongsu",
+          "type": "tourist_spot",
+          "address": "56-1 Yeonmujang-gil, Seongdong-gu, Seoul, South Korea",
+          "lat": 37.5423017,
+          "lng": 127.0554582,
+          "stay_minutes": 60,
+          "notes": "Conclude your day with a visit to this popular spot for delicious salt bread, a trendy 'food' item in Seoul. Great for a snack or dessert.",
+          "area": "seongsu"
+        },
+        {
+          "name": "Seongsu Handmade Shoes Street (성수동 수제화 거리)",
+          "type": "street",
+          "address": "Handmade Shoes Street, Seongsu-dong 2-ga, Seongdong-gu, Seoul",
+          "lat": 37.531503115571894,
+          "lng": 127.05764946608359,
+          "stay_minutes": 45,
+          "notes": "Discover the craftsmanship of Seongsu's handmade shoe industry. You can find unique and high-quality footwear, perfect for unique 'shopping'.",
+          "area": "seongsu"
+        },
+        {
+          "name": "Amore Seongsu (아모레 성수)",
+          "type": "shopping",
+          "address": "7 Achasan-ro 11-gil, Seongdong-gu, Seoul",
+          "lat": 37.54440782489604,
+          "lng": 127.05901731152727,
+          "stay_minutes": 90,
+          "notes": "Explore this flagship store and experience space by Amorepacific, offering beauty product trials and unique cosmetic 'shopping' experiences.",
+          "area": "seongsu"
+        }
+      ],
+      "estimated_cost": "70,000-110,000 KRW (includes food, shopping, K-POP experience)",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Seoul Forest (서울숲)",
+          "to_name": "KWANGYA",
+          "distance_km": 0.26,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.54306914850906,127.04179894329786&ep=37.5448781,127.0437127&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.54306914850906,127.04179894329786&ep=37.5448781,127.0437127&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "KWANGYA",
+          "to_name": "Seongsu Yeonmujang-gil (성수연무장길)",
+          "distance_km": 0.56,
+          "walk_minutes": 8,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5448781,127.0437127&ep=37.54415874999967,127.0499445640484&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5448781,127.0437127&ep=37.54415874999967,127.0499445640484&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Seongsu Yeonmujang-gil (성수연무장길)",
+          "to_name": "Seongsu-dong Galbi Alley (성수동 갈비골목)",
+          "distance_km": 0.26,
+          "walk_minutes": 4,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.54415874999967,127.0499445640484&ep=37.54617287080923,127.04848717018473&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.54415874999967,127.0499445640484&ep=37.54617287080923,127.04848717018473&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Seongsu-dong Galbi Alley (성수동 갈비골목)",
+          "to_name": "Jayeondo Sogeumppang (Salt Bread) in Seongsu",
+          "distance_km": 0.75,
+          "walk_minutes": 11,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.54617287080923,127.04848717018473&ep=37.5423017,127.0554582&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.54617287080923,127.04848717018473&ep=37.5423017,127.0554582&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Jayeondo Sogeumppang (Salt Bread) in Seongsu",
+          "to_name": "Seongsu Handmade Shoes Street (성수동 수제화 거리)",
+          "distance_km": 1.22,
+          "walk_minutes": 18,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5423017,127.0554582&ep=37.531503115571894,127.05764946608359&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5423017,127.0554582&ep=37.531503115571894,127.05764946608359&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "Seongsu Handmade Shoes Street (성수동 수제화 거리)",
+          "to_name": "Amore Seongsu (아모레 성수)",
+          "distance_km": 1.44,
+          "walk_minutes": 22,
+          "car_minutes": 3,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.531503115571894,127.05764946608359&ep=37.54440782489604,127.05901731152727&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.531503115571894,127.05764946608359&ep=37.54440782489604,127.05901731152727&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "theme": "Modern Temples, Mega Malls, and K-Pop in Gangnam (COEX Area)",
+      "pois": [
+        {
+          "name": "CoCo Ichibanya",
+          "type": "restaurant",
+          "address": "역삼동 619-4번지 지상1층 103호 강남구 서울특별시 KR",
+          "lat": 37.5018641,
+          "lng": 127.0269901,
+          "stay_minutes": 60,
+          "notes": "Enjoy a casual and delicious lunch at CoCo Ichibanya, a popular Japanese curry chain, offering a satisfying 'food' option within or near the COEX complex.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Bongeunsa Temple (봉은사)",
+          "type": "history",
+          "address": "531 Bongeunsa-ro, Gangnam-gu, Seoul, South Korea",
+          "lat": 37.515459649933476,
+          "lng": 127.05711772475642,
+          "stay_minutes": 60,
+          "notes": "Start your Gangnam journey with a serene visit to Bongeunsa Temple, a peaceful oasis amidst the bustling city. A profound 'history' and cultural 'activity'.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Starfield Coex Mall (코엑스몰)",
+          "type": "shopping",
+          "address": "513, Yeongdong-daero, Gangnam-gu, Seoul",
+          "lat": 37.512018348059286,
+          "lng": 127.0590370189726,
+          "stay_minutes": 150,
+          "notes": "Immerse yourself in one of Asia's largest underground shopping malls. A vast 'shopping' paradise with diverse stores, entertainment, and eateries.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Starfield Library (별마당도서관)",
+          "type": "tourist_spot",
+          "address": "513 Yeongdong-daero, COEX Mall 1F, Gangnam-gu, Seoul",
+          "lat": 37.512018348059286,
+          "lng": 127.0590370189726,
+          "stay_minutes": 45,
+          "notes": "Discover the iconic Starfield Library within COEX Mall, known for its towering bookshelves and impressive architecture. A popular 'tourist_spot' and 'activity' for photos and relaxation.",
+          "area": "gangnam"
+        },
+        {
+          "name": "COEX Aquarium (코엑스 아쿠아리움)",
+          "type": "tourist_spot",
+          "address": "513, Yeongdong-daero, Gangnam-gu, Seoul",
+          "lat": 37.512018348059286,
+          "lng": 127.0590370189726,
+          "stay_minutes": 90,
+          "notes": "Explore the diverse marine life at COEX Aquarium, a fun and educational 'activity' for all ages, located within the mall.",
+          "area": "gangnam"
+        },
+        {
+          "name": "K-POP Square",
+          "type": "kpop_landmark",
+          "address": "513 Yeongdong-daero, Gangnam District, Seoul, South Korea",
+          "lat": 37.5097431,
+          "lng": 127.0622062,
+          "stay_minutes": 60,
+          "notes": "Experience K-POP culture at this square near COEX, often featuring large media art displays and K-POP related 'activity'.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Cheongdam Bridge (청담대교)",
+          "type": "tourist_spot",
+          "address": "Cheongdam-dong, Gangnam-gu, Seoul (Cheongdam Bridge)",
+          "lat": 37.52299041753568,
+          "lng": 127.05225837419201,
+          "stay_minutes": 30,
+          "notes": "Conclude your day with a scenic view of the Han River and city lights from Cheongdam Bridge, a peaceful 'tourist_spot'.",
+          "area": "gangnam"
+        }
+      ],
+      "estimated_cost": "90,000-150,000 KRW (includes food, aquarium entry, shopping)",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "CoCo Ichibanya",
+          "to_name": "Bongeunsa Temple (봉은사)",
+          "distance_km": 3.06,
+          "walk_minutes": 46,
+          "car_minutes": 6,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5018641,127.0269901&ep=37.515459649933476,127.05711772475642&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5018641,127.0269901&ep=37.515459649933476,127.05711772475642&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "Bongeunsa Temple (봉은사)",
+          "to_name": "Starfield Coex Mall (코엑스몰)",
+          "distance_km": 0.42,
+          "walk_minutes": 6,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.515459649933476,127.05711772475642&ep=37.512018348059286,127.0590370189726&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.515459649933476,127.05711772475642&ep=37.512018348059286,127.0590370189726&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Starfield Coex Mall (코엑스몰)",
+          "to_name": "Starfield Library (별마당도서관)",
+          "distance_km": 0.0,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.512018348059286,127.0590370189726&ep=37.512018348059286,127.0590370189726&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.512018348059286,127.0590370189726&ep=37.512018348059286,127.0590370189726&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Starfield Library (별마당도서관)",
+          "to_name": "COEX Aquarium (코엑스 아쿠아리움)",
+          "distance_km": 0.0,
+          "walk_minutes": 1,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.512018348059286,127.0590370189726&ep=37.512018348059286,127.0590370189726&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.512018348059286,127.0590370189726&ep=37.512018348059286,127.0590370189726&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "COEX Aquarium (코엑스 아쿠아리움)",
+          "to_name": "K-POP Square",
+          "distance_km": 0.38,
+          "walk_minutes": 6,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.512018348059286,127.0590370189726&ep=37.5097431,127.0622062&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.512018348059286,127.0590370189726&ep=37.5097431,127.0622062&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "K-POP Square",
+          "to_name": "Cheongdam Bridge (청담대교)",
+          "distance_km": 1.71,
+          "walk_minutes": 26,
+          "car_minutes": 3,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5097431,127.0622062&ep=37.52299041753568,127.05225837419201&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5097431,127.0622062&ep=37.52299041753568,127.05225837419201&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "theme": "K-Pop Stardom and Trendy Streets in Apgujeong & Sinsa",
+      "pois": [
+        {
+          "name": "Viaone",
+          "type": "kpop_landmark",
+          "address": "11, Yeongdong-daero 82-gil B2FL, 강남구 서울특별시 South Korea",
+          "lat": 37.507239,
+          "lng": 127.0654997,
+          "stay_minutes": 60,
+          "notes": "Discover more K-POP merchandise and fan items at Viaone, adding another 'kpop_landmark' to your itinerary.",
+          "area": "gangnam"
+        },
+        {
+          "name": "I Have a Dream",
+          "type": "restaurant",
+          "address": "KG 타워 B1, 7 Teheran-ro 5-gil, Gangnam District",
+          "lat": 37.49917019999999,
+          "lng": 127.0291407,
+          "stay_minutes": 60,
+          "notes": "Enjoy a delightful lunch at 'I Have a Dream', a well-regarded restaurant in the heart of Gangnam, offering a pleasant 'food' experience.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Mein",
+          "type": "shopping_mall",
+          "address": "651-18 역삼1동, Gangnam District",
+          "lat": 37.5069876,
+          "lng": 127.0354656,
+          "stay_minutes": 75,
+          "notes": "Explore Mein for unique fashion and lifestyle items. This 'shopping_mall' offers a curated selection of trendy goods, fitting Gangnam's upscale style.",
+          "area": "gangnam"
+        },
+        {
+          "name": "K-Star Road (K-STAR로드)",
+          "type": "kpop_landmark",
+          "address": "407, Apgujeong-ro, Gangnam-gu, Seoul",
+          "lat": 37.52788712069156,
+          "lng": 127.04192650983958,
+          "stay_minutes": 60,
+          "notes": "Embark on a K-POP fan pilgrimage along K-Star Road, famous for its 'GangnamDol' bear art installations representing K-POP groups. A prime 'kpop_landmark' and 'activity'.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Dosan Park (도산공원)",
+          "type": "park",
+          "address": "20, Dosan-daero 45-gil, Gangnam-gu, Seoul",
+          "lat": 37.52395290285362,
+          "lng": 127.03560562386606,
+          "stay_minutes": 30,
+          "notes": "Find a tranquil escape at Dosan Park, a beautiful green space dedicated to independence activist Dosan Ahn Chang-ho. A relaxing 'activity' amidst urban bustle.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Sinsa-dong Garosu-gil Road (신사동 가로수길)",
+          "type": "street",
+          "address": "Sinsa-dong, Gangnam-gu, Seoul",
+          "lat": 37.51965606799503,
+          "lng": 127.02274244352047,
+          "stay_minutes": 90,
+          "notes": "Stroll along the fashionable Garosu-gil, lined with ginkgo trees, designer boutiques, and chic cafes. Ideal for 'shopping' and people-watching.",
+          "area": "garosu-gil"
+        },
+        {
+          "name": "Banpo Bridge Moonlight Rainbow Fountain (반포한강공원)",
+          "type": "tourist_spot",
+          "address": "40, Sinbanpo-ro 11-gil, Seocho-gu, Seoul",
+          "lat": 37.50770522731566,
+          "lng": 126.99273997522754,
+          "stay_minutes": 90,
+          "notes": "Witness the spectacular Banpo Bridge Moonlight Rainbow Fountain show in the evening (check seasonal schedules). A magical 'tourist_spot' and relaxing 'activity'.",
+          "area": "sinsa"
+        }
+      ],
+      "estimated_cost": "80,000-130,000 KRW (includes food, shopping)",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Viaone",
+          "to_name": "I Have a Dream",
+          "distance_km": 3.33,
+          "walk_minutes": 50,
+          "car_minutes": 7,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.507239,127.0654997&ep=37.49917019999999,127.0291407&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.507239,127.0654997&ep=37.49917019999999,127.0291407&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "I Have a Dream",
+          "to_name": "Mein",
+          "distance_km": 1.03,
+          "walk_minutes": 15,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.49917019999999,127.0291407&ep=37.5069876,127.0354656&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.49917019999999,127.0291407&ep=37.5069876,127.0354656&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Mein",
+          "to_name": "K-Star Road (K-STAR로드)",
+          "distance_km": 2.39,
+          "walk_minutes": 36,
+          "car_minutes": 5,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5069876,127.0354656&ep=37.52788712069156,127.04192650983958&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5069876,127.0354656&ep=37.52788712069156,127.04192650983958&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "K-Star Road (K-STAR로드)",
+          "to_name": "Dosan Park (도산공원)",
+          "distance_km": 0.71,
+          "walk_minutes": 11,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.52788712069156,127.04192650983958&ep=37.52395290285362,127.03560562386606&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.52788712069156,127.04192650983958&ep=37.52395290285362,127.03560562386606&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Dosan Park (도산공원)",
+          "to_name": "Sinsa-dong Garosu-gil Road (신사동 가로수길)",
+          "distance_km": 1.23,
+          "walk_minutes": 18,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.52395290285362,127.03560562386606&ep=37.51965606799503,127.02274244352047&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.52395290285362,127.03560562386606&ep=37.51965606799503,127.02274244352047&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "Sinsa-dong Garosu-gil Road (신사동 가로수길)",
+          "to_name": "Banpo Bridge Moonlight Rainbow Fountain (반포한강공원)",
+          "distance_km": 2.96,
+          "walk_minutes": 44,
+          "car_minutes": 6,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.51965606799503,127.02274244352047&ep=37.50770522731566,126.99273997522754&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.51965606799503,127.02274244352047&ep=37.50770522731566,126.99273997522754&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "theme": "Royal Tombs and Underground Shopping in Gangnam",
+      "pois": [
+        {
+          "name": "Seolleung and Jeongneung Royal Tombs (선릉과 정릉)",
+          "type": "history",
+          "address": "1 Seolleung-ro 100-gil, Gangnam-gu, Seoul, South Korea",
+          "lat": 37.50736771408222,
+          "lng": 127.04716601512439,
+          "stay_minutes": 90,
+          "notes": "Explore these UNESCO World Heritage-listed royal tombs, offering a tranquil historical 'activity' and a serene contrast to Gangnam's modernity.",
+          "area": "gangnam"
+        },
+        {
+          "name": "노들강",
+          "type": "restaurant",
+          "address": "184-18 Nonhyeon-dong, Gangnam District",
+          "lat": 37.5061933,
+          "lng": 127.025959,
+          "stay_minutes": 60,
+          "notes": "Have dinner at 노들강, a popular local restaurant offering authentic Korean dishes, providing a delicious 'food' experience to end your day.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Artbox Gangnam",
+          "type": "tourist_spot",
+          "address": "42 Teheran-ro 1-gil, Gangnam District, Seoul, South Korea",
+          "lat": 37.5011057,
+          "lng": 127.0271591,
+          "stay_minutes": 60,
+          "notes": "Browse unique stationery, gifts, and lifestyle products at Artbox. It's a fun 'shopping' stop for souvenirs and cute items.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Gangnam Station (강남역)",
+          "type": "shopping",
+          "address": "Around 396 Gangnam-daero, Gangnam-gu, Seoul",
+          "lat": 37.4981700785132,
+          "lng": 127.0283226043252,
+          "stay_minutes": 60,
+          "notes": "Dive into the vibrant shopping scene around Gangnam Station, including its extensive underground shopping mall. Perfect for fashion, cosmetics, and various 'shopping' needs.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Bonjuk Bibimbap Cafe Gangnam station",
+          "type": "restaurant",
+          "address": "201호, 강남지웰타워, 36 Seocho-dong, Seocho-daero 78-gil, Seocho District",
+          "lat": 37.4947876,
+          "lng": 127.0281223,
+          "stay_minutes": 60,
+          "notes": "Enjoy a traditional Korean lunch at Bonjuk Bibimbap Cafe near Gangnam Station, known for its healthy and delicious 'food' options.",
+          "area": "gangnam"
+        },
+        {
+          "name": "Ohmuraan",
+          "type": "restaurant",
+          "address": "66 Nonhyeon-ro 79-gil, Gangnam District",
+          "lat": 37.49611110000001,
+          "lng": 127.0336111,
+          "stay_minutes": 60,
+          "notes": "As an alternative or extra snack/cafe, Ohmuraan is another highly-rated restaurant in the Gangnam area. (Not counted towards the 5-8 POI limit, just an optional mention if less time is spent elsewhere).",
+          "area": "gangnam"
+        },
+        {
+          "name": "SCARLET",
+          "type": "shopping_mall",
+          "address": "869 도곡1동, Gangnam District",
+          "lat": 37.4920173,
+          "lng": 127.0430764,
+          "stay_minutes": 75,
+          "notes": "Continue your 'shopping' spree at SCARLET, a modern shopping destination offering a variety of goods and brands.",
+          "area": "gangnam"
+        }
+      ],
+      "estimated_cost": "70,000-110,000 KRW (includes food, shopping)",
+      "transit_legs": [
+        {
+          "from_idx": 0,
+          "to_idx": 1,
+          "from_name": "Seolleung and Jeongneung Royal Tombs (선릉과 정릉)",
+          "to_name": "노들강",
+          "distance_km": 1.88,
+          "walk_minutes": 28,
+          "car_minutes": 4,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.50736771408222,127.04716601512439&ep=37.5061933,127.025959&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.50736771408222,127.04716601512439&ep=37.5061933,127.025959&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 1,
+          "to_idx": 2,
+          "from_name": "노들강",
+          "to_name": "Artbox Gangnam",
+          "distance_km": 0.58,
+          "walk_minutes": 9,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5061933,127.025959&ep=37.5011057,127.0271591&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5061933,127.025959&ep=37.5011057,127.0271591&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 2,
+          "to_idx": 3,
+          "from_name": "Artbox Gangnam",
+          "to_name": "Gangnam Station (강남역)",
+          "distance_km": 0.34,
+          "walk_minutes": 5,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.5011057,127.0271591&ep=37.4981700785132,127.0283226043252&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.5011057,127.0271591&ep=37.4981700785132,127.0283226043252&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 3,
+          "to_idx": 4,
+          "from_name": "Gangnam Station (강남역)",
+          "to_name": "Bonjuk Bibimbap Cafe Gangnam station",
+          "distance_km": 0.38,
+          "walk_minutes": 6,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.4981700785132,127.0283226043252&ep=37.4947876,127.0281223&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.4981700785132,127.0283226043252&ep=37.4947876,127.0281223&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 4,
+          "to_idx": 5,
+          "from_name": "Bonjuk Bibimbap Cafe Gangnam station",
+          "to_name": "Ohmuraan",
+          "distance_km": 0.51,
+          "walk_minutes": 8,
+          "car_minutes": 1,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.4947876,127.0281223&ep=37.49611110000001,127.0336111&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.4947876,127.0281223&ep=37.49611110000001,127.0336111&by=car",
+          "transit_options": []
+        },
+        {
+          "from_idx": 5,
+          "to_idx": 6,
+          "from_name": "Ohmuraan",
+          "to_name": "SCARLET",
+          "distance_km": 0.95,
+          "walk_minutes": 14,
+          "car_minutes": 2,
+          "kakao_walk_url": "https://m.map.kakao.com/scheme/route?sp=37.49611110000001,127.0336111&ep=37.4920173,127.0430764&by=foot",
+          "kakao_car_url": "https://m.map.kakao.com/scheme/route?sp=37.49611110000001,127.0336111&ep=37.4920173,127.0430764&by=car",
+          "transit_options": []
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "theme": "Fashion, K-Pop, and Urban Green Spaces in Gangnam (Revisited)",
+      "pois": [],
+      "estimated_cost": "70,000-120,000 KRW (includes food, shopping, K-POP experiences)",
+      "transit_legs": []
+    },
+    {
+      "day": 10,
+      "theme": "Final Reflections: Culture, K-Pop, and Last-Minute Finds in Gangnam",
+      "pois": [
+        {
+          "name": "Coex Mall (코엑스몰)",
+          "type": "shopping",
+          "address": "513 Yeongdong-daero, Gangnam-gu, Seoul, South Korea",
+          "lat": 37.512018348059286,
+          "lng": 127.0590370189726,
+          "stay_minutes": 180,
+          "notes": "Enjoy last-minute 'shopping' and souvenir hunting at the vast Coex Mall, ensuring you find all the gifts and items you desire.",
+          "area": "gangnam"
+        }
+      ],
+      "estimated_cost": "80,000-140,000 KRW (includes food, shopping)",
+      "transit_legs": []
+    }
+  ],
+  "sources": [
+    {
+      "course_id": "VS_MVP_030_DAY1AND2",
+      "course_title": "If you visit Seoul for the first time",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouvisitSeoulforthefirsttime/ENN036597"
+    },
+    {
+      "course_id": "VS_MVP_038_DAY2",
+      "course_title": "If you are a Hallyu star fan",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouareaHallyustarfan/ENN036208"
+    },
+    {
+      "course_id": "VS_MVP_005_DAY1",
+      "course_title": "A 2-Day, 1-Night Golden Tour of Seoul Following K-POP Demon Hunters",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/GoldenTour-2Day-1Night/ENN7loklj"
+    },
+    {
+      "course_id": "VS_MVP_033_DAY1",
+      "course_title": "If you are a cultural traveler",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/Ifyouareaculturaltraveler/ENN036599"
+    },
+    {
+      "course_id": "VS_MVP_030_DAY3",
+      "course_title": "If you visit Seoul for the first time",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouvisitSeoulforthefirsttime/ENN036597"
+    },
+    {
+      "course_id": "VS_MVP_011_DAY5",
+      "course_title": "4 nights 5 days course for novices",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/4nights5dayscoursefornovices/ENN034896"
+    },
+    {
+      "course_id": "VS_MVP_030_DAY5",
+      "course_title": "If you visit Seoul for the first time",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouvisitSeoulforthefirsttime/ENN036597"
+    },
+    {
+      "course_id": "VK_THEME_047",
+      "course_title": "Trip to Seoul for hipsters",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=256"
+    },
+    {
+      "course_id": "VS_MVP_001",
+      "course_title": "Seongsu Hotspot One-Day Course for the MZ Generation",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/SeongsuHotspot-1day/ENN8khsan"
+    },
+    {
+      "course_id": "VK_THEME_030",
+      "course_title": "This is the trendiest place in Seoul right now!",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=209"
+    },
+    {
+      "course_id": "VS_MVP_030_DAY4",
+      "course_title": "If you visit Seoul for the first time",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/IfyouvisitSeoulforthefirsttime/ENN036597"
+    },
+    {
+      "course_id": "VS_MVP_012_DAY4",
+      "course_title": "3 nights 4 days course for novices",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/3nights4dayscoursefornovices/ENN034895"
+    },
+    {
+      "course_id": "VS_MVP_013_DAY3",
+      "course_title": "2 nights 3 days course for novices",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/2nights3dayscoursefornovices/ENN034735"
+    },
+    {
+      "course_id": "VK_THEME_036",
+      "course_title": "Come and get a taste of the real Gangnam Style",
+      "source": "Visit Korea",
+      "source_url": "https://english.visitkorea.or.kr/svc/whereToGo/hdrdslt/hdrdsltView.do?crsSn=261"
+    },
+    {
+      "course_id": "VS_MVP_005_DAY2",
+      "course_title": "A 2-Day, 1-Night Golden Tour of Seoul Following K-POP Demon Hunters",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/GoldenTour-2Day-1Night/ENN7loklj"
+    },
+    {
+      "course_id": "VS_MVP_028_DAY4",
+      "course_title": "3 nights 4 days course for those who have visited Seoul already",
+      "source": "Visit Seoul",
+      "source_url": "https://english.visitseoul.net/mvp/3nights4dayscourseforthosewhohavevisitedSeoulalready/ENN034899"
+    }
+  ],
+  "requested_areas": [
+    "jongno",
+    "insadong",
+    "itaewon",
+    "hongdae",
+    "seongsu",
+    "gangnam"
+  ],
+  "area_coverage": {
+    "jongno": 15,
+    "insadong": 7,
+    "itaewon": 7,
+    "hongdae": 8,
+    "seongsu": 7,
+    "gangnam": 35
+  },
+  "repair_log": [
+    "Removed duplicate POI: K-Star Road (K-STAR로드).",
+    "Removed duplicate POI: Dosan Park (도산공원).",
+    "Removed duplicate POI: Mein.",
+    "Removed duplicate POI: I Have a Dream.",
+    "Removed duplicate POI: Sinsa-dong Garosu-gil Road (신사동 가로수길).",
+    "Removed duplicate POI: Viaone.",
+    "Removed duplicate POI: Gangnam Station (강남역).",
+    "Removed duplicate POI: Bongeunsa Temple (봉은사).",
+    "Removed duplicate POI: Starfield Library (별마당도서관).",
+    "Removed duplicate POI: CoCo Ichibanya.",
+    "Removed duplicate POI: K-POP Square.",
+    "Removed duplicate POI: Artbox Gangnam.",
+    "Removed duplicate POI: Cheongdam Bridge (청담대교)."
+  ],
+  "removed_pois": [],
+  "critic_report": {
+    "before": {
+      "overall_score": 0.977,
+      "feasibility_score": 1.0,
+      "requested_area_coverage_score": 1.0,
+      "duplicate_score": 0.85,
+      "foreigner_readiness_score": 1.0,
+      "requested_areas": [
+        "jongno",
+        "insadong",
+        "itaewon",
+        "hongdae",
+        "seongsu",
+        "gangnam"
+      ],
+      "area_coverage": {
+        "jongno": 16,
+        "insadong": 7,
+        "itaewon": 6,
+        "hongdae": 8,
+        "seongsu": 7,
+        "gangnam": 35
+      },
+      "missing_areas": [],
+      "issues": [
+        {
+          "code": "DUPLICATE_POIS",
+          "severity": "low",
+          "message": "Duplicate POIs found: K-Star Road (K-STAR로드), Dosan Park (도산공원), Mein, I Have a Dream, Sinsa-dong Garosu-gil Road (신사동 가로수길), Viaone, Gangnam Station (강남역), Bongeunsa Temple (봉은사), Starfield Library (별마당도서관), CoCo Ichibanya, K-POP Square, Artbox Gangnam, Cheongdam Bridge (청담대교).",
+          "day": null,
+          "area": null
+        }
+      ]
+    },
+    "after": {
+      "overall_score": 0.958,
+      "feasibility_score": 0.88,
+      "requested_area_coverage_score": 1.0,
+      "duplicate_score": 1.0,
+      "foreigner_readiness_score": 1.0,
+      "requested_areas": [
+        "jongno",
+        "insadong",
+        "itaewon",
+        "hongdae",
+        "seongsu",
+        "gangnam"
+      ],
+      "area_coverage": {
+        "jongno": 16,
+        "insadong": 7,
+        "itaewon": 6,
+        "hongdae": 8,
+        "seongsu": 7,
+        "gangnam": 22
+      },
+      "missing_areas": [],
+      "issues": [
+        {
+          "code": "TOO_FEW_POIS",
+          "severity": "medium",
+          "message": "Day 9 has only 0 POIs; at least 5 are recommended.",
+          "day": 9,
+          "area": null
+        },
+        {
+          "code": "NO_MEAL_SLOT",
+          "severity": "medium",
+          "message": "Day 9 has no clear cafe/restaurant/market slot.",
+          "day": 9,
+          "area": null
+        },
+        {
+          "code": "TOO_FEW_POIS",
+          "severity": "medium",
+          "message": "Day 10 has only 1 POIs; at least 5 are recommended.",
+          "day": 10,
+          "area": null
+        },
+        {
+          "code": "NO_MEAL_SLOT",
+          "severity": "medium",
+          "message": "Day 10 has no clear cafe/restaurant/market slot.",
+          "day": 10,
+          "area": null
+        }
+      ]
+    },
+    "repair_applied": true,
+    "repair_log": [
+      "Removed duplicate POI: K-Star Road (K-STAR로드).",
+      "Removed duplicate POI: Dosan Park (도산공원).",
+      "Removed duplicate POI: Mein.",
+      "Removed duplicate POI: I Have a Dream.",
+      "Removed duplicate POI: Sinsa-dong Garosu-gil Road (신사동 가로수길).",
+      "Removed duplicate POI: Viaone.",
+      "Removed duplicate POI: Gangnam Station (강남역).",
+      "Removed duplicate POI: Bongeunsa Temple (봉은사).",
+      "Removed duplicate POI: Starfield Library (별마당도서관).",
+      "Removed duplicate POI: CoCo Ichibanya.",
+      "Removed duplicate POI: K-POP Square.",
+      "Removed duplicate POI: Artbox Gangnam.",
+      "Removed duplicate POI: Cheongdam Bridge (청담대교)."
+    ]
+  }
+}
