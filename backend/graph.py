@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import json
+from datetime import date, datetime
 from types import SimpleNamespace
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, END
@@ -9,7 +10,6 @@ from langgraph.checkpoint.memory import MemorySaver
 from state import TravelState
 from planner import make_retrieve_node, plan_node
 from critic_repair import make_critic_repair_node
-from rag import parse_trip_start_date
 
 # ---------------------------------------------------------------------------
 # Module-level API key (set by build_graph)
@@ -53,40 +53,6 @@ def _gemini_json(prompt: str) -> dict:
             return {}
 
 
-def _extract_trip_info(text: str) -> SimpleNamespace:
-    prompt = (
-        f'Extract Seoul trip details from this user message: "{text}"\n\n'
-        "Return JSON with exactly these fields:\n"
-        '- travel_dates: dates or duration like "June 15-17", "3 days". "MISSING" if not mentioned.\n'
-        '- category: interests normalized to K-POP/Cafe/Beauty/Food/Shopping/History/Activity. '
-        'Comma-separated if multiple. "MISSING" if not mentioned.\n'
-        '- restrictions: dietary or physical restrictions. "none" if user says no restrictions. '
-        '"MISSING" if not mentioned.\n'
-        '- companion: solo/couple/friends/family. "MISSING" if not mentioned.\n'
-        '- pace: "packed" for busy or "relaxed" for slow pace. "MISSING" if not mentioned.'
-    )
-    data = _gemini_json(prompt)
-    return SimpleNamespace(
-        travel_dates=str(data.get("travel_dates", "MISSING")),
-        category=str(data.get("category", "MISSING")),
-        restrictions=str(data.get("restrictions", "MISSING")),
-        companion=str(data.get("companion", "MISSING")),
-        pace=str(data.get("pace", "MISSING")),
-    )
-
-
-def _extract_region(text: str) -> SimpleNamespace:
-    prompt = (
-        f'Extract Seoul area preferences from this user message: "{text}"\n\n'
-        "Return JSON with exactly this field:\n"
-        "- region: one or more areas from Hongdae/Seongsu/Gangnam/Itaewon/Myeongdong/"
-        "Jongno/Bukchon/Mapo/Insadong/Dongdaemun/Sinchon/Apgujeong. "
-        'Comma-separated if multiple. "NONE" if user asks for recommendation or doesn\'t specify.'
-    )
-    data = _gemini_json(prompt)
-    return SimpleNamespace(region=str(data.get("region", "NONE")))
-
-
 def _classify_intent(user_message: str) -> SimpleNamespace:
     prompt = (
         f'Classify what the user wants to do with their Seoul trip plan.\n'
@@ -116,13 +82,59 @@ FIELD_LABELS = {
 ALL_FIELDS = list(FIELD_LABELS.keys())
 
 FIELD_QUESTIONS = {
-    "travel_dates": "What are your travel dates or how many days?",
+    # No "or how many days?" — a typed duration is exactly what the picker-only
+    # rule rejects, so the question must not invite one.
+    "travel_dates": "When are you travelling? Tap the calendar to pick your dates "
+                    "(up to 7 days).",
     "category":     "What are your main interests? (beauty, history, food, shopping, activity)",
     "restrictions": "Any dietary or physical restrictions? (or 'none')",
     "companion":    "Who are you traveling with? (solo/couple/friends/family)",
     "pace":         "Packed schedule or relaxed pace?",
     "region":       "Which area of Seoul? (e.g. Hongdae, Gangnam, Itaewon) -- or I can recommend!",
 }
+
+# The order the buddy asks in, one field per turn. Deliberately not
+# ALL_FIELDS order: region goes last so _recommend_region has a category to
+# work from when the traveller wants a suggestion instead of picking an area.
+FIELD_ORDER = ["travel_dates", "category", "companion", "pace", "restrictions", "region"]
+
+# One JSON instruction line per field, fed to _extract_field. Lifted verbatim
+# from the old combined extraction prompt so behaviour per field is unchanged.
+FIELD_EXTRACT = {
+    "travel_dates": 'travel_dates: dates or duration like "June 15-17", "3 days". '
+                    '"MISSING" if the reply does not answer the question.',
+    "category":     'category: interests normalized to K-POP/Cafe/Beauty/Food/Shopping/'
+                    'History/Activity. Comma-separated if multiple. "MISSING" if the '
+                    'reply does not answer the question.',
+    "companion":    'companion: solo/couple/friends/family. "MISSING" if the reply does '
+                    'not answer the question.',
+    "pace":         'pace: "packed" for busy or "relaxed" for slow pace. "MISSING" if the '
+                    'reply does not answer the question.',
+    "restrictions": 'restrictions: dietary or physical restrictions. "none" if the user '
+                    'says they have no restrictions. "MISSING" if the reply does not '
+                    'answer the question.',
+    "region":       'region: one or more areas from Hongdae/Seongsu/Gangnam/Itaewon/'
+                    'Myeongdong/Jongno/Bukchon/Mapo/Insadong/Dongdaemun/Sinchon/Apgujeong. '
+                    'Comma-separated if multiple. "NONE" if the user asks for a '
+                    'recommendation or does not specify.',
+}
+
+
+def _extract_field(field: str, text: str) -> str:
+    """Pull ONE slot out of the reply to that slot's own question.
+
+    Strict one-at-a-time: anything else the traveller volunteers is ignored,
+    because the very next turn asks for it directly.
+    """
+    prompt = (
+        f'The user was asked: "{FIELD_QUESTIONS[field]}"\n'
+        f'They replied: "{text}"\n\n'
+        "Return JSON with exactly this field:\n"
+        f"- {FIELD_EXTRACT[field]}"
+    )
+    data = _gemini_json(prompt)
+    return str(data.get(field, "MISSING")).strip()
+
 
 _CATEGORY_REGIONS: dict[str, str] = {
     "beauty":   "Hongdae or Gangnam",
@@ -164,71 +176,156 @@ def build_summary(state: TravelState) -> str:
 # Graph nodes
 # ---------------------------------------------------------------------------
 
+# The date question is answered by the client's date picker, never by typing.
+# formatDateRange() in conversational_intake_screen.dart emits exactly this:
+# "September 6, 2026" or "September 30, 2026 to October 2, 2026".
+_PICKED_DATES_RE = re.compile(
+    r"^([A-Za-z]+ \d{1,2}, \d{4})(?:\s+to\s+([A-Za-z]+ \d{1,2}, \d{4}))?$"
+)
+
+MAX_TRIP_DAYS = 7
+
+
+def _parse_picked_dates(text: str) -> tuple[date, date] | None:
+    """Parse the picker's output into (start, end), or None for typed text.
+
+    Deliberately strict — anything that isn't the picker's own format is a
+    hand-typed answer, and collect_node bounces those back to the calendar
+    rather than guessing. Nothing here is fuzzy, so no LLM call and no
+    dateutil: the picker already resolved the ambiguity.
+    """
+    m = _PICKED_DATES_RE.match(text.strip())
+    if not m:
+        return None
+    try:
+        start = datetime.strptime(m.group(1), "%B %d, %Y").date()
+        end = datetime.strptime(m.group(2), "%B %d, %Y").date() if m.group(2) else start
+    except ValueError:
+        return None            # real-looking but impossible ("February 30, 2026")
+    return (start, end) if end >= start else (end, start)
+
+
+def _format_date(d: date) -> str:
+    # Not strftime("%-d"): that flag isn't portable, and %d would print "June 05".
+    return f"{d.strftime('%B')} {d.day}, {d.year}"
+
+
+def _describe_trip(start: date, end: date) -> tuple[int, str]:
+    """Inclusive day count plus the label stored in travel_dates.
+
+    date subtraction does the calendar work, so month and year boundaries need
+    no special case: Sept 30 -> Oct 2 is (2 days) + 1 = 3, same as any other
+    three-day span. The "(N days)" suffix is what rag._parse_num_days reads,
+    and an explicit count beats it having to re-derive the span from the text.
+    """
+    days = (end - start).days + 1
+    label = _format_date(start) if start == end else f"{_format_date(start)} to {_format_date(end)}"
+    return days, f"{label} ({days} day{'s' if days != 1 else ''})"
+
+
+def _next_field(state: TravelState) -> str | None:
+    """The first field we haven't put a question to yet, or None when done.
+
+    Keyed on `asked`, not on which slots are empty: a field the traveller
+    skipped or answered unintelligibly stays empty, and asking it again would
+    loop forever. Every field gets exactly one question.
+    """
+    asked = state.get("asked") or []
+    return next((f for f in FIELD_ORDER if f not in asked), None)
+
+
+def _store(field: str, raw: str, state: TravelState) -> dict:
+    """Turn one extracted value into the state update for its slot."""
+    value = (raw or "").strip()
+
+    if field == "region":
+        # "NONE" (asked us to recommend) and "MISSING" (didn't answer) both land
+        # on the category-based suggestion — same as the old collecting_region.
+        if not value or value.upper() in ("MISSING", "NONE"):
+            return {"region": f"{_recommend_region(state.get('category'))} (recommended)"}
+        return {"region": _parse_regions(value)}
+
+    if not value or value.upper() == "MISSING":
+        return {}
+
+    return {field: value}
+
+
+def _ask(state: TravelState, updates: dict, field: str | None) -> TravelState:
+    """Apply `updates`, then either ask `field` or fall through to the summary."""
+    if field is None:
+        return {**state, **updates, "pending": None, "current_step": "confirm"}
+    return {
+        **state, **updates,
+        "pending": field,
+        "asked": [*(state.get("asked") or []), field],
+        "current_step": "collecting",
+        "messages": [AIMessage(content=FIELD_QUESTIONS[field])],
+    }
+
+
 def collect_node(state: TravelState) -> TravelState:
+    """One question per turn: ask `pending`, bank the answer, ask the next."""
     step = state.get("current_step", "start")
     messages = state.get("messages", [])
 
     if step == "start":
+        first = FIELD_ORDER[0]
         greeting = (
             "Hi! I'm SeoulFit Buddy \U0001f425\n"
-            "To plan your perfect Seoul trip, tell me:\n"
-            "\U0001f5d3 Travel dates (or I'll pick for you!)\n"
-            "\U0001f3af Interests (beauty, history, food, shopping, activity...)\n"
-            "⚠️ Any restrictions? (dietary, physical, etc.)\n"
-            "\U0001f465 Who are you traveling with? (solo/couple/friends/family)\n"
-            "\U0001f4cb Trip style: packed schedule or relaxed pace?"
+            "I'll ask a few quick questions, one at a time, "
+            "and then build your Seoul trip.\n\n"
+            f"\U0001f5d3 {FIELD_QUESTIONS[first]}"
         )
-        return {**state, "current_step": "collecting_basics",
-                "messages": [AIMessage(content=greeting)]}
+        return {**state, "current_step": "collecting", "pending": first,
+                "asked": [first], "messages": [AIMessage(content=greeting)]}
 
     last_human = next((m.content for m in reversed(messages) if isinstance(m, HumanMessage)), None)
     if not last_human:
         return state
 
-    if last_human.strip().lower() in ("confirm", "yes", "ok", "go", "generate"):
-        return {**state, "current_step": "confirm"}
+    # Note: no "confirm"/"yes"/"ok" shortcut here any more. With one question per
+    # turn those are ordinary answers ("Any restrictions?" -> "no"), and swallowing
+    # them as a confirm skipped the rest of intake. Confirming is handle_confirm's
+    # job, reached only from current_step == "confirm".
+    field = state.get("pending") or _next_field(state)
+    if field is None:
+        return {**state, "pending": None, "current_step": "confirm"}
 
-    if step == "collecting_basics":
-        try:
-            result = _extract_trip_info(last_human)
-            updates: dict = {}
-            for field in ["travel_dates", "category", "restrictions", "companion", "pace"]:
-                value = getattr(result, field, "").strip()
-                if value and value.upper() != "MISSING":
-                    updates[field] = value
-            if "travel_dates" in updates:
-                # 실제 캘린더 날짜를 뽑을 수 있으면 채우고, 못 뽑으면(예: "3일간")
-                # None으로 남긴다 — 폴백이지 에러가 아니므로 여기서 멈추지 않는다.
-                updates["trip_start_date"] = parse_trip_start_date(updates["travel_dates"])
-        except Exception as e:
-            return {**state, "messages": [AIMessage(
-                content=f"Sorry, I had trouble understanding that. Could you try again? ({e})"
-            )]}
-
-        region_ask = (
-            "Do you have a specific area in Seoul in mind?\n"
-            "(e.g. Hongdae, Seongsu, Gangnam, Itaewon)\n"
-            "Or I can recommend based on your interests! \U0001f60a"
+    if field == "travel_dates":
+        # Picker-only: no extraction, no LLM. Both rejections leave `pending`
+        # on travel_dates, so the next message is read as another attempt.
+        picked = _parse_picked_dates(last_human)
+        if picked is None:
+            return {**state, "messages": [AIMessage(content=(
+                "Please tap the calendar icon \U0001f5d3 to pick your travel dates.\n"
+                "That way I get the exact days and can check what's actually open."
+            ))]}
+        days, label = _describe_trip(*picked)
+        if days > MAX_TRIP_DAYS:
+            return {**state, "messages": [AIMessage(content=(
+                f"That's {days} days — I can plan up to {MAX_TRIP_DAYS} at a time.\n"
+                "Tap the calendar again and pick a shorter range."
+            ))]}
+        return _ask(
+            state,
+            {"travel_dates": label, "trip_start_date": picked[0].isoformat()},
+            _next_field(state),
         )
-        return {**state, **updates, "current_step": "collecting_region",
-                "messages": [AIMessage(content=region_ask)]}
 
-    if step == "collecting_region":
-        try:
-            result = _extract_region(last_human)
-            raw = result.region.strip()
-        except Exception:
-            raw = "NONE"
+    try:
+        raw = _extract_field(field, last_human)
+    except Exception as e:
+        # Leave `pending` where it is so the same question is re-asked.
+        return {**state, "messages": [AIMessage(
+            content=f"Sorry, I had trouble understanding that. Could you try again? ({e})"
+        )]}
 
-        if not raw or raw.upper() == "NONE":
-            recommended = _recommend_region(state.get("category"))
-            region_val = f"{recommended} (recommended)"
-        else:
-            region_val = _parse_regions(raw)
+    updates = _store(field, raw, state)
 
-        return {**state, "region": region_val, "current_step": "confirm"}
-
-    return state
+    # _next_field reads `asked`, which already contains `field` -- so this is the
+    # next unasked one, and None once every field has had its turn.
+    return _ask(state, updates, _next_field(state))
 
 
 def confirm_node(state: TravelState) -> TravelState:
@@ -264,8 +361,10 @@ def handle_confirm_node(state: TravelState) -> TravelState:
 
     field = intent.lower()
     if field in ALL_FIELDS:
-        next_step = "collecting_region" if field == "region" else "collecting_basics"
-        reset: dict = {field: None}
+        # Re-ask this one field only. `asked` deliberately stays full, so
+        # _next_field returns None after the answer and we land back on the
+        # summary instead of restarting the whole questionnaire.
+        reset: dict = {field: None, "pending": field}
         if field == "travel_dates":
             # travel_dates가 다시 채워질 때까지 묵은 trip_start_date가 남아있지
             # 않도록 같이 지운다 (다음 턴에 collecting_basics에서 둘 다 새로 채워짐).
@@ -273,7 +372,7 @@ def handle_confirm_node(state: TravelState) -> TravelState:
         return {
             **state,
             **reset,
-            "current_step": next_step,
+            "current_step": "collecting",
             "messages": [AIMessage(content=f"Got it! {FIELD_QUESTIONS[field]}")]
         }
 
@@ -309,13 +408,11 @@ def route_entry(state: TravelState) -> str:
 
 
 def _after_collect(state: TravelState) -> str:
-    if state.get("current_step") != "confirm":
-        return END
-    messages = state.get("messages", [])
-    last_human = next((m.content for m in reversed(messages) if isinstance(m, HumanMessage)), None)
-    if last_human and last_human.strip().lower() in ("confirm", "yes", "ok", "go", "generate"):
-        return "handle_confirm"
-    return "confirm"
+    # Collecting only reaches "confirm" once every field has had its question,
+    # and the traveller has never seen the summary at that point -- so always
+    # show it. Routing straight to handle_confirm here used to hijack a plain
+    # answer like "ok" into generating the itinerary.
+    return "confirm" if state.get("current_step") == "confirm" else END
 
 
 def _after_handle_confirm(state: TravelState) -> str:
@@ -362,7 +459,7 @@ def build_graph(api_key: str):
     builder.add_conditional_edges(
         "collect",
         _after_collect,
-        {"confirm": "confirm", "handle_confirm": "handle_confirm", END: END},
+        {"confirm": "confirm", END: END},
     )
 
     builder.add_edge("confirm", END)

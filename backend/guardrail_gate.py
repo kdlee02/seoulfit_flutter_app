@@ -34,8 +34,15 @@ def _get_rails() -> LLMRails:
     return _rails
 
 
-def is_blocked(text: str | None) -> bool:
+def is_blocked(text: str | None, question: str | None = None) -> bool:
     """True if the user message should be blocked by the input rail.
+
+    [question] is the question the buddy just asked, when there is one. Without
+    it the rail judges each message in isolation, which is hopeless for the
+    one-word replies the intake flow is built out of: a bare "none" answering
+    "Any dietary or physical restrictions?" got blocked as off-topic chit-chat,
+    while "I have no restrictions" sailed through. The question is app text
+    (FIELD_QUESTIONS), never user input, so it is safe to hand to the judge.
 
     Empty/whitespace input is never blocked (the greeting turn sends no message).
     Any guardrail error falls open (returns False) — a flaky safety check must
@@ -44,9 +51,15 @@ def is_blocked(text: str | None) -> bool:
     """
     if not text or not text.strip():
         return False
+    content = text
+    if question:
+        # Labelled rather than glued together, so the judge can tell our question
+        # from their reply — and so an injection can't fake the prefix and claim
+        # the app sanctioned it.
+        content = f'[SeoulFit Buddy asked: "{question}"]\n{text}'
     try:
         result = _get_rails().check(
-            [{"role": "user", "content": text}],
+            [{"role": "user", "content": content}],
             rail_types=[RailType.INPUT],
         )
         return result.status == RailStatus.BLOCKED

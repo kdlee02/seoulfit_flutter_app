@@ -10,14 +10,50 @@ import '../widgets/chat_mode_toggle.dart';
 import '../config/api_base.dart';
 import '../providers/travel_provider.dart';
 
-/// Starter prompts shown before the traveller has typed anything, so the empty
-/// chat is an invitation to act rather than a blank box.
-const List<String> _starterPrompts = [
-  '3 days in Seoul, love cafés & K-pop',
-  'Family trip, relaxed pace, halal food',
-  'Solo weekend, history & palaces',
-  'Foodie night out in Hongdae',
+/// The order the backend asks its questions in — mirrors FIELD_ORDER in
+/// backend/graph.py. Used only to render "Question 3 of 6"; the backend still
+/// decides what comes next, this list never drives the conversation.
+const List<String> kFieldOrder = [
+  'travel_dates',
+  'category',
+  'companion',
+  'pace',
+  'restrictions',
+  'region',
 ];
+
+/// Tappable answers for the question currently on screen. Each one sends its
+/// text as an ordinary message, so the backend contract is unchanged — these
+/// are a shortcut past typing, not a separate input path.
+/// travel_dates is absent on purpose: that question is answered by the date
+/// picker only, so offering "3 days" as a tappable answer would just walk the
+/// traveller into the backend's "please use the calendar" bounce.
+const Map<String, List<String>> kFieldPrompts = {
+  'category': ['K-POP', 'Cafe', 'Food', 'Shopping', 'History', 'Beauty', 'Activity'],
+  'companion': ['Solo', 'Couple', 'Friends', 'Family'],
+  'pace': ['Packed schedule', 'Relaxed pace'],
+  'restrictions': ['None', 'Vegetarian', 'Halal', 'No spicy food', 'Limited walking'],
+  'region': ['Hongdae', 'Gangnam', 'Myeongdong', 'Itaewon', 'Jongno', 'You pick for me'],
+};
+
+const List<String> _months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/// Formats a picked range into the exact wire format the backend expects:
+/// "September 6, 2026" or "September 30, 2026 to October 2, 2026".
+///
+/// This is a contract, not a display string — graph._PICKED_DATES_RE matches it
+/// strictly and rejects anything else as hand-typed, so changing the shape here
+/// (dropping a year, using a dash, abbreviating the month) breaks the dates
+/// question outright. The backend derives both the start date and the inclusive
+/// day count from it.
+String formatDateRange(DateTimeRange range) {
+  String one(DateTime d) => '${_months[d.month - 1]} ${d.day}, ${d.year}';
+  final start = one(range.start);
+  return range.start == range.end ? start : '$start to ${one(range.end)}';
+}
 
 class ConversationalIntakeScreen extends StatefulWidget {
   const ConversationalIntakeScreen({super.key});
@@ -64,6 +100,22 @@ class _ConversationalIntakeScreenState
     await _sendText(_controller.text);
   }
 
+  /// Opens the native range picker and sends the choice as an ordinary
+  /// message. Beats typing "June 15-17" and removes that whole parse-failure
+  /// path — the backend still just receives text.
+  Future<void> _pickDates() async {
+    final now = DateTime.now();
+    final range = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year, now.month, now.day),
+      lastDate: DateTime(now.year + 2, now.month, now.day),
+      helpText: 'Select your travel dates',
+      saveText: 'Done',
+    );
+    if (range == null) return;
+    await _sendText(formatDateRange(range));
+  }
+
   Future<void> _sendText(String raw) async {
     final text = raw.trim();
     if (text.isEmpty) return;
@@ -82,6 +134,11 @@ class _ConversationalIntakeScreenState
     // keyboard appears, which is half of the jump this screen used to have.
     final safeBottom = mq.viewPadding.bottom;
     final keyboardOpen = keyboardInset > 0;
+    // The slot the backend is waiting on, and where it sits in the script.
+    final field = provider.state?.currentField;
+    final questionIndex = field == null ? -1 : kFieldOrder.indexOf(field);
+    final atSummary = provider.state?.currentStep == 'confirm';
+    final pickingDates = field == 'travel_dates';
     _scrollToBottom();
 
     return Scaffold(
@@ -116,7 +173,11 @@ class _ConversationalIntakeScreenState
                           ),
                         ),
                         Text(
-                          'Ready to explore Seoul?',
+                          questionIndex >= 0
+                              ? 'Question ${questionIndex + 1} of ${kFieldOrder.length}'
+                              : atSummary
+                                  ? 'All set — review your trip below'
+                                  : 'Ready to explore Seoul?',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
@@ -156,13 +217,18 @@ class _ConversationalIntakeScreenState
                       },
                     ),
             ),
-            // Suggested prompts: only while the conversation is just starting.
-            // Also dropped while the keyboard is up: the fixed chrome above and
-            // below the message list already fills a shrunken body, and holding
-            // the chips there overflows it. They are a starting hint anyway —
-            // nobody needs suggestions while they are mid-sentence.
-            if (messages.length <= 1 && !provider.loading && !keyboardOpen)
-              _SuggestedPrompts(onTap: _sendText),
+            // Quick replies for the question currently on screen. Dropped while
+            // the keyboard is up: the fixed chrome above and below the message
+            // list already fills a shrunken body, and holding the chips there
+            // overflows it — and nobody needs them mid-sentence anyway.
+            if (field != null && !provider.loading && !keyboardOpen)
+              _SuggestedPrompts(
+                // Re-keying on the field restarts the stagger, so each new
+                // question's chips animate in rather than silently swapping.
+                key: ValueKey(field),
+                prompts: kFieldPrompts[field] ?? const [],
+                onTap: _sendText,
+              ),
             if (provider.error != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -185,9 +251,12 @@ class _ConversationalIntakeScreenState
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: provider.state == null
-                      ? null
-                      : () => Navigator.pushNamed(context, '/slot-parsing'),
+                  // Gated on the summary step: enabling this the moment any
+                  // reply arrived let you escape to generation at question two
+                  // with five empty slots.
+                  onPressed: atSummary
+                      ? () => Navigator.pushNamed(context, '/slot-parsing')
+                      : null,
                   icon: const Icon(Icons.auto_awesome_rounded, size: 18),
                   label: const Text('Confirm & Parse My Request'),
                   style: ElevatedButton.styleFrom(
@@ -210,6 +279,24 @@ class _ConversationalIntakeScreenState
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
               child: Row(
                 children: [
+                  if (pickingDates) ...[
+                    PressableScale(
+                      onTap: provider.sending ? null : _pickDates,
+                      scale: 0.88,
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: kMintLight,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: kMint, width: 1.5),
+                        ),
+                        child: const Icon(Icons.calendar_month_rounded,
+                            color: kMint, size: 19),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -221,10 +308,18 @@ class _ConversationalIntakeScreenState
                       ),
                       child: TextField(
                         controller: _controller,
+                        // Dates are picker-only. Making the field read-only (and
+                        // routing its tap to the picker) means the backend's
+                        // "please use the calendar" guard stays a backstop for
+                        // other clients rather than something a user ever sees.
+                        readOnly: pickingDates,
+                        onTap: pickingDates ? _pickDates : null,
                         style: GoogleFonts.plusJakartaSans(
                             fontSize: 14, color: kInk),
                         decoration: InputDecoration(
-                          hintText: 'Type your travel preference...',
+                          hintText: pickingDates
+                              ? 'Tap to pick your dates (up to 7 days)'
+                              : 'Type your travel preference...',
                           hintStyle: GoogleFonts.plusJakartaSans(
                               fontSize: 14, color: kSubtext),
                           isDense: true,
@@ -238,7 +333,9 @@ class _ConversationalIntakeScreenState
                   ),
                   const SizedBox(width: 8),
                   PressableScale(
-                    onTap: provider.sending ? null : _send,
+                    onTap: provider.sending
+                        ? null
+                        : (pickingDates ? _pickDates : _send),
                     scale: 0.88,
                     child: Container(
                       width: 42,
@@ -357,11 +454,17 @@ class _BuddyAvatar extends StatelessWidget {
 }
 
 class _SuggestedPrompts extends StatelessWidget {
+  final List<String> prompts;
   final void Function(String) onTap;
-  const _SuggestedPrompts({required this.onTap});
+  const _SuggestedPrompts({
+    super.key,
+    required this.prompts,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (prompts.isEmpty) return const SizedBox.shrink();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(Insets.lg, 0, Insets.lg, Insets.sm),
@@ -371,7 +474,7 @@ class _SuggestedPrompts extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: Insets.sm, left: 2),
             child: Text(
-              'Try one of these',
+              'Tap an answer, or type your own',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -383,8 +486,8 @@ class _SuggestedPrompts extends StatelessWidget {
           Wrap(
             spacing: Insets.sm,
             runSpacing: Insets.sm,
-            children: List.generate(_starterPrompts.length, (i) {
-              final prompt = _starterPrompts[i];
+            children: List.generate(prompts.length, (i) {
+              final prompt = prompts[i];
               return FadeSlideIn(
                 delay: Motion.stagger * i,
                 offsetY: 8,

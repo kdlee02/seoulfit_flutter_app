@@ -71,7 +71,7 @@ if not GEMINI_API_KEY:
 if not os.getenv("GOOGLE_API_KEY"):
     os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY
 
-from graph import build_graph, clear_thread
+from graph import build_graph, clear_thread, FIELD_QUESTIONS
 from lens import router as lens_router
 from live_help import router as live_help_router
 from guardrail_gate import is_blocked
@@ -249,6 +249,9 @@ class StateResponse(BaseModel):
     pace: Optional[str] = None
     region: Optional[str] = None
     current_step: str
+    # Which slot the buddy is waiting on right now, so the client can show the
+    # matching quick replies / date picker. None outside the collecting step.
+    current_field: Optional[str] = None
     confirmed: bool
     reply: Optional[str]
     itinerary: Optional[dict] = None
@@ -360,8 +363,13 @@ def chat(req: ChatRequest):
     # Input gatekeeper (NeMo self-check): drop off-topic / prompt-injection /
     # jailbreak messages before they reach the planner. Empty message (the
     # greeting turn) is never blocked. Fails open on any guardrail error.
-    if req.message and is_blocked(req.message):
-        state = _get_state(req.thread_id)
+    #
+    # The pending question goes with it: intake asks one thing at a time, so most
+    # replies are fragments, and judging "none" without knowing it answers "Any
+    # dietary or physical restrictions?" blocked it as chit-chat.
+    state = _get_state(req.thread_id)
+    pending_question = FIELD_QUESTIONS.get(state.get("pending") or "")
+    if req.message and is_blocked(req.message, pending_question):
         return StateResponse(
             travel_dates=state.get("travel_dates"),
             category=state.get("category"),
@@ -370,6 +378,7 @@ def chat(req: ChatRequest):
             pace=state.get("pace"),
             region=state.get("region"),
             current_step=state.get("current_step", "start"),
+            current_field=state.get("pending"),
             confirmed=state.get("confirmed", False),
             reply=_BLOCKED_REPLY,
             itinerary=state.get("itinerary"),
@@ -390,6 +399,7 @@ def chat(req: ChatRequest):
         pace=new_state.get("pace"),
         region=new_state.get("region"),
         current_step=new_state.get("current_step", "start"),
+        current_field=new_state.get("pending"),
         confirmed=new_state.get("confirmed", False),
         reply=_latest_ai_message(new_state),
         itinerary=new_state.get("itinerary"),
@@ -408,6 +418,7 @@ def get_state(thread_id: str):
         pace=state.get("pace"),
         region=state.get("region"),
         current_step=state.get("current_step", "start"),
+        current_field=state.get("pending"),
         confirmed=state.get("confirmed", False),
         reply=_latest_ai_message(state),
         itinerary=state.get("itinerary"),
