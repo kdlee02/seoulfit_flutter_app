@@ -53,6 +53,7 @@ backend/.env
 
 # Python backend runtime (do not commit)
 backend/venv/
+backend/venv_*/
 backend/__pycache__/
 backend/**/__pycache__/
 backend/*.pyc
