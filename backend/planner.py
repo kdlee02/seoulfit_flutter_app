@@ -672,12 +672,14 @@ def _format_google_supplement(places: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-def _format_requested_area_rules(requested_areas: list[str], duration: str) -> str:
+def _format_requested_area_rules(
+    requested_areas: list[str], duration: str, num_days: int | None = None,
+) -> str:
     if not requested_areas:
         return ""
 
     labels = [_area_label(a) for a in requested_areas]
-    num_days = _parse_num_days(duration)
+    num_days = _parse_num_days(duration, override=num_days)
 
     lines = [
         "",
@@ -980,6 +982,7 @@ def _format_courses_for_prompt(
     google_supplement: list[dict[str, Any]] | None = None,
     requested_areas: list[str] | None = None,
     duration: str = "",
+    num_days: int | None = None,
     day_segments: list[dict[str, Any]] | None = None,
 ) -> str:
     requested_areas = requested_areas or []
@@ -992,7 +995,7 @@ def _format_courses_for_prompt(
         blocks = [_format_one_course(c, i) for i, c in enumerate(courses, start=1)]
         result = "\n\n".join(blocks)
 
-    result += _format_requested_area_rules(requested_areas, duration)
+    result += _format_requested_area_rules(requested_areas, duration, num_days=num_days)
 
     if google_supplement:
         result += _format_google_supplement(google_supplement)
@@ -1252,6 +1255,7 @@ def _validate_and_repair_itinerary(
     google_supplement: list[dict[str, Any]],
     requested_areas: list[str],
     duration: str = "",
+    num_days: int | None = None,
     purpose: str = "",
 ) -> dict[str, Any]:
     """Remove hallucinations and force requested area coverage."""
@@ -1265,7 +1269,7 @@ def _validate_and_repair_itinerary(
     itinerary["days"] = days
 
     # 0. Ensure the itinerary has the correct number of days.
-    expected_days = _parse_num_days(duration) if duration else 0
+    expected_days = _parse_num_days(duration, override=num_days) if (duration or num_days) else 0
     if expected_days > 0 and len(days) < expected_days:
         existing_day_nums = {int(d.get("day") or 0) for d in days}
         for day_num in range(1, expected_days + 1):
@@ -1277,16 +1281,27 @@ def _validate_and_repair_itinerary(
 
     # 0b. Cap to the requested number of days. The planner LLM sometimes
     # over-produces day entries (e.g. 22 days for a 2-day trip). Keep the first
-    # `expected_days` days and fold any overflow POIs back into them — round
-    # robin so day sizes stay balanced — instead of dropping locations.
+    # `expected_days` days and fold any overflow POIs back into them.
+    #
+    # Each overflow POI goes to whichever kept day currently has the fewest
+    # POIs (not round-robin by position). Round-robin assumes the kept days
+    # started out evenly sized, which isn't true when expected_days is small
+    # (or mis-parsed) and/or the kept days were already lopsided going in --
+    # in the worst case (expected_days==1) round-robin has no choice but to
+    # dump every overflow POI into that single day. Always filling the
+    # currently-smallest day makes the final sizes as balanced as the day
+    # count allows, no matter how skewed the input was.
     if expected_days > 0 and len(days) > expected_days:
         days.sort(key=lambda d: int(d.get("day") or 0))
         kept = days[:expected_days]
+        for d in kept:
+            d.setdefault("pois", [])
         overflow_pois = [
             poi for d in days[expected_days:] for poi in (d.get("pois") or [])
         ]
-        for i, poi in enumerate(overflow_pois):
-            kept[i % expected_days].setdefault("pois", []).append(poi)
+        for poi in overflow_pois:
+            target = min(kept, key=lambda d: len(d["pois"]))
+            target["pois"].append(poi)
         # Renumber kept days 1..expected_days so day labels stay contiguous.
         for idx, d in enumerate(kept, start=1):
             d["day"] = idx
@@ -1592,6 +1607,44 @@ def _normalize_sources(
     return itinerary
 
 
+def _resolve_num_days(state: TravelState) -> int | None:
+    """A structured `state["num_days"]`, or None to signal "not set -- fall
+    back to parsing state['travel_dates'] text".
+
+    No current caller sets `state["num_days"]`: graph.collect_node's date
+    picker flow (see `_describe_trip`) instead bakes the day count as a
+    "(N days)" suffix straight into `travel_dates`, which the normal
+    `_parse_num_days` text-parsing path already reads correctly -- so this
+    resolves to None in practice today, and callers fall through to that
+    path. Kept as a seam (not removed) so a future structured day-count
+    input can be wired in here without touching every call site again.
+
+    If `state["num_days"]` ever IS set but invalid (0, negative), it does
+    NOT fall back to text parsing: a structured field being present at all
+    would mean travel_dates text may be absent or stale, so it falls back to
+    a safe flat default (3) instead.
+    """
+    num_days = state.get("num_days")
+    if num_days is None:
+        return None
+    if isinstance(num_days, int) and num_days > 0:
+        return num_days
+    return 3
+
+
+_PACE_TARGETS: dict[str, str] = {
+    "packed": "PACE: packed schedule -- aim for 7-8 POIs per day (never fewer than 7).",
+    "relaxed": "PACE: relaxed pace -- aim for 5-6 POIs per day (never fewer than 5, never more than 6).",
+}
+
+
+def _pace_target_line(pace: str | None) -> str:
+    """Extra prompt line steering the LLM's per-day POI count toward the
+    user's trip_style. Kept out of the ItineraryPlanner docstring (which is
+    shared/static across every call) since the target varies per request."""
+    return _PACE_TARGETS.get((pace or "").strip().lower(), "")
+
+
 # ---------------------------------------------------------------------------
 # Graph nodes
 # ---------------------------------------------------------------------------
@@ -1604,6 +1657,7 @@ def make_retrieve_node(api_key: str):
             location=state.get("region") or "",
             purpose=state.get("category") or "",
             duration=state.get("travel_dates") or "",
+            num_days=_resolve_num_days(state),
         )
 
         try:
@@ -1643,8 +1697,18 @@ def plan_node(state: TravelState) -> TravelState:
     location = state.get("region") or ""
     purpose = state.get("category") or ""
     duration = state.get("travel_dates") or ""
+    num_days = _resolve_num_days(state)
+    pace = state.get("pace")
     budget = ""
     dietary = state.get("restrictions") or "none"
+
+    # Only matters if num_days is ever set (see _resolve_num_days) while
+    # travel_dates text is empty/stale -- surfaces the day count to the LLM
+    # explicitly instead of letting it guess from blank duration text. In
+    # today's flow duration is always the picker's own "... (N days)" string
+    # by the time plan_node runs, so this is a no-op fallback, not the
+    # common path.
+    duration_text = duration or (f"{num_days} days" if num_days else "")
 
     requested_areas = _extract_requested_areas(location, purpose)
     print(f"[planner] requested_areas = {requested_areas}")
@@ -1665,19 +1729,22 @@ def plan_node(state: TravelState) -> TravelState:
         google_supplement=google_supplement,
         requested_areas=requested_areas,
         duration=duration,
+        num_days=num_days,
         day_segments=day_segments,
     )
 
     try:
         system_prompt = ItineraryPlanner.__doc__ or ""
+        pace_line = _pace_target_line(pace)
         user_prompt = (
             f"{system_prompt}\n\n"
-            f"Duration: {duration}\n"
+            f"Duration: {duration_text}\n"
             f"Location: {location}\n"
             f"Budget: {budget}\n"
             f"Dietary: {dietary}\n"
             f"Purpose: {purpose}\n"
-            f"Candidate Courses:\n{prompt_context}"
+            + (f"{pace_line}\n" if pace_line else "")
+            + f"Candidate Courses:\n{prompt_context}"
         )
         raw_json = _gemini_text(user_prompt)
 
@@ -1689,6 +1756,7 @@ def plan_node(state: TravelState) -> TravelState:
             google_supplement=google_supplement,
             requested_areas=requested_areas,
             duration=duration,
+            num_days=num_days,
             purpose=purpose,
         )
 
