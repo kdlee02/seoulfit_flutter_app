@@ -1795,12 +1795,20 @@ def _resolve_locked_meals(
     requested_areas: list[str],
     expected_days: int,
     meal_type: str = "dinner",
+    exclude_by_day: dict[int, tuple[str, ...]] | None = None,
 ) -> dict[int, dict[str, Any]]:
     """Resolve one `meal_type` pick per day via meal_slots.fill_meal_slot()
     (Michelin tier 1 -> Google Places tier 2) BEFORE the Gemini call, so the
     same choice can be told to the LLM as locked ("don't change this") and
     later enforced identically by _validate_and_repair_itinerary -- one
     lookup, not two independent ones that could disagree.
+
+    `exclude_by_day`: {day_num: (name, ...)} of restaurants already locked
+    for a different meal that day (e.g. dinner's pick, when this call is
+    resolving lunch) -- passed straight through to fill_meal_slot's existing
+    exclude_names, so the same restaurant can't be locked twice into one day.
+    If that leaves tier 1 empty, tier 2/3 kick in exactly as they would for
+    any other exclusion -- no separate dedup logic.
 
     Cuisine-avoidance filtering is out of scope here: exclude_families is
     never passed, so tier 1 is never family-filtered and tier 2 (Google) is
@@ -1827,6 +1835,7 @@ def _resolve_locked_meals(
 
         result = meal_slots.fill_meal_slot(
             area=day_area, weekday=weekday, slot_start=slot_start, slot_end=slot_end,
+            exclude_names=(exclude_by_day or {}).get(day_num, ()),
         )
         if result["status"] == "filled":
             locked[day_num] = result
@@ -1924,8 +1933,15 @@ def plan_node(state: TravelState) -> TravelState:
     locked_meals = _resolve_locked_meals(
         state.get("trip_start_date"), requested_areas, expected_days, meal_type="dinner",
     )
+    # Lunch excludes each day's already-locked dinner pick, so the same
+    # restaurant never gets locked into both meals on one day -- reuses
+    # fill_meal_slot's existing exclude_names, no new dedup logic.
+    dinner_names_by_day = {
+        day_num: (meal["name"],) for day_num, meal in locked_meals.items() if meal.get("name")
+    }
     locked_lunch_meals = _resolve_locked_meals(
         state.get("trip_start_date"), requested_areas, expected_days, meal_type="lunch",
+        exclude_by_day=dinner_names_by_day,
     )
 
     google_supplement: list[dict[str, Any]] = []
